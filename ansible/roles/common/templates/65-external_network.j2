@@ -1,0 +1,4 @@
+auto eth0 
+iface eth0 inet dhcp
+mtu 8880
+post-up /sbin/ethtool -K "$IFACE" tso off

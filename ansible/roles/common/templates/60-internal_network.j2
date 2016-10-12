@@ -1,0 +1,6 @@
+auto eth1
+iface eth1 inet static
+address {{private_addr}}
+netmask 255.255.255.0
+mtu 8880
+post-up /sbin/ethtool -K "$IFACE" tso off

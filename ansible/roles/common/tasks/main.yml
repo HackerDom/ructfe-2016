@@ -1,0 +1,31 @@
+- name: copy network configs for eth0 and eth1
+  template: src={{item}}.j2 dest=/etc/network/interfaces.d/{{item}}.cfg
+  with_items:
+    - 60-internal_network
+    - 65-external_network
+  notify:
+    - restart networking
+
+- name: remove old network config
+  file: path=/etc/network/interfaces.d/50-cloud-init.cfg state=absent
+  notify:
+    - restart networking
+
+- name: generate locales
+  locale_gen: name={{item}} state=present
+  with_items:
+    - en_US.UTF-8
+    - ru_RU.UTF-8
+
+- name: set hostname
+  hostname: name={{inventory_hostname}}
+
+- name: copy hostname file
+  copy: content={{inventory_hostname}} dest=/etc/hostname
+
+- name: install basic packages
+  apt: name={{item}} state=latest
+  with_items:
+    - python-pip
+    - htop
+    - iperf
