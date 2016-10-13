@@ -1,0 +1,56 @@
+- name: install packages
+  apt: name={{item}} state=latest
+  with_items:
+    - openvpn
+    - nginx
+    - python3-jinja2
+    - fping
+    - python3-requests
+
+- name: copy vpn configs
+  synchronize: 
+    src: openvpn/
+    dest: /etc/openvpn/
+    rsync_opts: "--chmod=0600 --chown=root:root"
+  notify: restart openvpn
+
+- name: create users
+  user: name={{item}} shell=/bin/false
+  with_items:
+    - teamcheck
+    - networkclosed
+    - antiddos
+
+- name: copy teamcheck files
+  copy: src=teamcheck/{{item}} dest=/home/teamcheck/ owner=teamcheck group=teamcheck
+  with_items:
+    - favicon.ico
+    - gen_status_loop.py
+    - team_tcp_checker.py
+    - status.tpl
+    - teams.py
+
+- name: make gen_status_loop and team_tcp_checker executable
+  file: path={{item}} mode=0755
+  with_items:
+    - /home/teamcheck/gen_status_loop.py
+    - /home/teamcheck/team_tcp_checker.py
+
+- name: copy teamcheck systemd service
+  copy: src=teamcheck/teamcheck.service dest=/etc/systemd/system/teamcheck.service
+  notify: enable and restart teamcheck
+
+- name: copy nginx config
+  copy: src=nginx/default dest=/etc/nginx/sites-available/default
+  notify: restart nginx
+
+- name: copy nginx htpasswd
+  copy: src=nginx/htpasswd dest=/etc/nginx/htpasswd
+  notify: restart nginx
+
+- name: create teamcheck web symlinks
+  file: src=/home/teamcheck/{{item}} dest=/var/www/html/{{item}} state=link force=yes
+  with_items:
+    - status.html
+    - favicon.ico
+

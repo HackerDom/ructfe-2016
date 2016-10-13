@@ -1,0 +1,8 @@
+- name: restart openvpn
+  shell: /bin/bash -c "/bin/systemctl restart openvpn@{0..767}"
+
+- name: restart nginx
+  service: name=nginx state=restarted
+
+- name: enable and restart teamcheck
+  service: name=teamcheck enabled=yes state=restarted

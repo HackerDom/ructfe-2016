@@ -32,6 +32,8 @@
     - python-pip
     - htop
     - iperf
+    - mc
+    - tmux
 
 - name: set limits
   copy: src=limits.conf dest=/etc/security/limits.conf
