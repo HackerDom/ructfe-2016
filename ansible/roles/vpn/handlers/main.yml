@@ -6,3 +6,9 @@
 
 - name: enable and restart teamcheck
   service: name=teamcheck enabled=yes state=restarted
+
+- name: enable and restart networkclosed
+  service: name=networkclosed enabled=yes state=restarted
+
+- name: enable and restart antidos
+  service: name=antidos enabled=yes state=restarted

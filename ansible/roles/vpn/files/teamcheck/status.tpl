@@ -21,7 +21,7 @@
         </style>
     </head>
     <body>
-        <h1> RuCTFE 2014 Network Status </h1>
+        <h1> RuCTFE 2016 Network Status </h1>
         <h3> Updated at: {{time}} </h3>
         {% if netopened %}
         <h4> Network is opened </h4>
