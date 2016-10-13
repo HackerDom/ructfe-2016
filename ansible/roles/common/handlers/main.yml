@@ -1,2 +1,2 @@
-- name: restart networking
-  service: name=networking state=restarted
+- name: update timezone
+  command: dpkg-reconfigure --frontend noninteractive tzdata

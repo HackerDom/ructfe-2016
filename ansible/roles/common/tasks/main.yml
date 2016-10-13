@@ -1,15 +1,15 @@
+- name: set timezone to Asia/Yekaterinburg
+  file: src=/usr/share/zoneinfo/Asia/Yekaterinburg dest=/etc/localtime state=link force=yes
+  notify: update timezone
+
 - name: copy network configs for eth0 and eth1
   template: src={{item}}.j2 dest=/etc/network/interfaces.d/{{item}}.cfg
   with_items:
     - 60-internal_network
     - 65-external_network
-  notify:
-    - restart networking
-
+  
 - name: remove old network config
   file: path=/etc/network/interfaces.d/50-cloud-init.cfg state=absent
-  notify:
-    - restart networking
 
 - name: generate locales
   locale_gen: name={{item}} state=present
