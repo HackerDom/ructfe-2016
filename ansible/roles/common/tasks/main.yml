@@ -23,9 +23,21 @@
 - name: copy hostname file
   copy: content={{inventory_hostname}} dest=/etc/hostname
 
+- name: place /etc/hosts
+  template: src=hosts.j2 dest=/etc/hosts
+
 - name: install basic packages
   apt: name={{item}} state=latest
   with_items:
     - python-pip
     - htop
     - iperf
+
+- name: set limits
+  copy: src=limits.conf dest=/etc/security/limits.conf
+
+- name: place .bashrc to root
+  copy: src=.bashrc dest=/root/.bashrc
+
+- name: place .bashrc to ubuntu user
+  copy: src=.bashrc dest=/home/ubuntu/.bashrc owner=ubuntu
