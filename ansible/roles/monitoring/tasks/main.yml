@@ -1,0 +1,85 @@
+- name: install basic packages for monitoring
+  apt: name={{item}} state=latest
+  with_items:
+    - graphite-web
+    - graphite-carbon
+    - nginx
+    - nginx-extras
+    - uwsgi
+    - uwsgi-plugin-python
+    - adduser
+    - libfontconfig
+
+- name: tweak /etc/carbon/carbon.conf
+  ini_file: dest=/etc/carbon/carbon.conf section=cache option={{item.option}} value={{item.value}}
+  with_items:
+    - {option: MAX_UPDATES_PER_SECOND, value: 100}
+    - {option: USE_WHITELIST, value: True}
+    - {option: MAX_CREATES_PER_MINUTE, value: 1000}
+  notify: enable and restart carbon-cache
+
+- name: tweak /etc/carbon/storage-schemas.conf
+  ini_file: dest=/etc/carbon/storage-schemas.conf section=default_1min_for_1day option={{item.option}} value={{item.value}}
+  with_items:
+    - {option: pattern, value: .*}
+    - {option: retentions, value: "10s:14d"}
+  notify: enable and restart carbon-cache
+
+- name: copy /etc/default/graphite-carbon
+  copy: content="CARBON_CACHE_ENABLED=true\n" dest=/etc/default/graphite-carbon
+  notify: enable and restart carbon-cache
+
+- name: place nginx config
+  copy: src=default dest=/etc/nginx/sites-available/default
+  notify: restart nginx
+
+- name: copy htpasswd to /etc/nginx/htpasswd
+  copy: src=htpasswd dest=/etc/nginx/htpasswd
+  notify: restart nginx
+
+- name: copy graphite.ini to uwsgi
+  copy: src=graphite.ini dest=/etc/uwsgi/apps-available/graphite.ini
+
+- name: link graphite.ini to uwsgi apps-enabled
+  file: src=/etc/uwsgi/apps-available/graphite.ini dest=/etc/uwsgi/apps-enabled/graphite.ini state=link
+  notify: restart uwsgi
+
+- name: place secret key to /etc/graphite/local_settings.py
+  lineinfile: 
+    dest: /etc/graphite/local_settings.py
+    regexp: "^SECRET_KEY "
+    line: SECRET_KEY = 'Ts9DcpJ7aWP8grXl0S3S'
+    insertafter: "^#SECRET_KEY"
+
+# graphite db was created with: graphite-manage syncdb
+
+- name: copy /var/lib/graphite/graphite.db
+  file: src=graphite.db dest=/var/lib/graphite/graphite.db owner=_graphite group=_graphite
+
+- name: get grafana 3.1.1
+  get_url: 
+    url: https://grafanarel.s3.amazonaws.com/builds/grafana_3.1.1-1470047149_amd64.deb
+    dest: /root/grafana_3.1.1-1470047149_amd64.deb
+
+- name: install grafana 3.1.1
+  apt: deb=/root/grafana_3.1.1-1470047149_amd64.deb
+
+- name: setup /etc/grafana/grafana.ini server
+  ini_file: dest=/etc/grafana/grafana.ini section=server option={{item.option}} value={{item.value}}
+  with_items:
+    - {option: http_addr, value: "127.0.0.1"}
+    - {option: root_url, value: "%(protocol)s://%(domain)s:%(http_port)s/g/"}
+  notify: enable and restart grafana
+
+- name: setup /etc/grafana/grafana.ini security
+  ini_file: dest=/etc/grafana/grafana.ini section=security option={{item.option}} value={{item.value}}
+  with_items:
+    - {option: admin_user, value: monitor}
+    - {option: admin_password, value: "{jxeUkzyenmVjybnjh"}
+  notify: enable and restart grafana
+
+- name: setup /etc/grafana/grafana.ini users
+  ini_file: dest=/etc/grafana/grafana.ini section=users option={{item.option}} value={{item.value}}
+  with_items:
+    - {option: allow_sign_up, value: false}
+  notify: enable and restart grafana

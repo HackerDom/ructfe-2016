@@ -1,0 +1,31 @@
+upstream django {
+    # Distribute requests to servers based on client IP. This keeps load
+    # balancing fair but consistent per-client. In this instance we're
+    # only using one uWGSI worker anyway.
+    server unix:/tmp/graphite.sock;
+}
+
+server {
+        listen 80 default_server;
+
+        location /static/ {
+                alias /usr/share/graphite-web/static/;
+        }
+
+        location / {
+                uwsgi_pass  django;
+                include     uwsgi_params;
+        }
+
+        location /g/ {
+                proxy_pass  http://127.0.0.1:3000/;
+                proxy_redirect     off;
+                proxy_set_header   Host $host;
+        }
+
+        location = /favicon.ico {
+            alias    /var/www/grafana/favicon.ico;
+        }
+        auth_basic "Oops!";
+        auth_basic_user_file /etc/nginx/htpasswd;
+}
