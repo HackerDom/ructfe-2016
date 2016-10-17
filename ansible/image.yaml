@@ -1,0 +1,9 @@
+- hosts: all
+  pre_tasks:
+    - name: generate locales
+      locale_gen: name={{item}} state=present
+      with_items:
+        - en_US.UTF-8
+        - ru_RU.UTF-8
+  roles:
+    - lxc

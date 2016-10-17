@@ -1,0 +1,64 @@
+---
+- name: Add backports repo
+  apt_repository: repo="deb http://ftp.debian.org/debian jessie-backports main" state=present update_cache=yes
+
+- name: Create bridge0
+  template: src=lxc-br0.j2 dest=/etc/network/interfaces.d/lxc-br0.cfg
+  register: lxc_bridge
+
+- name: Restart network
+  when: lxc_bridge.changed
+  service: name=networking state=restarted
+
+- name: Enable forwarding
+  sysctl: name="net.ipv4.ip_forward" value=1 sysctl_set=yes state=present reload=yes
+
+- name: Add nat rule
+  when: lxc_bridge.changed
+  iptables: table=nat chain=POSTROUTING source=192.168.254.0/24 jump=MASQUERADE
+
+- name: Install lxc
+  apt: pkg={{ item }} state=latest default_release=jessie-backports
+  with_items:
+    - lxc
+    - lxc-dev
+    - debootstrap
+    - bridge-utils
+    - python
+    - python-pip
+    - python-dev
+
+- name: Install lxc-python2
+  pip: name=lxc-python2 state=latest
+
+- name: Create lxc container
+  lxc_container:
+    name: "{{ item.name }}"
+    template: debian
+    state: started
+    backing_store: loop
+    fs_size: "4G"
+    container_log: true
+    container_config:
+      - "lxc.network.type = veth"
+      - "lxc.network.flags = up"
+      - "lxc.network.name = eth0"
+      - "lxc.network.link = lxc-br0"
+      - "lxc.network.veth.pair = veth-{{ item.num }}"
+      - "lxc.network.ipv4 = 192.168.254.{{ item.num }}/24"
+      - "lxc.network.ipv4.gateway = 192.168.254.254"
+      #- "lxc.cgroup.memory.limit_in_bytes = {{ item.mem }}"    # TODO: Fix memory limits
+      #- "lxc.cgroup.memory.memsw.limit_in_bytes = {{ item.mem }}"
+    container_command: |
+      sed -i 's/PermitRootLogin\s*without-password/PermitRootLogin yes/g' /etc/ssh/sshd_config
+      systemctl restart ssh
+      mkdir -p /root/.ssh/
+      echo "{{ SSH_PUBLIC_KEY }}" >> /root/.ssh/authorized_keys
+      bash
+  with_items:
+    - { name: nginx, num: 1, mem: "512M" }
+    # - { name: service1, num: 2, mem: "512M" }
+    # - { name: service2, num: 3, mem: "512M" }
+    # - { name: service3, num: 4, mem: "512M" }
+
+
