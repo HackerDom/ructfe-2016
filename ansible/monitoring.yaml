@@ -2,3 +2,4 @@
   roles:
     - common
     - monitoring
+    - monitoring_client

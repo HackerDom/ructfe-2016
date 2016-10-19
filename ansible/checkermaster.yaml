@@ -1,3 +1,4 @@
 - hosts: checkermaster
   roles:
     - common
+    - monitoring_client
