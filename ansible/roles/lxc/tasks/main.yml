@@ -43,6 +43,9 @@
 - name: Create lxc default.conf
   template: src=default.conf.j2 dest=/etc/lxc/default.conf
 
+- name: Add lxc-net to resolv.conf
+  lineinfile: dest=/etc/resolv.conf line="nameserver 192.168.254.254" insertbefore=BOF
+
 - name: Enable lxc-net
   service: name=lxc-net state=restarted enabled=yes
 
@@ -68,8 +71,7 @@
       bash
   with_items:
     - { name: nginx, mem: "512000000" }
-    # - { name: service1, num: 2, mem: "512M" }
-    # - { name: service2, num: 3, mem: "512M" }
-    # - { name: service3, num: 4, mem: "512M" }
-
+    - { name: service1, mem: "512000000" }
+    # - { name: service2, mem: "512000000" }
+    # - { name: service3, mem: "512000000" }
 
