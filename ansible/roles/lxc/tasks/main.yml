@@ -1,21 +1,28 @@
 ---
+- name: Enable swappaccount and memory limit
+  lineinfile:
+    line: 'GRUB_CMDLINE_LINUX_DEFAULT="quiet swapaccount=1 cgroup_enable=memory"'
+    dest: "/etc/default/grub"
+  register: grub
+
+- name: Update grub
+  command: update-grub
+  when: grub.changed
+
+- name: Restart image
+  shell: sleep 2 && shutdown -r now "Ansible updates triggered"
+  async: 1
+  poll: 0
+  ignore_errors: true
+  when: grub.changed
+
+- name: waiting for image to come back
+  local_action: wait_for host={{ inventory_hostname }} state=started delay=5 timeout=100
+  become: false
+  when: grub.changed
+
 - name: Add backports repo
-  apt_repository: repo="deb http://ftp.debian.org/debian jessie-backports main" state=present update_cache=yes
-
-- name: Create bridge0
-  template: src=lxc-br0.j2 dest=/etc/network/interfaces.d/lxc-br0.cfg
-  register: lxc_bridge
-
-- name: Restart network
-  when: lxc_bridge.changed
-  service: name=networking state=restarted
-
-- name: Enable forwarding
-  sysctl: name="net.ipv4.ip_forward" value=1 sysctl_set=yes state=present reload=yes
-
-- name: Add nat rule
-  when: lxc_bridge.changed
-  iptables: table=nat chain=POSTROUTING source=192.168.254.0/24 jump=MASQUERADE
+  apt_repository: repo="deb http://mirror.yandex.ru/debian jessie-backports main" state=present update_cache=yes
 
 - name: Install lxc
   apt: pkg={{ item }} state=latest default_release=jessie-backports
@@ -23,13 +30,24 @@
     - lxc
     - lxc-dev
     - debootstrap
-    - bridge-utils
     - python
     - python-pip
     - python-dev
 
 - name: Install lxc-python2
   pip: name=lxc-python2 state=latest
+
+- name: Create lxc-net
+  template: src=lxc-net.j2 dest=/etc/default/lxc-net
+
+- name: Create lxc default.conf
+  template: src=default.conf.j2 dest=/etc/lxc/default.conf
+
+- name: Enable lxc-net
+  service: name=lxc-net state=restarted enabled=yes
+
+- name: Enable forwarding
+  sysctl: name="net.ipv4.ip_forward" value=1 sysctl_set=yes state=present reload=yes
 
 - name: Create lxc container
   lxc_container:
@@ -40,15 +58,8 @@
     fs_size: "4G"
     container_log: true
     container_config:
-      - "lxc.network.type = veth"
-      - "lxc.network.flags = up"
-      - "lxc.network.name = eth0"
-      - "lxc.network.link = lxc-br0"
-      - "lxc.network.veth.pair = veth-{{ item.num }}"
-      - "lxc.network.ipv4 = 192.168.254.{{ item.num }}/24"
-      - "lxc.network.ipv4.gateway = 192.168.254.254"
-      #- "lxc.cgroup.memory.limit_in_bytes = {{ item.mem }}"    # TODO: Fix memory limits
-      #- "lxc.cgroup.memory.memsw.limit_in_bytes = {{ item.mem }}"
+      - "lxc.cgroup.memory.limit_in_bytes = {{ item.mem }}"
+      - "lxc.cgroup.memory.memsw.limit_in_bytes = {{ item.mem }}"
     container_command: |
       sed -i 's/PermitRootLogin\s*without-password/PermitRootLogin yes/g' /etc/ssh/sshd_config
       systemctl restart ssh
@@ -56,7 +67,7 @@
       echo "{{ SSH_PUBLIC_KEY }}" >> /root/.ssh/authorized_keys
       bash
   with_items:
-    - { name: nginx, num: 1, mem: "512M" }
+    - { name: nginx, mem: "512000000" }
     # - { name: service1, num: 2, mem: "512M" }
     # - { name: service2, num: 3, mem: "512M" }
     # - { name: service3, num: 4, mem: "512M" }
