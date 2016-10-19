@@ -21,3 +21,6 @@ done
 
 sysctl net.nf_conntrack_max=30000000
 echo "sysctl net.nf_conntrack_max=30000000"
+
+echo 33554432 > /sys/module/nf_conntrack/parameters/hashsize
+echo "echo 33554432 > /sys/module/nf_conntrack/parameters/hashsize"
