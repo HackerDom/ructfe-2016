@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Visualization</title>
+	<link href="./css/viz.css" rel="stylesheet" type="text/css"/>
+	<script src="./lib/jquery-3.1.1.min.js"></script>
+	<script src="./lib/jquery-ui-tooltip-1.12.1.min.js"></script>
+	<script src="./lib/underscore-1.8.3.min.js"></script>
+	<script src="./lib/d3/d3-3.5.12.min.js"></script>
+	<script src="./js/viz.js"></script>
+</head>
+<body>
+	<div id="svg-wrapper"></div>
+	<script>
+		var viz = new Viz();
+		viz.genTeams(300);
+		viz.init();
+	</script>
+</body>
+</html>
+
+<!--
+<div style="background:blue">
+	<svg viewBox="0 0 202 197"
+		 xmlns="http://www.w3.org/2000/svg"
+		 xmlns:xlink="http://www.w3.org/1999/xlink" >
+		<defs>
+			<linearGradient id="myG"  fy="0">
+
+				<stop offset="0" stop-color="white" stop-opacity="0">
+				</stop>
+				<stop offset="1" stop-color="white" stop-opacity="0">
+					<animate attributeName="offset" begin="0.5" dur="0.5" values="0;0.5"
+							 repeatCount="1" />
+				</stop>
+				<stop offset="1" stop-color="white">
+					<animate attributeName="offset" dur="1s" values="0;1"
+							 repeatCount="1" />
+				</stop>
+				<stop offset="1" stop-color="white" stop-opacity="0">
+					<animate attributeName="offset" dur="1s" values="0;1"
+							 repeatCount="1" />
+				</stop>
+				<stop offset="1" stop-color="white" stop-opacity="0"/>
+
+			</linearGradient>
+		</defs>
+		<line x1="0" y1="9.99" x2="100" y2="10" stroke-width="1" stroke="url(#myG)"/>
+	</svg>
+</div>
+-->
