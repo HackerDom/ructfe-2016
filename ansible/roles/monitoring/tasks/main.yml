@@ -54,7 +54,7 @@
 # graphite db was created with: graphite-manage syncdb
 
 - name: copy /var/lib/graphite/graphite.db
-  file: src=graphite.db dest=/var/lib/graphite/graphite.db owner=_graphite group=_graphite
+  copy: src=graphite.db dest=/var/lib/graphite/graphite.db owner=_graphite group=_graphite
 
 - name: get grafana 3.1.1
   get_url: 
@@ -83,3 +83,7 @@
   with_items:
     - {option: allow_sign_up, value: false}
   notify: enable and restart grafana
+
+- name: copy /var/lib/grafana/grafana.db
+  copy: src=grafana.db dest=/var/lib/grafana/grafana.db owner=grafana group=grafana mode=0640
+  notify: enable and restart grafana  
