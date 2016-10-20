@@ -77,6 +77,9 @@ if [ "$color_prompt" = yes ]; then
         chk0) HOSTCOLOR="$green" ;;
         chk1) HOSTCOLOR="$green" ;;
         chk2) HOSTCOLOR="$green" ;;
+        chk3) HOSTCOLOR="$green" ;;
+        chk4) HOSTCOLOR="$green" ;;
+        chk5) HOSTCOLOR="$green" ;;
         dump) HOSTCOLOR="$purple" ;;
         mon) HOSTCOLOR="$cyan" ;;
 
