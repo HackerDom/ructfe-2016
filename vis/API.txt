@@ -1,0 +1,18 @@
+/info =>
+    {
+        "teams": {"team_id": "team_name", ...}
+        "services": {"service_id": "service_name", ...}
+    }
+
+/scoreboard =>
+    {
+        "table": {"team_id": "score", ...},
+        "status": "0"|... (0 — NOT_STARTED, 1 — PLAYING, 2 — SUSPEND, 3 — FINISHED),
+        "round": "current_round"
+    }
+
+/events?from=<round> =>
+    [
+        ["round", "service_id", "attacker_id", "victim_id"]
+        ...
+    ]
