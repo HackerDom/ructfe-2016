@@ -1,0 +1,31 @@
+- name: ensure user
+  user: name={{cs_user}} state=present
+
+- name: ensure common requirements
+  apt: name={{item}} state=latest update_cache=yes
+  with_items:
+    - libssl-dev
+    - libpq-dev
+    - cpanminus
+    - git
+    - build-essential
+
+- name: clone repo
+  git: repo=https://github.com/HackerDom/checksystem.git dest={{cs_dir}}/app
+
+- name: copy config
+  template: src={{cs_conf}} dest={{cs_dir}}/app/c_s.conf
+
+- name: ensure permissions
+  file: path={{cs_dir}}/app owner={{cs_user}} group={{cs_user}} recurse=yes
+
+- name: perl modules
+  command: cpanm -n --installdeps {{cs_dir}}/app
+  register: r
+  changed_when: "r.stdout.find('Found dependencies') != -1"
+
+- name: catalog for checkers
+  file: path={{cs_dir}}/app/checkers state=directory
+
+- name: bay checker
+  template: src=bay.py dest={{cs_dir}}/app/checkers/bay.py mode=a+x

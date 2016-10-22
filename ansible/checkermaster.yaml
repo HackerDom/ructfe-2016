@@ -2,3 +2,8 @@
   roles:
     - common
     - monitoring_client
+    - cs_common
+  vars:
+    cs_user: cs
+    cs_dir: /home/cs
+    cs_conf: c_s.conf.test.j2
