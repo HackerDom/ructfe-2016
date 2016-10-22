@@ -59,7 +59,7 @@ def check(addr):
     close(OK)        
 
 
-def put(addr, flag_id, flag):
+def put(addr, flag_id, flag, vuln=None):
     s = socket.create_connection((addr, PORT))
     hello_data_exchange(s)
 
@@ -70,7 +70,7 @@ def put(addr, flag_id, flag):
     close(OK, flag_id)
 
 
-def get(addr, checker_flag_id, flag):
+def get(addr, checker_flag_id, flag,vuln=None):
     s = socket.create_connection((addr, PORT))
     hello_data_exchange(s)
 
@@ -101,4 +101,3 @@ if __name__ == '__main__':
         close(CORRUPT, "Socket I/O error", "SOCKET ERROR: %s" % e)
     except Exception as e:
         close(INTERNAL_ERROR, "Unknown error", "INTERNAL ERROR: %s" % e)
-
