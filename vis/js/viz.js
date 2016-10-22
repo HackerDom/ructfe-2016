@@ -19,7 +19,7 @@ var Viz = function(infoData, startScoreboard) {
 	for (var fieldName in info.teams) {
 		if (info.teams.hasOwnProperty(fieldName)) {
 			var id = teams.length;
-			teams.push({id: id, team_id: fieldName, name: info.teams[fieldName], score: 0, status: 0});
+			teams.push({index: id, id: id, team_id: fieldName, name: info.teams[fieldName], score: 0, status: 0});
 			teamIdToNum[fieldName] = teams.length - 1;
 		}
 	}
@@ -36,8 +36,9 @@ var Viz = function(infoData, startScoreboard) {
 	});
 	svg.call(zoom);
 
-	setOptimalZoom();
+	var force;
 	drawTeams();
+
 	loop();
 	setInterval(loop, loopDelayInMs);
 
@@ -49,7 +50,7 @@ var Viz = function(infoData, startScoreboard) {
 			}
 		});
 		if (scoreboard.status != NOT_STARTED) {
-			arrows = genRandomArrows(1);
+			arrows = genRandomArrows(5);
 			showArrows(arrows);
 		}
 	}
@@ -64,9 +65,34 @@ var Viz = function(infoData, startScoreboard) {
 		var $svg = $("#" + svgId);
 		var realHeight = $svg.height();
 		var realWidth = $svg.width();
-		var scale = Math.min(realWidth / width, realHeight / height);
-		var translate = [(realWidth - scale * width) / 2, (realHeight - scale * height) / 2];
+		var cad = getCetnerAndDelta(teams);
+		var size = teams[0].size;
+		cad.dx += size * 2;
+		cad.dy += size * 2;
+		cad.x += size * 0.5;
+		cad.y += size * 0.5;
+		var scale = Math.min(realWidth / cad.dx, realHeight / cad.dy);
+		var translate = [realWidth / 2 - scale * cad.x, realHeight / 2 - scale * cad.y];
 		zoom.translate(translate).scale(scale).event(svg);
+	}
+
+	function getCetnerAndDelta(nodes) {
+		var miny, maxy;
+		var minx = miny = Number.MAX_VALUE;
+		var maxx = maxy = Number.MIN_VALUE;
+		nodes.forEach(function(d) {
+			if(d == undefined)
+				return;
+			minx = Math.min(d.x, minx);
+			maxx = Math.max(d.x, maxx);
+			miny = Math.min(d.y, miny);
+			maxy = Math.max(d.y, maxy);
+		});
+		var dx = maxx - minx;
+		var dy = maxy - miny;
+		var x = (maxx + minx ) / 2;
+		var y = (maxy + miny) / 2;
+		return { x: x, y: y, dx: dx, dy: dy };
 	}
 
 	function showArrows(arrows) {
@@ -113,15 +139,25 @@ var Viz = function(infoData, startScoreboard) {
 		nodes.each(function () {
 			var node = d3.select(this);
 			var nodeData = node.data()[0];
-			nodeData.x = (nodeData.id % columnsCount) * islandSquareSide + spaceBetweenIslands / 2;
-			nodeData.y =  Math.floor(nodeData.id / columnsCount) * islandSquareSide + spaceBetweenIslands / 2;
 			nodeData.size = islandSquareSide - spaceBetweenIslands;
+			nodeData.width = nodeData.size + 10;
+			nodeData.height = nodeData.size + 10;
 			node.append("rect")
 				.classed("island", true)
 				.attr("width", nodeData.size)
-				.attr("height", nodeData.size)
-				.attr("transform", "translate(" + nodeData.x + ", " + nodeData.y + ")")
+				.attr("height", nodeData.size);
 		});
+
+		force = d3.layout.force()
+			.gravity(0.05)
+			.charge(function(d, i) {
+				return i < 2 ? -15000 : -40;
+			})
+			.nodes([{x: width / 2, y: -1000, width: 0, height: 0, fixed: true}, {x: width / 2, y: height + 1000, width: 0, height: 0, fixed: true}].concat(teams))
+			.size([width, height])
+			.on("tick", tick);
+		force.start();
+		startTicks();
 
 		function setIslandSize(teamsCount) {
 			islandSquareSide = 10;
@@ -130,6 +166,72 @@ var Viz = function(infoData, startScoreboard) {
 			columnsCount = Math.floor(width / islandSquareSide);
 			rowsCount = Math.floor(height / islandSquareSide);
 		}
+	}
+
+	function tick() {
+		var q = d3.geom.quadtree(teams),
+			i = 0,
+			n = teams.length;
+
+		while (++i < n) {
+			q.visit(collide(teams[i]));
+		}
+	}
+
+	function collide(node) {
+		return function(quad, x1, y1, x2, y2) {
+			var updated = false;
+			if (quad.point && (quad.point !== node)) {
+
+				var x = node.x - quad.point.x,
+					y = node.y - quad.point.y,
+					xSpacing = (quad.point.width + node.width) / 2,
+					ySpacing = (quad.point.height + node.height) / 2,
+					absX = Math.abs(x),
+					absY = Math.abs(y),
+					l,
+					lx,
+					ly;
+
+				if (absX < xSpacing && absY < ySpacing) {
+					l = Math.sqrt(x * x + y * y);
+
+					lx = (absX - xSpacing) / l;
+					ly = (absY - ySpacing) / l;
+
+					if (Math.abs(lx) > Math.abs(ly)) {
+						lx = 0;
+					} else {
+						ly = 0;
+					}
+
+					node.x -= x *= lx;
+					node.y -= y *= ly;
+					quad.point.x += x;
+					quad.point.y += y;
+
+					updated = true;
+				}
+			}
+			return updated;
+		};
+	}
+
+	function startTicks() {
+		force.tick();
+		if(force.alpha() > 0.015) {
+			startTicks();
+		} else {
+			force.stop();
+			updatePicture();
+		}
+	}
+
+	function updatePicture() {
+		svg.selectAll('.island')
+			.attr('x', function(d) { return d.x; })
+			.attr('y', function(d) { return d.y; });
+		setOptimalZoom();
 	}
 
 	function genRandomArrows(count) {
