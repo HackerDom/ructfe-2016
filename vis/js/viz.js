@@ -1,33 +1,63 @@
-var Viz = function() {
+var Viz = function(infoData, startScoreboard) {
 	var svgWrapperId = "svg-wrapper";
 	var svgId = "svg-viz";
-
-	var svg;
-	var container;
-	var zoom;
-	var teams = [];
+	var NOT_STARTED = "0";
+	var PLAYING = "1";
+	var SUSPEND = "2";
+	var FINISHED = "3";
 	var width = 800; // Это базовый размер экрана. Для остальных экранов используем zoom относительно этого размера.
-	var height = 600; // Хороший вариант: 1366x662
+	var height = 600; // TODO: Хороший вариант: 1366x662
+	var loopDelayInMs = 1 * 1000; // TODO: 60 * 1000
+
+	var info = infoData;
+	var scoreboard = startScoreboard;
+	var teams = [];
+	var teamIdToNum = {};
 	var nodes;
 	var arrows;
 
-	function init() {
-		svg = d3.select("#" + svgWrapperId).append("svg")
-			.attr("version", "1.1")
-			.attr("xmlns", "http://www.w3.org/2000/svg")
-			.attr("id", svgId);
-		container = svg.append("g").classed("container", true);
+	for (var fieldName in info.teams) {
+		if (info.teams.hasOwnProperty(fieldName)) {
+			var id = teams.length;
+			teams.push({id: id, team_id: fieldName, name: info.teams[fieldName], score: 0, status: 0});
+			teamIdToNum[fieldName] = teams.length - 1;
+		}
+	}
+	updateScore();
 
-		zoom = d3.behavior.zoom().scaleExtent([0.25, 3]).size([width, height]).on("zoom", function () {
-			container.attr("transform", "translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")");
+	var svg = d3.select("#" + svgWrapperId).append("svg")
+		.attr("version", "1.1")
+		.attr("xmlns", "http://www.w3.org/2000/svg")
+		.attr("id", svgId);
+	var container = svg.append("g").classed("container", true);
+
+	var zoom = d3.behavior.zoom().scaleExtent([0.25, 3]).size([width, height]).on("zoom", function () {
+		container.attr("transform", "translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")");
+	});
+	svg.call(zoom);
+
+	setOptimalZoom();
+	drawTeams();
+	loop();
+	setInterval(loop, loopDelayInMs);
+
+	function loop() {
+		$.getJSON("./scoreboard").done(function (scoreboardData) {
+			if (scoreboardData[1] === "success") {
+				scoreboard = scoreboardData;
+				updateScore();
+			}
 		});
-		svg.call(zoom);
+		if (scoreboard.status != NOT_STARTED) {
+			arrows = genRandomArrows(1);
+			showArrows(arrows);
+		}
+	}
 
-		setOptimalZoom();
-		drawTeams();
-
-		arrows = genRandomArrows(60);
-		showArrows(arrows);
+	function updateScore() {
+		for (var i = 0; i < teams.length; i++) {
+			teams[i].score = scoreboard.table[teams[i].team_id];
+		}
 	}
 
 	function setOptimalZoom() {
@@ -102,21 +132,12 @@ var Viz = function() {
 		}
 	}
 
-	function genTeams(count) {
-		for (var i = 0; i<count; i++) {
-			var team = {
-				id: i
-			};
-			teams.push(team);
-		}
-	}
-
 	function genRandomArrows(count) {
 		var arrows = [];
 		var i=0;
 		while (i < count) {
-			var from = randomInteger(0, teams.length);
-			var to = randomInteger(0, teams.length);
+			var from = randomInteger(0, teams.length - 1);
+			var to = randomInteger(0, teams.length - 1);
 			if (from != to) {
 				i++;
 				arrows.push({from: from, to: to});
@@ -126,7 +147,7 @@ var Viz = function() {
 	}
 
 	function randomInteger(min, max) {
-		var rand = min + Math.random() * (max - min)
+		var rand = min + Math.random() * (max - min);
 		rand = Math.round(rand);
 		return rand;
 	}
@@ -143,8 +164,9 @@ var Viz = function() {
 		content: function() {
 			var node = d3.select(this);
 			var nodeData = node.data()[0];
-			var text = nodeData.id + "";
-			return "<div class='team-tooltip'>" + text + "</div>";
+			var html = "<span>Team name: " + nodeData.name + "</span><br/>"
+				+ "<span>Score: " + nodeData.score + "</span>";
+			return "<div class='team-tooltip'>" + html + "</div>";
 		},
 		close: function () {
 			$(".ui-helper-hidden-accessible").remove();
@@ -152,8 +174,8 @@ var Viz = function() {
 	});
 
 	return {
-		init: init,
-		genTeams: genTeams,
-		getTeamsData: function() { return teams; }
+		getTeamsData: function() { return teams; },
+		getInfo: function() { return info; },
+		getScoreboard: function() { return scoreboard; }
 	}
 };

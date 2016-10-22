@@ -1,0 +1,4 @@
+{
+  "teams": {"t1": "team name 1", "t2": "team name 2", "t3": "team name 3"},
+  "services": {"s1": "service name 1", "s2": "service name 2"}
+}
