@@ -12,6 +12,7 @@
 
 - name: clone repo
   git: repo=https://github.com/HackerDom/checksystem.git dest={{cs_dir}}/app
+  become_user: "{{cs_user}}"
 
 - name: copy config
   template: src={{cs_conf}} dest={{cs_dir}}/app/c_s.conf
