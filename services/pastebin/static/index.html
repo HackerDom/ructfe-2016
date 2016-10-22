@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset='utf-8'>
+		<script type='text/javascript' src='/static/jquery.js'> </script>
+		<script type='text/javascript' src='/static/main.js'> </script>
+	</head>
+	<body>
+		<div>
+			<h1>Register</h1>
+			<form id='register' onsubmit='return OnRegister()'>
+				<input type='text' name='user' placeholder='user' required autocomplete='off'>
+				<input type='password' name='password' placeholder='password' required autocomplete='off'>
+				<input type='submit' value='Register'>
+			</form>
+		</div>
+		<div>
+			<h1>Login</h1>
+			<form id='login' onsubmit='return OnLogin()'>
+				<input type='text' name='user' placeholder='user' required autocomplete='off'>
+				<input type='password' name='password' placeholder='password' required autocomplete='off'>
+				<input type='submit' value='Login'>
+			</form>
+		</div>
+		<div>
+			<h1>Logout</h1>
+			<form id='logout' onsubmit='return OnLogout()'>
+				<input type='submit' value='Logout'>
+			</form>
+		</div>
+		<div>
+			<h1>Upload</h1>
+			<form id='upload' enctype="multipart/form-data" onsubmit='return OnUpload()'>
+				<input type='checkbox' name='is_public' autocomplete='off'>
+				<input type='file' name='file' required autocomplete='off'>
+				<input type='submit' value='upload'>
+			</form>
+		</div>
+
+		<div>
+			<table id='publics'></table>
+			<script type='text/javascript'>OnLoadPublics();</script>
+		</div>
+	</body>
+</html>

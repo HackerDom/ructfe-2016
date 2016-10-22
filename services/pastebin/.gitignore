@@ -1,0 +1,5 @@
+*_temp
+logs
+nginx.config.compiled
+*.o
+*.so
