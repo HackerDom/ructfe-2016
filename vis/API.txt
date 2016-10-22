@@ -2,6 +2,7 @@
     {
         "teams": {"team_id": "team_name", ...}
         "services": {"service_id": "service_name", ...}
+        "start": "time(sec)"
     }
 
 /scoreboard =>
@@ -13,6 +14,6 @@
 
 /events?from=<round> =>
     [
-        ["round", "service_id", "attacker_id", "victim_id"]
+        ["time(sec)", "service_id", "attacker_id", "victim_id"]
         ...
     ]
