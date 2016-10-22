@@ -64,6 +64,9 @@ function OnLoadPublics() {
 	var url = 'ws://' + window.location.hostname + ':' + window.location.port + '/publics';
 	var socket = new WebSocket(url);
 
+	socket.onopen = function() {
+		console.log('opened!!!');
+	}
 	socket.onmessage = function(event) {
 		console.log(event.data);
 	}

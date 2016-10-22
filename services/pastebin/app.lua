@@ -6,8 +6,6 @@ local redis = require('redis')
 
 local sha1 = require('sha1')
 
-require 'utils';
-
 -- TODO: сделать атомарную регистрацию
 --redis.commands = redis.comman('eval', {
 --
@@ -107,6 +105,7 @@ app:post("/upload", function(self)
 
 	if is_public then
 		client:zadd("publics", os.time() + config.ttl, id)
+		client:publish("publics", id)
 	end
 
 	return {json = self:url_for("download", {id = id})}
