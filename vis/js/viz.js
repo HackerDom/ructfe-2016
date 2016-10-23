@@ -8,6 +8,7 @@ var Viz = function(infoData, startScoreboard) {
 	var width = 800; // Это базовый размер экрана. Для остальных экранов используем zoom относительно этого размера.
 	var height = 600; // TODO: Хороший вариант: 1366x662
 	var loopDelayInMs = 1 * 1000; // TODO: 60 * 1000
+	var timeForArrowAnimation = 1;
 
 	var info = infoData;
 	var scoreboard = startScoreboard;
@@ -16,6 +17,7 @@ var Viz = function(infoData, startScoreboard) {
 	var nodes;
 	var arrows;
 	var lastGradientId = 0;
+	var lastArrowId = 0;
 
 	for (var fieldName in info.teams) {
 		if (info.teams.hasOwnProperty(fieldName)) {
@@ -52,7 +54,15 @@ var Viz = function(infoData, startScoreboard) {
 		});
 		if (scoreboard.status != NOT_STARTED) {
 			arrows = genRandomArrows(60);
-			showArrows(arrows);
+			var step = timeForArrowAnimation * 1000 / arrows.length;
+			var timeoutStart = 0;
+			for (var i=0; i<arrows.length; i++) {
+				var _elem = arrows[i];
+				setTimeout(function(elem) {return function () {
+					showArrow(elem);
+				}}(_elem), timeoutStart);
+				timeoutStart += step;
+			}
 		}
 	}
 
@@ -96,14 +106,14 @@ var Viz = function(infoData, startScoreboard) {
 		return { x: x, y: y, dx: dx, dy: dy };
 	}
 
-	function showArrows(arrows) {
-		container.selectAll(".arrow").remove();
+	function showArrow(arrow) {
 
-		var links = container.selectAll(".arrow")
-			.data(arrows)
+		var links = container.selectAll(".arrow" + lastArrowId)
+			.data([arrow])
 			.enter()
 			.append("g")
-			.attr("class", "arrow");
+			.attr("class", ".arrow" + lastArrowId);
+		lastArrowId++;
 
 		links.each(function () {
 			var link = d3.select(this);
@@ -121,17 +131,20 @@ var Viz = function(infoData, startScoreboard) {
 			var gradientId = "grad" + lastGradientId;
 			lastGradientId++;
 			addGradient(gradientId, "white");
+			link.append("line")
+				.attr("class", "arrow-line")
+				.attr("x1", fromX)
+				.attr("y1", fromY)
+				.attr("x2", fromX + length)
+				.attr("y2", fromY + 0.01)
+				.attr("transform", "rotate(" + angle + " " + fromX + " " + fromY + ")")
+				.attr("stroke-width", "3")
+				.attr("stroke-linecap", "round")
+				.attr("stroke", "url(#" + gradientId + ")");
 			setTimeout(function () {
-				link.append("line")
-					.attr("id", "arrow-line")
-					.attr("x1", fromX)
-					.attr("y1", fromY)
-					.attr("x2", fromX + length)
-					.attr("y2", fromY + 0.01)
-					.attr("transform", "rotate(" + angle + " " + fromX + " " + fromY + ")")
-					.attr("stroke-width", "3")
-					.attr("stroke", "url(#" + gradientId + ")");
-			}, 0);
+				link.remove();
+				defs.select("#" + gradientId).remove();
+			}, timeForArrowAnimation * 1000);
 		});
 	}
 
@@ -292,7 +305,7 @@ var Viz = function(infoData, startScoreboard) {
 		var startTime = svg[0][0].getCurrentTime();
 		var gradient = defs.append("linearGradient").attr("id", id);
 		var tracePortion = 0.2;
-		var allTime = 1;
+		var allTime = timeForArrowAnimation;
 		var traceTime = allTime * tracePortion;
 
 		gradient.append("stop")
