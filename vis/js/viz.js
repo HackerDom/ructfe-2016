@@ -15,6 +15,7 @@ var Viz = function(infoData, startScoreboard) {
 	var teamIdToNum = {};
 	var nodes;
 	var arrows;
+	var lastGradientId = 0;
 
 	for (var fieldName in info.teams) {
 		if (info.teams.hasOwnProperty(fieldName)) {
@@ -25,11 +26,9 @@ var Viz = function(infoData, startScoreboard) {
 	}
 	updateScore();
 
-	var svg = d3.select("#" + svgWrapperId).append("svg")
-		.attr("version", "1.1")
-		.attr("xmlns", "http://www.w3.org/2000/svg")
-		.attr("id", svgId);
+	var svg = d3.select("#" + svgId);
 	var container = svg.append("g").classed("container", true);
+	var defs = svg.append("defs");
 
 	var zoom = d3.behavior.zoom().scaleExtent([0.25, 3]).size([width, height]).on("zoom", function () {
 		container.attr("transform", "translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")");
@@ -39,8 +38,10 @@ var Viz = function(infoData, startScoreboard) {
 	var force;
 	drawTeams();
 
-	loop();
-	setInterval(loop, loopDelayInMs);
+	setTimeout(function () {
+		loop();
+		setInterval(loop, loopDelayInMs);
+	}, 0);
 
 	function loop() {
 		$.getJSON("./scoreboard").done(function (scoreboardData) {
@@ -50,7 +51,7 @@ var Viz = function(infoData, startScoreboard) {
 			}
 		});
 		if (scoreboard.status != NOT_STARTED) {
-			arrows = genRandomArrows(5);
+			arrows = genRandomArrows(60);
 			showArrows(arrows);
 		}
 	}
@@ -113,12 +114,24 @@ var Viz = function(infoData, startScoreboard) {
 			var fromY = teamFrom.y + teamFrom.size / 2;
 			var toX = teamTo.x + teamTo.size / 2;
 			var toY = teamTo.y + teamTo.size / 2;
-			link.append("line")
-				.classed("arrow-line", true)
-				.attr("x1", fromX)
-				.attr("y1", fromY)
-				.attr("x2", toX)
-				.attr("y2", toY);
+			var dx = toX - fromX;
+			var dy = toY - fromY;
+			var length = Math.sqrt(dx * dx + dy * dy);
+			var angle = Math.atan2(dy, dx) * 180 / Math.PI;
+			var gradientId = "grad" + lastGradientId;
+			lastGradientId++;
+			addGradient(gradientId, "white");
+			setTimeout(function () {
+				link.append("line")
+					.attr("id", "arrow-line")
+					.attr("x1", fromX)
+					.attr("y1", fromY)
+					.attr("x2", fromX + length)
+					.attr("y2", fromY + 0.01)
+					.attr("transform", "rotate(" + angle + " " + fromX + " " + fromY + ")")
+					.attr("stroke-width", "3")
+					.attr("stroke", "url(#" + gradientId + ")");
+			}, 0);
 		});
 	}
 
@@ -274,6 +287,119 @@ var Viz = function(infoData, startScoreboard) {
 			$(".ui-helper-hidden-accessible").remove();
 		}
 	});
+
+	function addGradient(id, color) {
+		var startTime = svg[0][0].getCurrentTime();
+		var gradient = defs.append("linearGradient").attr("id", id);
+		var tracePortion = 0.2;
+		var allTime = 1;
+		var traceTime = allTime * tracePortion;
+
+		gradient.append("stop")
+			.attr("offset", 0)
+			.attr("stop-color", color)
+			.attr("stop-opacity", 0);
+		var stop2 = gradient.append("stop")
+			.attr("offset", 0)
+			.attr("stop-color", color)
+			.attr("stop-opacity", 1);
+		stop2.append("animate")
+			.attr("attributeName", "stop-opacity")
+			.attr("begin", startTime)
+			.attr("dur", traceTime)
+			.attr("values", "1;0")
+			.attr("repeatCount", 1)
+			.attr("fill", "freeze");
+		stop2.append("animate")
+			.attr("attributeName", "offset")
+			.attr("begin", startTime + traceTime)
+			.attr("dur", allTime - traceTime)
+			.attr("values", "0;" + (1 - tracePortion))
+			.attr("repeatCount", 1)
+			.attr("fill", "freeze");
+		stop2.append("animate")
+			.attr("attributeName", "stop-opacity")
+			.attr("begin", startTime + allTime)
+			.attr("dur", "0.001s")
+			.attr("values", "0;1")
+			.attr("repeatCount", 1)
+			.attr("fill", "freeze");
+		stop2.append("animate")
+			.attr("attributeName", "offset")
+			.attr("begin", startTime + allTime)
+			.attr("dur", "0.001s")
+			.attr("values", (1 - tracePortion) + ";0")
+			.attr("repeatCount", 1)
+			.attr("fill", "freeze");
+		var stop3 = gradient.append("stop")
+			.attr("offset", 0)
+			.attr("stop-color", color)
+			.attr("stop-opacity", 1);
+		stop3.append("animate")
+			.attr("attributeName", "offset")
+			.attr("begin", startTime)
+			.attr("dur", allTime - traceTime)
+			.attr("values", "0;1")
+			.attr("repeatCount", 1)
+			.attr("fill", "freeze");
+		stop3.append("animate")
+			.attr("attributeName", "stop-opacity")
+			.attr("begin", startTime + allTime - traceTime)
+			.attr("dur", traceTime)
+			.attr("values", "1;0")
+			.attr("repeatCount", 1)
+			.attr("fill", "freeze");
+		stop3.append("animate")
+			.attr("attributeName", "offset")
+			.attr("begin", startTime + allTime)
+			.attr("dur", "0.001s")
+			.attr("values", "1;0")
+			.attr("repeatCount", 1)
+			.attr("fill", "freeze");
+		stop3.append("animate")
+			.attr("attributeName", "stop-opacity")
+			.attr("begin", startTime + allTime)
+			.attr("dur", "0.001s")
+			.attr("values", "0;1")
+			.attr("repeatCount", 1)
+			.attr("fill", "freeze");
+		var stop4 = gradient.append("stop")
+			.attr("offset", 0)
+			.attr("stop-color", color)
+			.attr("stop-opacity", 0);
+		stop4.append("animate")
+			.attr("attributeName", "offset")
+			.attr("begin", startTime)
+			.attr("dur", allTime - traceTime)
+			.attr("values", "0;1")
+			.attr("repeatCount", 1)
+			.attr("fill", "freeze");
+		stop4.append("animate")
+			.attr("attributeName", "stop-opacity")
+			.attr("begin", startTime + allTime - traceTime)
+			.attr("dur", traceTime)
+			.attr("values", "1;0")
+			.attr("repeatCount", 1)
+			.attr("fill", "freeze");
+		stop4.append("animate")
+			.attr("attributeName", "offset")
+			.attr("begin", startTime + allTime)
+			.attr("dur", "0.001s")
+			.attr("values", "1;0")
+			.attr("repeatCount", 1)
+			.attr("fill", "freeze");
+		stop4.append("animate")
+			.attr("attributeName", "stop-opacity")
+			.attr("begin", startTime + allTime)
+			.attr("dur", "0.001s")
+			.attr("values", "1;0")
+			.attr("repeatCount", 1)
+			.attr("fill", "freeze");
+		gradient.append("stop")
+			.attr("offset", 1)
+			.attr("stop-color", color)
+			.attr("stop-opacity", 0);
+	}
 
 	return {
 		getTeamsData: function() { return teams; },

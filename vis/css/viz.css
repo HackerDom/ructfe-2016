@@ -26,6 +26,5 @@ body,
   height: auto;
 }
 .arrow-line {
-  stroke-width: 2;
-  stroke: black;
+  stroke-linecap: "round";
 }
