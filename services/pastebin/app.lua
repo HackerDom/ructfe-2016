@@ -84,7 +84,6 @@ app:post("/upload", function(self)
 	local is_public = self.req.params_post.is_public
 	local user = self.session.user
 
-	print(is_public)
 	if user == nil then
 		return {status = 401, json = {"need to login"}}
 	end
@@ -92,7 +91,6 @@ app:post("/upload", function(self)
 		return {status = 400, json = {"file required"}}
 	end
 	is_public = is_public and true or false
-	print(is_public)
 
 	local data = file.content
 	local state = client:hincrby(get_userid(user), "state", 1)
@@ -100,15 +98,17 @@ app:post("/upload", function(self)
 
 
 	-- TODO atom
-	client:hmset(get_fileid(id), "is_public", is_public, "data", data, "owner", user)
+	local expired = os.time() + config.ttl
+	local url = self:url_for("download", {id = id})
+	client:hmset(get_fileid(id), "is_public", is_public, "data", data, "owner", user, "expired", expired, "url", url)
 	client:expire(get_fileid(id), config.ttl)
 
 	if is_public then
-		client:zadd("publics", os.time() + config.ttl, id)
+		client:zadd("publics", expired, id)
 		client:publish("publics", id)
 	end
 
-	return {json = self:url_for("download", {id = id})}
+	return {json = url}
 end)
 
 app:get("download", "/file/:id", function(self)

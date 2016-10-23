@@ -33,6 +33,12 @@ local function get_all_replaies(client)
 	end
 end
 
+local function get_file_info(client, id)
+	id = 'file:' .. id
+	local url, owner, expired = unpack(client:hmget(id, 'url', 'owner', 'expired'))
+	return {url = url, owner = owner, ttl = expired - os.time()}
+end
+
 function module.process()
 	local socket, err = server:new {
 	    timeout = 60000,
@@ -56,14 +62,16 @@ function module.process()
 	client:zremrangebyscore('publics', 0, os.time())
 
 	for file in get_all_elements(client, 'publics') do
-	    local bytes, err = socket:send_text(json.encode(file))
+		local data = get_file_info(client, file)
+		local bytes, err = socket:send_text(json.encode(data))
 		if not bytes then
 			break
 		end
 	end
 
 	for file in get_all_replaies(listener) do
-		local bytes, err = socket:send_text(json.encode(err[3]))
+		local data = get_file_info(client, file)
+		local bytes, err = socket:send_text(json.encode(data))
 		if not bytes then
 			break
 		end
