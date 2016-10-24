@@ -1,9 +1,24 @@
-- hosts: all
+---
+- hosts: image
   pre_tasks:
     - name: generate locales
-      locale_gen: name={{item}} state=present
+      locale_gen: name={{ item }} state=present
       with_items:
         - en_US.UTF-8
         - ru_RU.UTF-8
+    - name: remove trash
+      apt: name={{ item }} state=absent
+      with_items:
+        - cups
+        - cups-daemon
+        - exim4
+        - exim4-base
+        - nfs-common
+        - rpcbind
   roles:
     - lxc
+    - general_nginx
+
+- hosts: pastebin
+  roles:
+    - pastebin

@@ -1,0 +1,8 @@
+upstream {{ item.name }} {
+    server {{ item.name }}.lxc:{{ item.remote_port | default(item.port) }};
+}
+
+server {
+    listen {{ item.port }};
+    proxy_pass {{ item.name }};
+}

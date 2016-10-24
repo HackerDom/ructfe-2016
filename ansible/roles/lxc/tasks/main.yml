@@ -39,15 +39,21 @@
 
 - name: Create lxc-net
   template: src=lxc-net.j2 dest=/etc/default/lxc-net
+  register: lxc_net
 
 - name: Create lxc default.conf
   template: src=default.conf.j2 dest=/etc/lxc/default.conf
+  register: lxc_conf
 
 - name: Add lxc-net to resolv.conf
   lineinfile: dest=/etc/resolv.conf line="nameserver 192.168.254.254" insertbefore=BOF
 
 - name: Enable lxc-net
-  service: name=lxc-net state=restarted enabled=yes
+  service: name=lxc-net enabled=yes
+
+- name: Restart lxc-net
+  service: name=lxc-net state=restarted
+  when: "lxc_net.changed or lxc_conf.changed"
 
 - name: Enable forwarding
   sysctl: name="net.ipv4.ip_forward" value=1 sysctl_set=yes state=present reload=yes
@@ -70,8 +76,8 @@
       echo "{{ SSH_PUBLIC_KEY }}" >> /root/.ssh/authorized_keys
       bash
   with_items:
-    - { name: nginx, mem: "512000000" }
-    - { name: service1, mem: "512000000" }
+    - { name: crash, mem: "512000000" }
+    - { name: pastebin, mem: "512000000" }
     # - { name: service2, mem: "512000000" }
     # - { name: service3, mem: "512000000" }
 

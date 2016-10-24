@@ -1,0 +1,8 @@
+---
+- name: restart nginx
+  service: name=nginx state=restarted
+  become_user: root
+
+- name: reload nginx
+  service: name=nginx state=reloaded
+  become_user: root

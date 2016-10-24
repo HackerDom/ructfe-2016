@@ -39,5 +39,9 @@ http {
     tcp_nopush  on;
     charset     utf-8;
     server_tokens off;
-    include /etc/nginx/conf.d/*;
+    include /etc/nginx/web/*;
+}
+
+stream {
+    include /etc/nginx/stream/*;
 }
