@@ -1,9 +1,9 @@
-local lapis = require('lapis')
-local app = lapis.Application()
+local app = require('lapis').Application()
 
 local config = require('lapis.config').get()
 local redis = require('redis')
 
+local rand = require('rand')
 local sha1 = require('sha1')
 
 -- TODO: сделать атомарную регистрацию
@@ -51,7 +51,8 @@ app:post("/register", function(self)
 		return {status = 400, json = {"username already have used"}}
 	end
 
-	client:hmset(get_userid(user), "password", password, "state", 0)
+	local state = rand.init()
+	client:hmset(get_userid(user), "password", password, "state", state)
 	if client:hget(get_userid(user), "password") ~= password then
 		return {status = 400, json = {"username already have used"}}
 	end
@@ -92,14 +93,18 @@ app:post("/upload", function(self)
 	end
 	is_public = is_public and true or false
 
+	log('start')
+
 	local data = file.content
-	local state = client:hincrby(get_userid(user), "state", 1)
-	local id = sha1(user .. "upload" .. state)
+	local state, value = client:hget(get_userid(user), "state")
+	state, value = rand(state)
+	local id = sha1(value .. '@' .. user)
 
-
-	-- TODO atom
 	local expired = os.time() + config.ttl
 	local url = self:url_for("download", {id = id})
+
+	-- TODO atom
+	client:hset(get_userid(user), "state", state)
 	client:hmset(get_fileid(id), "is_public", is_public, "data", data, "owner", user, "expired", expired, "url", url)
 	client:expire(get_fileid(id), config.ttl)
 
