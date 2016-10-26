@@ -1,13 +1,7 @@
 ---
-- name: Nginx | Packages | Add signing key
-  apt_key: url=http://nginx.org/keys/nginx_signing.key
-
-- name: Nginx | Packages | Add repo
-  apt_repository: repo='deb http://nginx.org/packages/debian/ jessie nginx' state=present update_cache=yes
-
-- name: Nginx | Install required packaged
-  apt: pkg={{ item }} state=latest
+- name: Install nginx
+  apt: pkg={{ item }} state=latest default_release=testing
   with_items:
-    - nginx
+    - nginx-extras
     - rsync
     - sudo

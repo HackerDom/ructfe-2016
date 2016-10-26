@@ -2,4 +2,3 @@
 dependencies:
   - service
   - nginx
-  # Use another nginx? Needs lua module
