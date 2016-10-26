@@ -4,39 +4,10 @@ local json = require 'cjson'
 
 local module = {}
 
-local function get_all_elements(client, field)
-	local cursor, elements, i = 0
-	local function get_next()
-		cursor, elements = unpack(client:zscan('publics', cursor))
-		i = -1
-	end
-	get_next()
-	return function() 
-		while i + 1 == #elements do
-			if cursor == "0" then
-				return
-			else
-				get_next()
-			end
-		end
-		i = i + 2
-		return elements[i]
-	end
-end
-
-local function get_all_replaies(client)
-	return function()
-		local res, err = client:read_reply()
-		if res then
-			return res[3]
-		end
-	end
-end
-
-local function get_file_info(client, id)
-	id = 'file:' .. id
-	local url, owner, expired = unpack(client:hmget(id, 'url', 'owner', 'expired'))
-	return {url = url, owner = owner, ttl = expired - os.time()}
+local function send_file(client, socket, file)
+	local data = client:get_file_info(file)
+	local bytes, err = socket:send_text(json.encode(data))
+	return bytes and true or false 
 end
 
 function module.process()
@@ -50,34 +21,22 @@ function module.process()
 	    return ngx.exit(444)
 	end
 
-	local listener = redis:client()
-
-	local res, err = listener:subscribe('publics')
-	if not res then
-		ngx.log(ngx.ERR, 'failed for subscribe: ', err)
-		return ngx.exit(500)
-	end
-
+	local listener = redis:listener()
 	local client = redis:client()
-	client:zremrangebyscore('publics', 0, os.time())
 
-	for file in get_all_elements(client, 'publics') do
-		local data = get_file_info(client, file)
-		local bytes, err = socket:send_text(json.encode(data))
-		if not bytes then
+	for file in client:get_public_files() do
+		if not send_file(client, socket, file) then
 			break
 		end
 	end
 
-	for file in get_all_replaies(listener) do
-		local data = get_file_info(client, file)
-		local bytes, err = socket:send_text(json.encode(data))
-		if not bytes then
+	for file in listener:get_news() do
+		if not send_file(client, socket, file) then
 			break
 		end
 	end
 
-	listener:unsubscribe('publics')
+	listener:close()
 	socket:send_close()
 end
 
