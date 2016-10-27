@@ -7,9 +7,11 @@
   with_items:
     - 60-internal_network
     - 65-external_network
+  when: datacenter=='a'
   
 - name: remove old network config
   file: path=/etc/network/interfaces.d/50-cloud-init.cfg state=absent
+  when: datacenter=='a'
 
 - name: generate locales
   locale_gen: name={{item}} state=present
