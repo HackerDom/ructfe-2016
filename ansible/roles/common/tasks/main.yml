@@ -43,5 +43,8 @@
 - name: place .bashrc to root
   copy: src=.bashrc dest=/root/.bashrc
 
+- name: create ubuntu user
+  user: name=ubuntu state=present shell=/bin/bash createhome=yes
+
 - name: place .bashrc to ubuntu user
   copy: src=.bashrc dest=/home/ubuntu/.bashrc owner=ubuntu
