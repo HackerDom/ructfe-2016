@@ -2,6 +2,7 @@
   roles:
     - common
     - cs_common
+    - cs_checker
   vars:
     cs_user: cs
     cs_dir: /home/cs

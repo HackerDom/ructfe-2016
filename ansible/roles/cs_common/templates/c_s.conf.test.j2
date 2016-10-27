@@ -8,7 +8,7 @@
       break => ['2016-04-17 13:00:00', '2016-04-17 14:00:00']
     },
     ctf            => {name => 'RuCTFE 2016 test mode'},
-    round_length   => 20,
+    round_length   => 60,
     flag_life_time => 15,
     flags => {port => 31337, timeout => 5 * 60},
     admin => {auth => 'root:Da0eeWooLoovajuMaic2'},
@@ -528,6 +528,9 @@
     {name => 'team_511',	network => '10.61.255.0/24',	host => '10.61.255.2'},
   ],
   services => [
-    {name => 'bay',    path => 'checkers/bay.py',    timeout => 10},
+    {name => 'bay',      path => 'checkers/bay.py',              timeout => 15},
+    {name => 'bay2',     path => 'checkers/bay.py',              timeout => 15},
+    {name => 'bay3',     path => 'checkers/bay.py',              timeout => 15},
+    {name => 'selenium', path => 'checkers/selenium_checker.py', timeout => 15},
   ],
 }

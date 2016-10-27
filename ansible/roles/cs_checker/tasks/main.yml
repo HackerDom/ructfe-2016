@@ -1,0 +1,24 @@
+- name: catalog for checkers
+  file: path={{cs_dir}}/app/checkers state=directory
+
+- name: bay checker
+  template: src=bay.py dest={{cs_dir}}/app/checkers/bay.py mode=a+x
+
+- name: selenium checker
+  template: src=selenium_checker.py dest={{cs_dir}}/app/checkers/selenium_checker.py mode=a+x
+
+- name: selenium checker sites
+  template: src=sites.txt dest={{cs_dir}}/app/checkers/sites.txt
+
+- name: selenium checker deps
+  apt: name={{item}} state=latest update_cache=yes
+  with_items:
+    - nodejs-legacy
+    - npm
+    - python3-pip
+
+- name: selenium checker npm deps
+  npm: name=phantomjs global=yes
+
+- name: selenium checker python deps
+  pip: executable=pip3 name=selenium

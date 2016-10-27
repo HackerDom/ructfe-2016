@@ -24,9 +24,3 @@
   command: cpanm -n --installdeps {{cs_dir}}/app
   register: r
   changed_when: "r.stdout.find('Found dependencies') != -1"
-
-- name: catalog for checkers
-  file: path={{cs_dir}}/app/checkers state=directory
-
-- name: bay checker
-  template: src=bay.py dest={{cs_dir}}/app/checkers/bay.py mode=a+x
