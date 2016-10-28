@@ -1,7 +1,7 @@
 local config = require("lapis.config").config
 
 config("development", {
-	session_name = "files",
+	session_name = "auth",
 	secret = "qqq",
 	redis = {
 		host = "127.0.0.1",
