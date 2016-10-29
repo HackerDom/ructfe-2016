@@ -24,6 +24,15 @@ body,
   background: white;
   max-width: 200px;
   height: auto;
+  padding: 5px;
+  border-radius: 2px;
+  position: relative;
+}
+.ui-tooltip .team-tooltip .header {
+  font-weight: normal;
+}
+.ui-tooltip .team-tooltip .value {
+  font-weight: bold;
 }
 circle.rocket {
   -webkit-transition: 1s linear;

@@ -33,7 +33,7 @@ var Viz = function(infoData, startScoreboard) {
 		for (var fieldName in info.teams) {
 			if (info.teams.hasOwnProperty(fieldName)) {
 				var id = teams.length;
-				teams.push({index: id, id: id, team_id: fieldName, name: info.teams[fieldName], score: 0, status: 0});
+				teams.push({index: id, id: id, team_id: fieldName, name: info.teams[fieldName], score: 0, place: null, status: 0});
 				teamIdToNum[fieldName] = teams.length - 1;
 			}
 		}
@@ -125,8 +125,16 @@ var Viz = function(infoData, startScoreboard) {
 	}
 
 	function updateScore() {
-		for (var i = 0; i < teams.length; i++) {
+		var i;
+		for (i = 0; i < teams.length; i++) {
 			teams[i].score = scoreboard.table[teams[i].team_id];
+		}
+		var orderedTeams = _.sortBy(teams, 'score').reverse();
+		for (i = 0; i < orderedTeams.length; i++) {
+			if (orderedTeams[i].score != 0)
+				orderedTeams[i].place = i + 1;
+			else
+				orderedTeams[i].place = undefined;
 		}
 	}
 
@@ -355,14 +363,13 @@ var Viz = function(infoData, startScoreboard) {
 		content: function() {
 			var node = d3.select(this);
 			var nodeData = node.data()[0];
-			var html = "<span>Team name: " + nodeData.name + "</span><br/>"
-				+ "<span>Score: " + nodeData.score + "</span>";
+			var html = "<span><span class='header'>Team name:</span> <span class='value'>" + nodeData.name + "</span></span><br/>"
+				+ "<span><span class='header'>Place:</span> <span class='value'>" + nodeData.place + "</span></span><br/>"
+				+ "<span><span class='header'>Score:</span> <span class='value'>" + nodeData.score + "</span></span>";
 			return "<div class='team-tooltip'>" + html + "</div>";
 		},
-		close: function () {
-			$(".ui-helper-hidden-accessible").remove();
-		}
 	});
+	$(".ui-helper-hidden-accessible").remove();
 
 	function createFilterPanel() {
 		var deselectionFlag = "deselected";
