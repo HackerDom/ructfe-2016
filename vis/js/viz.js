@@ -28,7 +28,7 @@ var Viz = function(infoData, startScoreboard) {
 		for (var fieldName in info.teams) {
 			if (info.teams.hasOwnProperty(fieldName)) {
 				var id = teams.length;
-				teams.push({index: id, id: id, team_id: fieldName, name: info.teams[fieldName], score: 0, status: 0});
+				teams.push({index: id, id: id, team_id: fieldName, name: info.teams[fieldName], score: 0, place: null, status: 0});
 				teamIdToNum[fieldName] = teams.length - 1;
 			}
 		}
@@ -84,6 +84,7 @@ var Viz = function(infoData, startScoreboard) {
 	}
 
 	function updateScore() {
+		var orderedTeams = orderedTeams.slice(0);
 		for (var i = 0; i < teams.length; i++) {
 			teams[i].score = scoreboard.table[teams[i].team_id];
 		}
@@ -329,6 +330,7 @@ var Viz = function(infoData, startScoreboard) {
 			var node = d3.select(this);
 			var nodeData = node.data()[0];
 			var html = "<span><span class='header'>Team name:</span> <span class='value'>" + nodeData.name + "</span></span><br/>"
+				+ "<span><span class='header'>Place:</span> <span class='value'>" + nodeData.place + "</span></span>"
 				+ "<span><span class='header'>Score:</span> <span class='value'>" + nodeData.score + "</span></span>";
 			return "<div class='team-tooltip'>" + html + "</div>";
 		},
