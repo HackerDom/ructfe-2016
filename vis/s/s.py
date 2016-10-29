@@ -92,6 +92,6 @@ if __name__ == '__main__':
     args = parse_args()
     start = int(time())
     events = []
-    scores = {team_(i): 0 for i in range(args.teams)}
+    scores = {team_(i + 1): 0 for i in range(args.teams)}
 
     run(host='0.0.0.0', port=8000, debug=True, reloader=True)
