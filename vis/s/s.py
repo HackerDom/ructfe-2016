@@ -4,7 +4,7 @@ import argparse
 import bisect
 import json
 import random
-from bottle import route, run, response, request
+from bottle import route, run, response, request, static_file
 from functools import wraps
 from time import time
 
@@ -16,9 +16,9 @@ def team_(x): return 'team_{}'.format(x)
 def service_(x): return 'service_{}'.format(x)
 
 
-@route('/')
-def main_page():
-    return "<h1>It works!</h1>"
+@route('/<filepath:path>')
+def main_page(filepath):
+    return static_file(filepath, root='./')
 
 
 def tojson(fn):
