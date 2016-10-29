@@ -6,6 +6,9 @@ local module = {}
 
 local function send_file(client, socket, file)
 	local data = client:get_file_info(file)
+	if not data then
+		return true
+	end
 	local bytes, err = socket:send_text(json.encode(data))
 	return bytes and true or false 
 end

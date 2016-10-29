@@ -3,6 +3,8 @@ local config = require('lapis.config').get()
 local rand = require 'rand'
 local sha1 = require 'sha1'
 
+require 'utils'
+
 local module = {}
 
 local function get_userid(username)
@@ -59,7 +61,10 @@ local function create_file(self, username, data, public, get_url)
 end
 
 local function get_file(self, filename)
-	return hget(get_fileid(filename), 'data')
+	local data = self.client:hget(get_fileid(filename), 'data')
+	if data ~= ngx.null then
+		return data
+	end
 end
 
 local function get_all(client, key)
@@ -92,7 +97,9 @@ end
 local function get_file_info(self, filename)
 	local id = get_fileid(filename)
 	local url, owner, expired = unpack(self.client:hmget(id, 'url', 'owner', 'expired'))
-	return {url = url, owner = owner, ttl = expired - os.time()}
+	if url ~= ngx.null then
+		return {url = url, owner = owner, ttl = expired - os.time()}
+	end
 end
 
 local function create_client()
@@ -110,6 +117,7 @@ function module.client()
 		user_exists = user_exists,
 		create_user = create_user,
 		create_file = create_file,
+		get_file = get_file,
 		get_public_files = get_public_files,
 		get_file_info = get_file_info
 	}

@@ -1,6 +1,8 @@
 local app = require('lapis').Application()
 local redis = require 'redis'
 
+require 'utils'
+
 local function is_significant(s)
 	return s ~= nil and s ~= '';
 end
@@ -90,7 +92,7 @@ end)
 app:get('download', '/file/:id', function(self)
 	local client = redis:client()
 	local data = client:get_file(self.params.id)
-	if data == nil then
+	if not data then
 		return {status = 404}
 	else
 		self:write(data, {content_type = 'text/plain'})
