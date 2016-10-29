@@ -328,14 +328,12 @@ var Viz = function(infoData, startScoreboard) {
 		content: function() {
 			var node = d3.select(this);
 			var nodeData = node.data()[0];
-			var html = "<span>Team name: " + nodeData.name + "</span><br/>"
-				+ "<span>Score: " + nodeData.score + "</span>";
+			var html = "<span><span class='header'>Team name:</span> <span class='value'>" + nodeData.name + "</span></span><br/>"
+				+ "<span><span class='header'>Score:</span> <span class='value'>" + nodeData.score + "</span></span>";
 			return "<div class='team-tooltip'>" + html + "</div>";
 		},
-		close: function () {
-			$(".ui-helper-hidden-accessible").remove();
-		}
 	});
+	$(".ui-helper-hidden-accessible").remove();
 
 	function createFilterPanel() {
 		var deselectionFlag = "deselected";
