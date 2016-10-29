@@ -4,6 +4,7 @@ import sys
 import signal
 import json
 import os
+import traceback
 from selenium import webdriver, common
 
 OK, GET_ERROR, CORRUPT, FAIL, INTERNAL_ERROR = 101, 102, 103, 104, 110
@@ -53,15 +54,20 @@ def init_check(command_ip):
         sites = [site.strip() for site in sites_file.readlines()]
     address = sites[ip_to_id(command_ip) % len(sites)]
 
-    driver = None
-    while True:
+    try:
+        driver = make_driver(address)
+    except Exception:
         try:
             driver = make_driver(address)
-            break
-        except Exception:
-            driver.service.process.send_signal(signal.SIGTERM)
-            driver.quit()
-            driver = None
+        except Exception as e:
+            close(
+                FAIL,
+                "Failed to init driver due to {}".format(e),
+                "Failed to init driver due to {}, {}".format(
+                    e,
+                    traceback.format_exc()
+                )
+            )
 
     driver.set_page_load_timeout(15)
 
@@ -78,8 +84,11 @@ def init_check(command_ip):
         close(
             FAIL,
             "Failed to put the flag due to {}".format(e),
-            "Failed to put the flag due to {}".format(e)
-              )
+            "Failed to put the flag due to {}, {}".format(
+                e,
+                traceback.format_exc()
+            )
+        )
     finally:
         driver.service.process.send_signal(signal.SIGTERM)
         driver.quit()
