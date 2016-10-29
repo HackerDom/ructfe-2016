@@ -79,14 +79,15 @@ class WSClient(WebSocketClient):
 		self.finish()
 
 class WSHelper:
-	def __init__(self, url, origin, ua, cookie):
+	def __init__(self, url, origin, ua, cookie, wanted, unwanted):
 		ws = WSClient(url, headers=[
 			('Origin', origin),
 			('User-Agent', ua),
 			('Cookie', get_cookie_string(cookie))
 		])
 		self.queue = queue.Queue()
-		self.wanted = set()
+		self.wanted = wanted
+		self.unwanted = unwanted
 		self.closed = False
 		try:
 			ws.deamon = True
@@ -104,19 +105,21 @@ class WSHelper:
 	def finish(self):
 		while len(self.wanted) > 0 and (not self.closed or not self.queue.empty()):
 			try:
-				top = self.queue.get(timeout=10)
+				top = self.queue.get(timeout=5)
 			except queue.Empty as ex:
 				if self.closed:
 					break
 				service_corrupt(error='too slow')
 			if top in self.wanted:
 				self.wanted.remove(top)
+			if top[0] in self.unwanted:
+				service_corrupt(error='show private files')
 		if len(self.wanted) > 0:
 			service_corrupt(error='fail getting all posted files')
 
 class State:
 	def __init__(self, hostname):
-		base_addr = '://{}:{}/'.format(hostname, PORT)
+		base_addr = '://{}:{}'.format(hostname, PORT)
 		self.base_addr = 'http' + base_addr
 		self.ws_addr = 'ws' + base_addr
 		self.session = requests.Session()
@@ -153,13 +156,13 @@ class State:
 		check_cookie(self.session.cookies)
 		return json.loads(response.text)[0]
 	def login(self, username, password):
-		return self.post('login', {'user': username, 'password': password})
+		return self.post('/login', {'user': username, 'password': password})
 	def logout(self):
-		return self.get('logout')
+		return self.get('/logout')
 	def register(self):
 		username = get_rand_string(8)
 		password = get_rand_string(16)
-		self.post('register', {'user': username, 'password': password})
+		self.post('/register', {'user': username, 'password': password})
 		return username, password
 	def get_private(self, url):
 		return self.get(url)
@@ -167,31 +170,44 @@ class State:
 		helper = self.get_listener()
 		helper.want((url, username))
 		helper.finish()
-	def get_publics(self, wanted):
-		listener = self.get_listener()
-		for url, owner in wanted:
-			listener.want(url, owner)
+	def get_publics(self, wanted, unwanted):
+		listener = self.get_listener(wanted, unwanted)
 		listener.finish()
-	def get_listener(self):
-		return WSHelper(self.ws_addr + 'publics', self.base_addr, self.ua,  self.session.cookies)
-	def put_file(self, data=None):
+	def get_listener(self, wanted, unwanted):
+		return WSHelper(self.ws_addr + '/publics', self.base_addr, self.ua,  self.session.cookies, wanted, unwanted)
+	def put_file(self, data=None, public=None):
 		if data is None:
 			data = get_rand_string(64)
+		if public is None:
+			public = random.randrange(2) == 0
 		filename = get_rand_string(10)
-		url = self.post_file('upload', True, filename, data)
-		return url, True
-	def put_files(self, username):
-		listener = self.get_listener()
+		url = self.post_file('/upload', public, filename, data)
+		return url, public, data
+	def put_files(self, username, count=1):
 		wanted = set()	
-		for i in range(1):
-			url, public = self.put_file()
+		content = set()
+		unwanted = set()
+		for i in range(count):
+			url, public, data = self.put_file()
 			if public:
 				wanted.add((url, username))
-				listener.want(url, username)
-		print('post')
-		listener.finish()
-		print('get 1')
-		return wanted
+			else:
+				unwanted.add(url)
+			content.add((url, data))
+		return wanted, unwanted, content
+	def get_private(self, url):
+		return self.get(url).text
+	def check_public(self, username, url):
+		wanted = set()
+		wanted.add((url, username))
+		self.get_publics(wanted)
+	def get_content(self, url, data):
+		response = self.get_private(url)
+		if response != data:
+			service_mumble(message="wrong file content '{}': expexted '{}', found '{}'".format(url, data, response))
+	def get_contents(self, contents):
+		for url, data in contents:
+			self.get_content(url, data)
 
 def handler_info(*args):
 	service_ok(message="vulns: 1")
@@ -200,11 +216,11 @@ def handler_check(*args):
 	hostname = args[0][0]
 	state = State(hostname)
 	username, password = state.register()
-	print('register')
-	wanted = state.put_files(username)
+	wanted, unwanted, contents = state.put_files(username, 5)
 	state = State(hostname)
-	state.get_publics(wanted)
-	print('get 2')
+	state.get_contents(contents)
+	state.get_publics(wanted, unwanted)
+	return service_ok()
 
 def handler_get(args):
 	hostname, id, flag, vuln = args
@@ -213,12 +229,26 @@ def handler_get(args):
 	file = state.get_private(private)
 	state.check_public(user, public)
 	if file != flag:
-		return service_corrupt(message="Bad flag")
+		return service_corrupt(message="Bad flag: expected {}, found {}".format(flag, file))
 	return service_ok()
 
 def handler_put(args):
-# TODO
-	return service_ok(message="{}\n{}\n{}\n{}".format(username, password, dashboard, name))
+	hostname, id, flag, vuln = args
+	state = State(hostname)
+	public_before = random.randrange(2) == 0
+	username, password = state.register()
+	state.put_files(username, random.randrange(3))
+	if public_before:
+		public_id = state.put_file(public=True)[0]
+	else:
+		private_id = state.put_file(flag, False)[0]
+	state.put_files(username, random.randrange(3))
+	if not public_before:
+		public_id = state.put_file(public=True)[0]
+	else:
+		private_id = state.put_file(flag, False)[0]
+	state.put_files(username, random.randrange(3))
+	return service_ok(message="{}\n{}\n{}".format(username, private_id, public_id))
 
 HANDLERS = {
 	'info' : handler_info,
