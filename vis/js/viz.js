@@ -9,6 +9,7 @@ var Viz = function(infoData, startScoreboard) {
 	var height = 600; // TODO: Хороший вариант: 1366x662
 	var loopDelayInMs = 1 * 1000; // TODO: 60 * 1000
 	var timeForArrowAnimation = 1;
+	var tracePortion = 0.2;
 
 	var info = infoData;
 	var scoreboard = startScoreboard;
@@ -53,7 +54,7 @@ var Viz = function(infoData, startScoreboard) {
 			}
 		});
 		if (scoreboard.status != NOT_STARTED) {
-			arrows = genRandomArrows(60);
+			arrows = genRandomArrows(10);
 			var step = timeForArrowAnimation * 1000 / arrows.length;
 			var timeoutStart = 0;
 			for (var i=0; i<arrows.length; i++) {
@@ -130,21 +131,36 @@ var Viz = function(infoData, startScoreboard) {
 			var angle = Math.atan2(dy, dx) * 180 / Math.PI;
 			var gradientId = "grad" + lastGradientId;
 			lastGradientId++;
-			addGradient(gradientId, "white");
 			link.append("line")
 				.attr("class", "arrow-line")
 				.attr("x1", fromX)
 				.attr("y1", fromY)
 				.attr("x2", fromX + length)
 				.attr("y2", fromY + 0.01)
-				.attr("transform", "rotate(" + angle + " " + fromX + " " + fromY + ")")
 				.attr("stroke-width", "3")
 				.attr("stroke-linecap", "round")
 				.attr("stroke", "url(#" + gradientId + ")");
+			link.attr("transform", "rotate(" + angle + " " + fromX + " " + fromY + ")");
+			var rocket = link.append("circle")
+				.attr("class", "rocket")
+				.attr("r", 15)
+				.attr("cx", fromX)
+				.attr("cy", fromY)
+				.attr("fill", "url(#" + gradientId + "radial" + ")");
+			addGradient(gradientId, "white");
+			addRadialGradient(gradientId + "radial", "white");
+			setTimeout(function () {
+				rocket.attr("style", "transform: translate(" + length + "px)");
+			}, 0);
 			setTimeout(function () {
 				link.remove();
 				defs.select("#" + gradientId).remove();
-			}, timeForArrowAnimation * 1000);
+				defs.select("#" + gradientId + "radial").remove();
+			}, timeForArrowAnimation * 1000 * (1 + tracePortion));
+			setTimeout(function () {
+				rocket.remove();
+				defs.select("#" + gradientId + "radial").remove();
+			}, timeForArrowAnimation * 1000 * (1 + tracePortion / 2));
 		});
 	}
 
@@ -301,12 +317,27 @@ var Viz = function(infoData, startScoreboard) {
 		}
 	});
 
+	function addRadialGradient(id, color) {
+		var gradient = defs.append("radialGradient").attr("id", id);
+		gradient.append("stop")
+			.attr("offset", 0)
+			.attr("stop-color", color)
+			.attr("stop-opacity", 1);
+		gradient.append("stop")
+			.attr("offset", 0.5)
+			.attr("stop-color", color)
+			.attr("stop-opacity", 0.2);
+		gradient.append("stop")
+			.attr("offset", 1)
+			.attr("stop-color", color)
+			.attr("stop-opacity", 0);
+	}
+
 	function addGradient(id, color) {
 		var startTime = svg[0][0].getCurrentTime();
 		var gradient = defs.append("linearGradient").attr("id", id);
-		var tracePortion = 0.2;
-		var allTime = timeForArrowAnimation;
-		var traceTime = allTime * tracePortion;
+		var traceTime = timeForArrowAnimation * tracePortion;
+		var allTime = timeForArrowAnimation + traceTime;
 
 		gradient.append("stop")
 			.attr("offset", 0)
