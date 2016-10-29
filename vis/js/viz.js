@@ -11,6 +11,8 @@ var Viz = function(infoData, startScoreboard) {
 	var timeForArrowAnimation = 1;
 	var tracePortion = 0.2;
 
+	var colors = ["white", "red", "green", "orange", "magenta", "cyan", "yellow"];
+
 	var info = infoData;
 	var scoreboard = startScoreboard;
 	var teams = [];
@@ -54,7 +56,7 @@ var Viz = function(infoData, startScoreboard) {
 			}
 		});
 		if (scoreboard.status != NOT_STARTED) {
-			arrows = genRandomArrows(10);
+			arrows = genRandomArrows(60);
 			var step = timeForArrowAnimation * 1000 / arrows.length;
 			var timeoutStart = 0;
 			for (var i=0; i<arrows.length; i++) {
@@ -130,6 +132,7 @@ var Viz = function(infoData, startScoreboard) {
 			var length = Math.sqrt(dx * dx + dy * dy);
 			var angle = Math.atan2(dy, dx) * 180 / Math.PI;
 			var gradientId = "grad" + lastGradientId;
+			var color = colors[randomInteger(0, colors.length - 1)];
 			lastGradientId++;
 			link.append("line")
 				.attr("class", "arrow-line")
@@ -147,8 +150,8 @@ var Viz = function(infoData, startScoreboard) {
 				.attr("cx", fromX)
 				.attr("cy", fromY)
 				.attr("fill", "url(#" + gradientId + "radial" + ")");
-			addGradient(gradientId, "white");
-			addRadialGradient(gradientId + "radial", "white");
+			addGradient(gradientId, color);
+			addRadialGradient(gradientId + "radial", color);
 			setTimeout(function () {
 				rocket.attr("style", "transform: translate(" + length + "px)");
 			}, 0);
