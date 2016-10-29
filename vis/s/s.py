@@ -58,10 +58,10 @@ def update_events():
     current = gtime()
 
     for x in range(args.frequency*((current - last_upd)//1000)):
-        attacker = random.randint(1, args.teams)
+        attacker = random.randint(0, args.teams - 1)
         victim = attacker
         while victim == attacker:
-            victim = random.randint(1, args.teams)
+            victim = random.randint(0, args.teams - 1)
 
         evt_time = int(last_upd + (x/args.frequency)*1000)
         events.append([
@@ -99,6 +99,6 @@ if __name__ == '__main__':
     args = parse_args()
     start = gtime()
     events = []
-    scores = {team_(i + 1): 0 for i in range(args.teams)}
+    scores = {team_(i): 0 for i in range(args.teams)}
 
     run(host='0.0.0.0', port=8000, debug=True, reloader=True)
