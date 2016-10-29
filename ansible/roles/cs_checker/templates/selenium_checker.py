@@ -2,7 +2,8 @@
 
 import sys
 import signal
-import random
+import json
+import os
 from selenium import webdriver, common
 
 OK, GET_ERROR, CORRUPT, FAIL, INTERNAL_ERROR = 101, 102, 103, 104, 110
@@ -29,12 +30,28 @@ def make_driver(to_url):
                                              '--local-url-access=false'])
 
 
-def init_check(address):
+def ip_to_id(ip):
+    ips_file = "command_logs.json"
+    if not os.path.exists(ips_file):
+        with open(ips_file, 'w') as dump_file:
+            dump_file.write("{}")
 
-    # ignore command id's
+    with open(ips_file, mode="r") as dump_file:
+        ips_dict = json.load(dump_file)
+        if ip in ips_dict:
+            return ips_dict[ip]
+        else:
+            ips_dict[ip] = len(ips_dict)
+
+    with open(ips_file, mode="w") as dump_file:
+        json.dump(ips_dict, dump_file)
+        return ips_dict[ip]
+
+
+def init_check(command_ip):
     with open("sites.txt") as sites_file:
         sites = [site.strip() for site in sites_file.readlines()]
-    address = sites[random.randint(0, len(sites))]
+    address = sites[ip_to_id(command_ip) % len(sites)]
 
     driver = None
     while True:
@@ -68,18 +85,18 @@ def init_check(address):
         driver.quit()
 
 
-def check(addr):
-    init_check(addr)
+def check(command_ip):
+    init_check(command_ip)
     close(OK)
 
 
-def put(addr, flag_id, flag, vuln=None):
-    init_check(addr)
+def put(command_ip, flag_id, flag, vuln=None):
+    init_check(command_ip)
     close(OK, flag_id)
 
 
-def get(addr, checker_flag_id, flag, vuln=None):
-    init_check(addr)
+def get(command_ip, checker_flag_id, flag, vuln=None):
+    init_check(command_ip)
     close(OK)
 
 
@@ -107,7 +124,8 @@ if __name__ == '__main__':
     try:
         COMMANDS.get(sys.argv[1], not_found)(*sys.argv[2:])
     except CheckerException as e:
-        close(CORRUPT, "Service did not work as expected", "Checker exception: %s" % e)
+        close(CORRUPT, "Service did not work as expected",
+              "Checker exception: %s" % e)
     except OSError as e:
         close(CORRUPT, "Socket I/O error", "SOCKET ERROR: %s" % e)
     except Exception as e:
