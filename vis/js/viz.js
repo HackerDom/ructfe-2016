@@ -22,8 +22,9 @@ var Viz = function(infoData, startScoreboard) {
 	var lastGradientId = 0;
 	var lastArrowId = 0;
 
-    var LOAD_INTERVAL = 60*1000;
-    var cur_round = 0;
+    var LOAD_INTERVAL = 10*1000;
+    var cur_round = -1;
+    var prev_second = -1;
     var pending_events = [];
 
 	for (var fieldName in info.teams) {
@@ -57,17 +58,18 @@ var Viz = function(infoData, startScoreboard) {
         setInterval(load_events, LOAD_INTERVAL);
     }, 0);
 
-    /* Загружает порции событий, которые нужно отрисовать.
-     * Ходит к скорборду каждую минуту
-     */
     function load_events() {
         $.getJSON('./scoreboard').done(function (rv) {
+            if (cur_round < 0) { cur_round = rv.round - 1; }
             if (cur_round === rv.round) { return; }
             next_round = rv.round;
 
             $.getJSON('./events?from=' + cur_round).done(function (rv) {
                 for (var i = 0; i < rv.length; ++i) {
-                    if (rv[i][0] > cur_round) { pending_events.push(rv[i]); }
+                    if (cur_round <= rv[i][0] && rv[i][0] < next_round) {
+                        console.log('ADD ', rv[i]);
+                        pending_events.push(rv[i]);
+                    }
                 }
                 cur_round = next_round;
             });
@@ -81,17 +83,26 @@ var Viz = function(infoData, startScoreboard) {
 				updateScore();
 			}
 		});
+
 		if (scoreboard.status != NOT_STARTED) {
-			arrows = []; //genRandomArrows(60);
-			var step = timeForArrowAnimation * 1000 / arrows.length;
-			var timeoutStart = 0;
-			for (var i=0; i<arrows.length; i++) {
-				var _elem = arrows[i];
-				setTimeout(function(elem) {return function () {
-					showArrow(elem);
-				}}(_elem), timeoutStart);
-				timeoutStart += step;
-			}
+            if (prev_second < 0 && pending_events.length > 0) {
+                prev_second = pending_events[0][1] - 1;
+            }
+
+            var end = prev_second + loopDelayInMs;
+            var next_second = prev_second;
+            while (pending_events.length > 0 && pending_events[0][1] < end) {
+                var evt = pending_events.shift();
+                setTimeout(
+                    function (elem) {
+                        return function() { showArrow(elem); }
+                    }({from: teamIdToNum[evt[3]], to: teamIdToNum[evt[4]]}),
+                    evt[1] - prev_second
+                );
+                next_second = evt[1];
+            }
+
+            prev_second = next_second;
 		}
 	}
 
@@ -304,22 +315,6 @@ var Viz = function(infoData, startScoreboard) {
 			.attr('y', function(d) { return d.y; });
 		setOptimalZoom();
 	}
-
-    /*
-	function genRandomArrows(count) {
-		var arrows = [];
-		var i=0;
-		while (i < count) {
-			var from = randomInteger(0, teams.length - 1);
-			var to = randomInteger(0, teams.length - 1);
-			if (from != to) {
-				i++;
-				arrows.push({from: from, to: to});
-			}
-		}
-		return arrows;
-	}
-    */
 
 	function randomInteger(min, max) {
 		var rand = min + Math.random() * (max - min);
