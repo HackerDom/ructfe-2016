@@ -11,38 +11,28 @@ var Viz = function(infoData, startScoreboard) {
 	var timeForArrowAnimation = 1;
 	var tracePortion = 0.2;
 
-	var colorConstants = ["white", "red", "green", "orange", "magenta", "cyan", "yellow", "brown"];
+	var colors = ["white", "red", "green", "orange", "magenta", "cyan", "yellow"];
 
 	var info = infoData;
 	var scoreboard = startScoreboard;
 	var teams = [];
 	var teamIdToNum = {};
-	var services = [];
-	var serviceIdToNum = {};
 	var nodes;
 	var arrows;
 	var lastGradientId = 0;
 	var lastArrowId = 0;
 
-	(function() {
-		for (var fieldName in info.teams) {
-			if (info.teams.hasOwnProperty(fieldName)) {
-				var id = teams.length;
-				teams.push({index: id, id: id, team_id: fieldName, name: info.teams[fieldName], score: 0, status: 0});
-				teamIdToNum[fieldName] = teams.length - 1;
-			}
+    var LOAD_INTERVAL = 60*1000;
+    var cur_round = 0;
+    var pending_events = [];
+
+	for (var fieldName in info.teams) {
+		if (info.teams.hasOwnProperty(fieldName)) {
+			var id = teams.length;
+			teams.push({index: id, id: id, team_id: fieldName, name: info.teams[fieldName], score: 0, status: 0});
+			teamIdToNum[fieldName] = teams.length - 1;
 		}
-	})();
-	(function() {
-		for (var fieldName in info.services) {
-			if (info.services.hasOwnProperty(fieldName)) {
-				var id = services.length;
-				services.push({id: id, service_id: fieldName, name: info.services[fieldName], color: colorConstants[id], visible: true});
-				serviceIdToNum[fieldName] = services.length - 1;
-			}
-		}
-	})();
-	createFilterPanel();
+	}
 	updateScore();
 
 	var svg = d3.select("#" + svgId);
@@ -62,6 +52,28 @@ var Viz = function(infoData, startScoreboard) {
 		setInterval(loop, loopDelayInMs);
 	}, 0);
 
+    setTimeout(function () {
+        load_events();
+        setInterval(load_events, LOAD_INTERVAL);
+    }, 0);
+
+    /* Загружает порции событий, которые нужно отрисовать.
+     * Ходит к скорборду каждую минуту
+     */
+    function load_events() {
+        $.getJSON('./scoreboard').done(function (rv) {
+            if (cur_round === rv.round) { return; }
+            next_round = rv.round;
+
+            $.getJSON('./events?from=' + cur_round).done(function (rv) {
+                for (var i = 0; i < rv.length; ++i) {
+                    if (rv[i][0] > cur_round) { pending_events.push(rv[i]); }
+                }
+                cur_round = next_round;
+            });
+        });
+    }
+
 	function loop() {
 		$.getJSON("./scoreboard").done(function (scoreboardData) {
 			if (scoreboardData[1] === "success") {
@@ -70,7 +82,7 @@ var Viz = function(infoData, startScoreboard) {
 			}
 		});
 		if (scoreboard.status != NOT_STARTED) {
-			arrows = genRandomArrows(60);
+			arrows = []; //genRandomArrows(60);
 			var step = timeForArrowAnimation * 1000 / arrows.length;
 			var timeoutStart = 0;
 			for (var i=0; i<arrows.length; i++) {
@@ -124,9 +136,6 @@ var Viz = function(infoData, startScoreboard) {
 	}
 
 	function showArrow(arrow) {
-		var service = services[randomInteger(0, services.length - 1)];
-		if (!service.visible)
-			return;
 
 		var links = container.selectAll(".arrow" + lastArrowId)
 			.data([arrow])
@@ -149,7 +158,7 @@ var Viz = function(infoData, startScoreboard) {
 			var length = Math.sqrt(dx * dx + dy * dy);
 			var angle = Math.atan2(dy, dx) * 180 / Math.PI;
 			var gradientId = "grad" + lastGradientId;
-			var color = service.color;
+			var color = colors[randomInteger(0, colors.length - 1)];
 			lastGradientId++;
 			link.append("line")
 				.attr("class", "arrow-line")
@@ -296,6 +305,7 @@ var Viz = function(infoData, startScoreboard) {
 		setOptimalZoom();
 	}
 
+    /*
 	function genRandomArrows(count) {
 		var arrows = [];
 		var i=0;
@@ -309,6 +319,7 @@ var Viz = function(infoData, startScoreboard) {
 		}
 		return arrows;
 	}
+    */
 
 	function randomInteger(min, max) {
 		var rand = min + Math.random() * (max - min);
@@ -336,28 +347,6 @@ var Viz = function(infoData, startScoreboard) {
 			$(".ui-helper-hidden-accessible").remove();
 		}
 	});
-
-	function createFilterPanel() {
-		var deselectionFlag = "deselected";
-		var $fc = $("#filters-container");
-
-		for (var i=0; i<services.length; i++) {
-			var service = services[i];
-			var $filter = $('<div class="filter">' + service.name + '</div>');
-			$filter.css("color", service.color);
-			$filter.click( function(index) {return function () {
-					if ($(this).hasClass(deselectionFlag)) {
-						$(this).removeClass(deselectionFlag);
-						services[index].visible = true;
-					} else {
-						$(this).addClass(deselectionFlag);
-						services[index].visible = false;
-					}
-				}
-			}(i));
-			$fc.append($filter);
-		}
-	}
 
 	function addRadialGradient(id, color) {
 		var gradient = defs.append("radialGradient").attr("id", id);
