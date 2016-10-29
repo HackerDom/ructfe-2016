@@ -33,16 +33,16 @@ var Viz = function(infoData, startScoreboard) {
 			}
 		}
 	})();
-
 	(function() {
 		for (var fieldName in info.services) {
 			if (info.services.hasOwnProperty(fieldName)) {
 				var id = services.length;
-				services.push({id: id, service_id: fieldName, name: info.services[fieldName], color: colorConstants[id]});
+				services.push({id: id, service_id: fieldName, name: info.services[fieldName], color: colorConstants[id], visible: true});
 				serviceIdToNum[fieldName] = services.length - 1;
 			}
 		}
 	})();
+	createFilterPanel();
 	updateScore();
 
 	var svg = d3.select("#" + svgId);
@@ -124,6 +124,9 @@ var Viz = function(infoData, startScoreboard) {
 	}
 
 	function showArrow(arrow) {
+		var service = services[randomInteger(0, services.length - 1)];
+		if (!service.visible)
+			return;
 
 		var links = container.selectAll(".arrow" + lastArrowId)
 			.data([arrow])
@@ -146,7 +149,7 @@ var Viz = function(infoData, startScoreboard) {
 			var length = Math.sqrt(dx * dx + dy * dy);
 			var angle = Math.atan2(dy, dx) * 180 / Math.PI;
 			var gradientId = "grad" + lastGradientId;
-			var color = services[randomInteger(0, services.length - 1)].color;
+			var color = service.color;
 			lastGradientId++;
 			link.append("line")
 				.attr("class", "arrow-line")
@@ -333,6 +336,28 @@ var Viz = function(infoData, startScoreboard) {
 			$(".ui-helper-hidden-accessible").remove();
 		}
 	});
+
+	function createFilterPanel() {
+		var deselectionFlag = "deselected";
+		var $fc = $("#filters-container");
+
+		for (var i=0; i<services.length; i++) {
+			var service = services[i];
+			var $filter = $('<div class="filter">' + service.name + '</div>');
+			$filter.css("color", service.color);
+			$filter.click( function(index) {return function () {
+					if ($(this).hasClass(deselectionFlag)) {
+						$(this).removeClass(deselectionFlag);
+						services[index].visible = true;
+					} else {
+						$(this).addClass(deselectionFlag);
+						services[index].visible = false;
+					}
+				}
+			}(i));
+			$fc.append($filter);
+		}
+	}
 
 	function addRadialGradient(id, color) {
 		var gradient = defs.append("radialGradient").attr("id", id);

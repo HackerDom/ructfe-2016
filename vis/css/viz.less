@@ -20,20 +20,32 @@ html, body, #svg-wrapper, #svg-viz  {
 
 .ui-tooltip {
 	position: absolute !important;
-}
-
-.team-tooltip {
-	background: white;
-	max-width: 200px;
-	height: auto;
-}
-
-@keyframes example {
-	from {fill: red;}
-	to {fill: yellow;}
+	.team-tooltip {
+		background: white;
+		max-width: 200px;
+		height: auto;
+	}
 }
 
 circle.rocket {
 	-webkit-transition: 1s linear;
 	transition: 1s linear;
+}
+
+#filters-container {
+	position: absolute;
+	right: 20px;
+	bottom: 20px;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	.filter {
+		color: white;
+		cursor: pointer;
+		text-align: right;
+		&.deselected {
+			text-decoration: line-through;
+		}
+	}
 }
