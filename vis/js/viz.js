@@ -84,9 +84,16 @@ var Viz = function(infoData, startScoreboard) {
 	}
 
 	function updateScore() {
-		var orderedTeams = orderedTeams.slice(0);
-		for (var i = 0; i < teams.length; i++) {
+		var i;
+		for (i = 0; i < teams.length; i++) {
 			teams[i].score = scoreboard.table[teams[i].team_id];
+		}
+		var orderedTeams = _.sortBy(teams, 'score').reverse();
+		for (i = 0; i < orderedTeams.length; i++) {
+			if (orderedTeams[i].score != 0)
+				orderedTeams[i].place = i + 1;
+			else
+				orderedTeams[i].place = undefined;
 		}
 	}
 
@@ -330,7 +337,7 @@ var Viz = function(infoData, startScoreboard) {
 			var node = d3.select(this);
 			var nodeData = node.data()[0];
 			var html = "<span><span class='header'>Team name:</span> <span class='value'>" + nodeData.name + "</span></span><br/>"
-				+ "<span><span class='header'>Place:</span> <span class='value'>" + nodeData.place + "</span></span>"
+				+ "<span><span class='header'>Place:</span> <span class='value'>" + nodeData.place + "</span></span><br/>"
 				+ "<span><span class='header'>Score:</span> <span class='value'>" + nodeData.score + "</span></span>";
 			return "<div class='team-tooltip'>" + html + "</div>";
 		},
