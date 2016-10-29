@@ -11,24 +11,38 @@ var Viz = function(infoData, startScoreboard) {
 	var timeForArrowAnimation = 1;
 	var tracePortion = 0.2;
 
-	var colors = ["white", "red", "green", "orange", "magenta", "cyan", "yellow"];
+	var colorConstants = ["white", "red", "green", "orange", "magenta", "cyan", "yellow", "brown"];
 
 	var info = infoData;
 	var scoreboard = startScoreboard;
 	var teams = [];
 	var teamIdToNum = {};
+	var services = [];
+	var serviceIdToNum = {};
 	var nodes;
 	var arrows;
 	var lastGradientId = 0;
 	var lastArrowId = 0;
 
-	for (var fieldName in info.teams) {
-		if (info.teams.hasOwnProperty(fieldName)) {
-			var id = teams.length;
-			teams.push({index: id, id: id, team_id: fieldName, name: info.teams[fieldName], score: 0, status: 0});
-			teamIdToNum[fieldName] = teams.length - 1;
+	(function() {
+		for (var fieldName in info.teams) {
+			if (info.teams.hasOwnProperty(fieldName)) {
+				var id = teams.length;
+				teams.push({index: id, id: id, team_id: fieldName, name: info.teams[fieldName], score: 0, status: 0});
+				teamIdToNum[fieldName] = teams.length - 1;
+			}
 		}
-	}
+	})();
+
+	(function() {
+		for (var fieldName in info.services) {
+			if (info.services.hasOwnProperty(fieldName)) {
+				var id = services.length;
+				services.push({id: id, service_id: fieldName, name: info.services[fieldName], color: colorConstants[id]});
+				serviceIdToNum[fieldName] = services.length - 1;
+			}
+		}
+	})();
 	updateScore();
 
 	var svg = d3.select("#" + svgId);
@@ -132,7 +146,7 @@ var Viz = function(infoData, startScoreboard) {
 			var length = Math.sqrt(dx * dx + dy * dy);
 			var angle = Math.atan2(dy, dx) * 180 / Math.PI;
 			var gradientId = "grad" + lastGradientId;
-			var color = colors[randomInteger(0, colors.length - 1)];
+			var color = services[randomInteger(0, services.length - 1)].color;
 			lastGradientId++;
 			link.append("line")
 				.attr("class", "arrow-line")
