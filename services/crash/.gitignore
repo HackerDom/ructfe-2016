@@ -1,2 +1,4 @@
 reports/*
 reports.db
+*.pyc
+*.bak

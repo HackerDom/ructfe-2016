@@ -1,5 +1,5 @@
-MODULE Linux x86_64 402FAA3CDD889404878FEF7328ADCC0A0 test_app
-INFO CODE_ID 3CAA2F4088DD0494878FEF7328ADCC0ACA3A3EA6
+MODULE Linux x86_64 678DC3D7E4AA1C9A021552C67CEF46C60 submarine_internal
+INFO CODE_ID D7C38D67AAE49A1C021552C67CEF46C6209191A8
 FILE 0 /home/ruslan/ctf/ructfe2016/breakpad/src/./src/client/linux/handler/microdump_extra_info.h
 FILE 1 /home/ruslan/ctf/ructfe2016/breakpad/src/./src/client/linux/handler/minidump_descriptor.h
 FILE 2 /home/ruslan/ctf/ructfe2016/breakpad/src/./src/client/linux/minidump_writer/directory_reader.h
@@ -36,7 +36,7 @@ FILE 32 /home/ruslan/ctf/ructfe2016/breakpad/src/src/common/linux/linux_libc_sup
 FILE 33 /home/ruslan/ctf/ructfe2016/breakpad/src/src/common/linux/memory_mapped_file.cc
 FILE 34 /home/ruslan/ctf/ructfe2016/breakpad/src/src/common/linux/safe_readlink.cc
 FILE 35 /home/ruslan/ctf/ructfe2016/breakpad/src/src/common/string_conversion.cc
-FILE 36 /home/ruslan/ctf/ructfe2016/ructfe-2016/checkers/crash/test_app.cpp
+FILE 36 /home/ruslan/ctf/ructfe2016/ructfe-2016/checkers/crash/submarine_internal.cpp
 FILE 37 /usr/include/c++/5/bits/basic_string.h
 FILE 38 /usr/include/c++/5/bits/basic_string.tcc
 FILE 39 /usr/include/c++/5/bits/char_traits.h
@@ -579,23 +579,23 @@ FUNC 3b70 254 0 main
 3bea f 130 36
 3bf9 36 131 36
 3c2f a 133 36
-3c39 12 135 36
-3c4b b 136 36
-3c56 18 136 36
-3c6e 49 136 36
-3cb7 10 136 36
-3cc7 12 136 36
-3cd9 10 136 36
-3ce9 9 136 36
-3cf2 e 136 36
-3d00 21 136 36
-3d21 5 138 36
+3c39 12 134 36
+3c4b b 135 36
+3c56 18 135 36
+3c6e 49 135 36
+3cb7 10 135 36
+3cc7 12 135 36
+3cd9 10 135 36
+3ce9 9 135 36
+3cf2 e 135 36
+3d00 21 135 36
+3d21 5 137 36
 3d26 f 131 36
 3d35 11 130 36
-3d46 45 139 36
+3d46 45 138 36
 3d8b 14 131 36
 3d9f 1a 130 36
-3db9 b 139 36
+3db9 b 138 36
 FUNC 3dc4 3a 0 google_breakpad::MicrodumpExtraInfo::MicrodumpExtraInfo()
 3dc4 8 43 15
 3dcc 32 47 15

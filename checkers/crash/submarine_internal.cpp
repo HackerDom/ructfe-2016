@@ -131,7 +131,6 @@ int main( int argc, char* argv[] ) {
   google_breakpad::ExceptionHandler eh(descriptor, NULL, dumpCallback, NULL, true, -1);
 
   g_idx = 0;
-  //const char* flag = "QWERTYUIOPASDFGHJKLZXCVBNM01234=";
   g_flagPtr = argv[ 1 ];
   PROCESS_SYMBOL()
 
