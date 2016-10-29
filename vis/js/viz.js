@@ -96,7 +96,11 @@ var Viz = function(infoData, startScoreboard) {
                 setTimeout(
                     function (elem) {
                         return function() { showArrow(elem); }
-                    }({from: teamIdToNum[evt[3]], to: teamIdToNum[evt[4]]}),
+                    }({
+                        from: teamIdToNum[evt[3]],
+                        to: teamIdToNum[evt[4]],
+                        svc: serviceIdToNum[evt[2]]
+                    }),
                     evt[1] - prev_second
                 );
                 next_second = evt[1];
