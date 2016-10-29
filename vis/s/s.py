@@ -65,6 +65,7 @@ def update_events():
             service_(random.randint(1, args.services)),
             team_(attacker), team_(victim)
         ])
+        scores[team_(attacker)] += 1
 
 
 @route('/events')
