@@ -9,11 +9,13 @@ from functools import wraps
 from time import time
 
 
-ROUND_TIME = 10
+ROUND_TIME = 10*1000
 
 
 def team_(x): return 'team_{}'.format(x)
 def service_(x): return 'service_{}'.format(x)
+
+def gtime(): return int(time()*1000)
 
 
 @route('/<filepath:path>')
@@ -47,21 +49,24 @@ def scores_page():
     return {
         'table': scores,
         'status': '1',
-        'round': (int(time()) - start)//ROUND_TIME
+        'round': (gtime() - start)//ROUND_TIME + 1
     }
 
 
 def update_events():
-    last_upd = events[-1][0] if events else start
-    current = int(time())
-    for x in range(args.frequency*(current - last_upd)):
+    last_upd = events[-1][1] if events else start
+    current = gtime()
+
+    for x in range(args.frequency*((current - last_upd)//1000)):
         attacker = random.randint(1, args.teams)
         victim = attacker
         while victim == attacker:
             victim = random.randint(1, args.teams)
 
+        evt_time = int(last_upd + (x/args.frequency)*1000)
         events.append([
-            last_upd + x//args.frequency + 1,
+            (evt_time - start)//ROUND_TIME + 1,
+            evt_time,
             service_(random.randint(1, args.services)),
             team_(attacker), team_(victim)
         ])
@@ -72,9 +77,11 @@ def update_events():
 @tojson
 def events_page():
     update_events()
-    rtime = int(request.params['from'])*ROUND_TIME + start
+    rnd = int(request.params['from'])
 
-    return json.dumps(events[bisect.bisect_left(events, [rtime, '', '', '']):])
+    return json.dumps(
+        events[bisect.bisect_left(events, [rnd, 0, '', '', '']):]
+    )
 
 
 def parse_args():
@@ -90,7 +97,7 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-    start = int(time())
+    start = gtime()
     events = []
     scores = {team_(i + 1): 0 for i in range(args.teams)}
 
