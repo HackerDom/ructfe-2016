@@ -150,8 +150,7 @@ def SubmitHandler():
 		  	return json.dumps( { 'status' : 'fail' } )
 
 		cursor = sqliteConn.cursor()
-		row = ( guid, service_name, parser.signature, strftime("%H %M %S", gmtime() ) )
-		cursor.execute( "INSERT INTO reports VALUES ( ?, ?, ?, ? )", row )
+		cursor.execute( "INSERT INTO reports VALUES ( '%s', '%s', '%s', '%s' )" % ( guid, service_name, parser.signature, strftime("%H %M %S", gmtime() ) ) )
 		sqliteConn.commit()
 
 	  	return json.dumps( { 'status' : 'ok' } )
