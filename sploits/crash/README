@@ -1,0 +1,12 @@
+Vulns:
+1. You can upload any file to arbitrary directory, but you can overwrite existing files(. See sploit.py
+2. SQL injection while report submiting
+
+Attack:
+1. You need some binary linked with google breakpad. See just_crash.cpp
+2. Generate symbols. See build.pl
+3. Crash you binary
+4. Edit symbol file. Instead of function name write SQL injection. See diff between 
+just_crash.sym and just_crash(original).sym
+5. Submit report with minidump and symbol. See sploit.py
+6. Open service's main page
