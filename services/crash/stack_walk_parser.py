@@ -17,7 +17,6 @@ class StackWalkParser:
 			self.raw_lines = f.readlines()
 			f.close()
 		except:
-			log.error("can't read '%s'", file_name)
 			return False
 
 		for line in self.raw_lines:
@@ -33,14 +32,16 @@ class StackWalkParser:
 			elif type.isdigit():
 				thread_id = int(type)
 				if thread_id == self.crash_thread:
+					func_idx = int(fields[1]) if fields[1].isdigit() else 0
 					frame = {
-						'idx': int(fields[1]) if fields[1].isdigit() else 0,
+						'idx': func_idx,
 						'module': fields[2],
 						'signature': fields[3],
 						'source': fields[4],
 						'line': int(fields[5]) if fields[5].isdigit() else 0
 					}
 					self.crash_thread_stack.append( frame )
-					self.signature = fields[3]
+					if func_idx == 0:
+						self.signature = fields[3]
 
 		return True
