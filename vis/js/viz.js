@@ -92,10 +92,8 @@ var Viz = function(infoData, startScoreboard) {
 
 	function loop() {
 		$.getJSON("./scoreboard").done(function (scoreboardData) {
-			if (scoreboardData[1] === "success") {
-				scoreboard = scoreboardData;
-				updateScore();
-			}
+			scoreboard = scoreboardData;
+			updateScore();
 		});
 
 		if (scoreboard.status != NOT_STARTED) {
@@ -125,16 +123,29 @@ var Viz = function(infoData, startScoreboard) {
 	}
 
 	function updateScore() {
-		var i;
+		var i, j;
 		for (i = 0; i < teams.length; i++) {
 			teams[i].score = scoreboard.table[teams[i].team_id];
 		}
-		var orderedTeams = _.sortBy(teams, 'score').reverse();
-		for (i = 0; i < orderedTeams.length; i++) {
-			if (orderedTeams[i].score != 0)
-				orderedTeams[i].place = i + 1;
-			else
-				orderedTeams[i].place = undefined;
+		var groupsHash = _.groupBy(teams, 'score');
+		groupsArray = [];
+		for (var groupKey in groupsHash) {
+			if (groupsHash.hasOwnProperty(groupKey)) {
+				groupsArray.push({'key': parseFloat(groupKey), 'value': groupsHash[groupKey]})
+			}
+		}
+		groupsArray = _.sortBy(groupsArray, 'key').reverse();
+		var minPlace = 1;
+		for (i = 0; i < groupsArray.length; i++) {
+			var teamsInGroup = groupsArray[i].value;
+			var maxPlace = minPlace + teamsInGroup.length - 1;
+			for (j = 0; j < teamsInGroup.length; j++) {
+				if (minPlace === maxPlace)
+					teamsInGroup[j].place = minPlace + "";
+				else
+					teamsInGroup[j].place = minPlace + "-" + maxPlace;
+			}
+			minPlace = maxPlace + 1;
 		}
 	}
 
