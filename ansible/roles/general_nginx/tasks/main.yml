@@ -4,33 +4,36 @@
   notify: restart nginx
 
 - name: Copy default site
-  when: "path_to_site is defined"
   synchronize:
-    src: "{{ path_to_site }}"
+    src: "{{ playbook_dir }}/../static/"
     dest: "/var/www/"
     recursive: yes
     delete: yes
     use_ssh_args: yes
 
+- name: Fix permissions
+  file: name="/var/www" state=directory owner=www-data group=www-data recurse=yes
+  notify: restart nginx
+
 - name: Create directories for nginx conf
-  file: name=/etc/nginx/{{ item }} state=directory
+  file: name=/etc/nginx/{{ item }} state=directory owner=www-data group=www-data
   with_items:
     - web
     - stream
 
 - name: Install nginx configuration file.
-  template: src=vhost.conf.j2 dest=/etc/nginx/web/default.conf
+  template: src=vhost.conf.j2 dest=/etc/nginx/web/default.conf owner=www-data group=www-data
   notify: reload nginx
 
 - name: Install service web conf
-  template: src=web.service.conf.j2 dest=/etc/nginx/web/{{ item }}.conf
+  template: src=web.service.conf.j2 dest=/etc/nginx/web/{{ item }}.conf owner=www-data group=www-data
   notify: reload nginx
   with_items:
     - pastebin
     - crash
 
 - name: Install service conf
-  template: src=service.conf.j2 dest=/etc/nginx/stream/{{ item.name }}.conf
+  template: src=service.conf.j2 dest=/etc/nginx/stream/{{ item.name }}.conf owner=www-data group=www-data
   notify: reload nginx
   with_items:
     - { name: pastebin, port: 8080, remote_port: 80 }
