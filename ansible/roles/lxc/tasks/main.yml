@@ -78,6 +78,4 @@
   with_items:
     - { name: crash, mem: "512000000" }
     - { name: pastebin, mem: "512000000" }
-    # - { name: service2, mem: "512000000" }
-    # - { name: service3, mem: "512000000" }
-
+    - { name: kost-service, mem: "512000000" }

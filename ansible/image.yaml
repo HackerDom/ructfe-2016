@@ -15,6 +15,9 @@
         - exim4-base
         - nfs-common
         - rpcbind
+    - name: full upgrade
+      apt: upgrade=full update_cache=yes
+      when: "first_time is defined"
   roles:
     - lxc
     - general_nginx
@@ -26,6 +29,10 @@
 - hosts: crash
   roles:
     - crash
+
+- hosts: kost-service
+  roles:
+    - kost-service
 
 - hosts: image
   tasks:
