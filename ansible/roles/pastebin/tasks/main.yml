@@ -1,4 +1,13 @@
 ---
+- name: Install requirements
+  apt: name={{ item }} default_release=testing
+  with_items:
+    - libssl-dev
+    - make
+    - luarocks
+    - g++
+    - git
+
 - name: Copy service
   synchronize:
     src: "{{ playbook_dir }}/../services/pastebin/"
@@ -6,4 +15,12 @@
     recursive: yes
     delete: yes
     use_ssh_args: yes
+  notify: restart nginx
+
+- name: Fix permissions
+  file: name="/etc/nginx" state=directory owner=www-data group=www-data recurse=yes
+  notify: restart nginx
+
+- name: Make all
+  make: chdir=/etc/nginx/ target=all
   notify: restart nginx
