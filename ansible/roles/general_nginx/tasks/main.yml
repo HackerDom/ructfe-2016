@@ -4,16 +4,11 @@
   notify: restart nginx
 
 - name: Copy default site
-  synchronize:
+  copy:
     src: "{{ playbook_dir }}/../static/"
     dest: "/var/www/"
-    recursive: yes
-    delete: yes
-    use_ssh_args: yes
-
-- name: Fix permissions
-  file: name="/var/www" state=directory owner=www-data group=www-data recurse=yes
-  notify: restart nginx
+    owner: www-data
+    group: www-data
 
 - name: Create directories for nginx conf
   file: name=/etc/nginx/{{ item }} state=directory owner=www-data group=www-data
@@ -29,12 +24,11 @@
   template: src=web.service.conf.j2 dest=/etc/nginx/web/{{ item }}.conf owner=www-data group=www-data
   notify: reload nginx
   with_items:
-    - pastebin
-    - crash
-
-- name: Install service conf
-  template: src=service.conf.j2 dest=/etc/nginx/stream/{{ item.name }}.conf owner=www-data group=www-data
-  notify: reload nginx
-  with_items:
-    - { name: pastebin, port: 8080, remote_port: 80 }
+    - { name: pastebin, port: 80 }
     - { name: crash, port: 1080 }
+
+# - name: Install service conf
+#   template: src=service.conf.j2 dest=/etc/nginx/stream/{{ item.name }}.conf owner=www-data group=www-data
+#   notify: reload nginx
+#   with_items:
+#     - { name: pastebin, port: 8080, remote_port: 80 }
