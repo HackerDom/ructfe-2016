@@ -1,5 +1,5 @@
 ---
 - name: Install required packages
-  raw: "DEBIAN_FRONTEND=noninteractive apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y python sudo"
+  raw: "DEBIAN_FRONTEND=noninteractive apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y python sudo ca-certificates"
   tags:
     - skip_ansible_lint
