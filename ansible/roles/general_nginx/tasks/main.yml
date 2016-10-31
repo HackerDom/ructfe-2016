@@ -21,7 +21,7 @@
   notify: reload nginx
 
 - name: Install service web conf
-  template: src=web.service.conf.j2 dest=/etc/nginx/web/{{ item }}.conf owner=www-data group=www-data
+  template: src=web.service.conf.j2 dest=/etc/nginx/web/{{ item.name }}.conf owner=www-data group=www-data
   notify: reload nginx
   with_items:
     - { name: pastebin, port: 80 }
