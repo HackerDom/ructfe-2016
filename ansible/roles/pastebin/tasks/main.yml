@@ -9,18 +9,18 @@
     - git
 
 - name: Copy service
-  synchronize:
+  copy:
     src: "{{ playbook_dir }}/../services/pastebin/"
     dest: "/etc/nginx/"
-    recursive: yes
-    delete: yes
-    use_ssh_args: yes
+    owner: www-data
   notify: restart nginx
 
-- name: Fix permissions
-  file: name="/etc/nginx" state=directory owner=www-data group=www-data recurse=yes
-  notify: restart nginx
+- name: Install lua requirements
+  command: luarocks install {{ item.name }} creates=/usr/local/share/lua/5.1/{{ item.creates }}
+  with_items:
+    - { name: sha1, creates: sha1.lua }
+    - { name: lapis, creates: lapis }
 
-- name: Make all
-  make: chdir=/etc/nginx/ target=all
+- name: Make rand
+  make: chdir=/etc/nginx/ target=rand.so
   notify: restart nginx
