@@ -4,6 +4,7 @@
   with_items:
     - python-setuptools
     - sqlite3
+    - rsync
 
 - name: Install python dependencies
   easy_install: name={{ item }}
@@ -15,10 +16,14 @@
   user: createhome=yes name=crash
 
 - name: Copy service
-  copy:
+  synchronize:
     src: "{{ playbook_dir }}/../services/crash/"
     dest: "/home/crash/"
-    owner: crash
+    recursive: yes
+    use_ssh_args: yes
+
+- name: Fix permissions
+  file: name="/home/crash" state=directory owner=crash recurse=yes
 
 - name: Add systemd service
   template: src=service.j2 dest=/lib/systemd/system/crash.service
