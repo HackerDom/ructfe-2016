@@ -22,3 +22,12 @@
 - hosts: pastebin
   roles:
     - pastebin
+
+- hosts: crash
+  roles:
+    - crash
+
+- hosts: image
+  tasks:
+    - name: Restart general_nginx
+      service: name=nginx state=restarted

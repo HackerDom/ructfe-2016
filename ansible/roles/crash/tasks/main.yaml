@@ -1,0 +1,30 @@
+---
+- name: Install requirements
+  apt: name={{ item }}
+  with_items:
+    - python-setuptools
+    - sqlite3
+
+- name: Install python dependencies
+  easy_install: name={{ item }}
+  with_items:
+    - pip
+    - bottle
+
+- name: Create
+  user: createhome=yes name=crash
+
+- name: Copy service
+  copy:
+    src: "{{ playbook_dir }}/../services/crash/"
+    dest: "/home/crash/"
+    owner: crash
+
+- name: Add systemd service
+  template: src=service.j2 dest=/lib/systemd/system/crash.service
+
+- name: Enable service
+  service: name=crash enabled=yes
+
+- name: Start service
+  service: name=crash state=started
