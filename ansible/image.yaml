@@ -26,3 +26,6 @@
     - name: Use first_time.sh
       lineinfile: dest=/root/.bashrc line="ONETIME=yes /root/first_time.sh"
       when: "release is defined"
+    - name: Remove network file
+      file: dest=/etc/network/interfaces.d/eth0.cfg state=absent
+      when: "release is defined"

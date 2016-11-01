@@ -8,20 +8,6 @@
     - en_US.UTF-8
     - ru_RU.UTF-8
 
-- name: remove trash
-  apt: name={{ item }} state=absent
-  with_items:
-    - cups
-    - cups-daemon
-    - exim4
-    - exim4-base
-    - nfs-common
-    - rpcbind
-
-- name: full upgrade
-  apt: upgrade=full update_cache=yes
-  when: "first_time is defined"
-
 - name: generate network
   copy:
     content: "source /etc/network/interfaces.d/*\nauto lo\niface lo inet loopback"
