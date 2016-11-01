@@ -1,0 +1,103 @@
+- name: add java repository
+  apt_repository: repo="ppa:webupd8team/java"
+  tags:
+    - elasticsearch
+    - graylog
+
+- name: accept oracle license
+  debconf: name='oracle-java8-installer' question='shared/accepted-oracle-license-v1-1' value='true' vtype='select'
+  tags:
+    - elasticsearch
+    - graylog
+
+- name: install packages for elasticsearch
+  apt: name={{item}} state=latest
+  with_items:
+    - software-properties-common
+    - oracle-java8-installer
+    - apt-transport-https
+  tags:
+    - elasticsearch
+
+- name: get elasticsearch package
+  get_url:
+    url: https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/deb/elasticsearch/2.4.1/elasticsearch-2.4.1.deb
+    dest: /root/elasticsearch-2.4.1.deb
+  tags:
+    - elasticsearch
+
+- name: install elasticsearch package
+  apt: deb=/root/elasticsearch-2.4.1.deb
+  notify: enable and restart elasticsearch
+  tags:
+    - elasticsearch
+
+# - name: make elasticsearch listen on localhost
+#   lineinfile: 
+#     dest: /etc/elasticsearch/elasticsearch.yml
+#     regexp: '^network\.bind_host\s*:'
+#     line: "network.bind_host: 127.0.0.1"
+#     insertafter: '^#network\.bind_host\s*:'
+#   notify: enable and restart elasticsearch
+#   tags:
+#     - elasticsearch
+
+# - name: make elasticsearch daemon start
+#   lineinfile: 
+#     dest: /etc/default/elasticsearch
+#     regexp: '^START_DAEMON=true'
+#     line: "START_DAEMON=true"
+#     insertafter: '^#START_DAEMON=true'
+#   notify: enable and restart elasticsearch
+#   tags:
+#     - elasticsearch
+
+- name: get graylog repo deb
+  get_url: 
+    url: http://packages.graylog2.org/repo/debian/pool/stable/2.1/g/graylog-2.1-repository/graylog-2.1-repository_1-1_all.deb
+    dest: /root/graylog-2.1-repository_1-1_all.deb
+  tags: graylog
+
+- name: install graylog repo
+  apt: deb=/root/graylog-2.1-repository_1-1_all.deb
+  tags: graylog
+
+- name: install packages for graylog
+  apt: name={{item}} update_cache=True
+  with_items:
+    - python-software-properties
+    - apt-transport-https
+    - graylog-server
+    - mongodb
+  tags: graylog
+
+- name: copy graylog config
+  template: src=server.conf.j2 dest=/etc/graylog/server/server.conf
+  notify: enable and restart graylog
+  tags: graylog
+
+- name: modify nginx config for graylog
+  blockinfile:
+    dest: /etc/nginx/sites-enabled/default
+    insertafter: "server {"
+    block: |
+        location /l/ {
+                proxy_pass  http://127.0.0.1:9000/l/;
+                proxy_redirect     off;
+                proxy_set_header   Host $host;
+        }
+
+        location /l/api_pVvDJbqpjQ/ {
+                auth_basic          off;
+                proxy_pass  http://127.0.0.1:9000/l/api_pVvDJbqpjQ/;
+                proxy_redirect     off;
+                proxy_set_header   Host $host;
+        }
+  notify: restart nginx
+  tags: graylog
+
+
+
+# 99a73863fe0d190ae317c1eb26e14e369e1be50ede206c3f995df875c121deba
+
+#- name: install Elastic Search

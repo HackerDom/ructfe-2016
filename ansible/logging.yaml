@@ -1,0 +1,5 @@
+- hosts: logging
+  roles:
+    - common
+    - logging
+    - monitoring_client
