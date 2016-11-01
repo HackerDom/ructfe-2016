@@ -1,0 +1,4 @@
+Sanic==0.1.7
+aiohttp==1.0.5
+peewee-async==0.5.5
+pytest
