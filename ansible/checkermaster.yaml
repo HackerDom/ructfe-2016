@@ -3,6 +3,7 @@
     - common
     - monitoring_client
     - cs_common
+    - logging_client
   vars:
     cs_user: cs
     cs_dir: /home/cs
