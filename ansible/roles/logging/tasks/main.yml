@@ -76,6 +76,11 @@
   notify: enable and restart graylog
   tags: graylog
 
+- name: change owner of /etc/graylog/server
+  file: path=/etc/graylog/server owner=graylog group=graylog
+  notify: enable and restart graylog
+  tags: graylog
+
 - name: modify nginx config for graylog
   blockinfile:
     dest: /etc/nginx/sites-enabled/default
