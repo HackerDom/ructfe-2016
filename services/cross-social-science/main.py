@@ -54,7 +54,7 @@ def make_app():
     # Exceptions
     # ----------------------------------------------- #
 
-    @app.exception(ServerError)
+    @app.exception(Exception)
     async def test(request, exception):
         return json(
             {"exception": "{}".format(exception),
@@ -70,6 +70,6 @@ def make_app():
 
 if __name__ == '__main__':
     app = make_app()
-    app.run(host="0.0.0.0", port=8000, debug=True,
+    app.run(host="0.0.0.0", port=8000, debug=True, loop=None,
             after_start=after_start,
             before_stop=before_stop)
