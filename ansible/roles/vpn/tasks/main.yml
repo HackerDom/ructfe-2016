@@ -38,13 +38,15 @@
     - team_tcp_checker.py
     - status.tpl
     - teams.py
+  notify: enable and restart teamcheck
 
 - name: make gen_status_loop and team_tcp_checker executable
   file: path={{item}} mode=0755
   with_items:
     - /home/teamcheck/gen_status_loop.py
     - /home/teamcheck/team_tcp_checker.py
-
+  notify: enable and restart teamcheck
+  
 - name: copy teamcheck systemd service
   copy: src=teamcheck/teamcheck.service dest=/etc/systemd/system/teamcheck.service
   notify: enable and restart teamcheck
