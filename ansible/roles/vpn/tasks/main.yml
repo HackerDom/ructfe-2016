@@ -7,12 +7,21 @@
     - fping
     - python3-requests
 
-- name: copy vpn configs
+- name: copy prod vpn configs
   synchronize: 
-    src: openvpn/
+    src: openvpn_prod/
     dest: /etc/openvpn/
     rsync_opts: "--chmod=0600 --chown=root:root"
   notify: restart openvpn
+  when: variant == "prod"
+
+- name: copy dev vpn configs
+  synchronize: 
+    src: openvpn_dev/
+    dest: /etc/openvpn/
+    rsync_opts: "--chmod=0600 --chown=root:root"
+  notify: restart openvpn
+  when: variant == "dev"
 
 - name: create users
   user: name={{item}} shell=/bin/false
