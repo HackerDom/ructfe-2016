@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import sys
-from bottle import get, post, request, run, static_file, response
+from bottle import get, post, request, run, static_file, response, route, template
 import os
 import zipfile
 from time import gmtime, strftime
@@ -14,6 +14,19 @@ sqliteConn = sqlite3.connect( 'reports.db' )
 
 REPORTS_DIR = "reports/"
 SYMBOLS_DIR = "symbols/"
+
+
+@route('/static/<filepath:path>')
+def static(filepath):
+	return static_file(filepath, root='./static/')
+
+@route('/service.html')
+def main_page():
+	return template('main_page.tpl')
+
+@route('/report.html')
+def main_page():
+    return template('report.tpl')
 
 
 def create_dir(name):
@@ -49,13 +62,12 @@ def safe_extract_zip(file_name, extract_path):
 
 	return True
 
-
 @get('/')
 def Index():
 	cursor = sqliteConn.cursor()
 	reports = []
 	for row in cursor.execute( "SELECT * FROM reports" ):
-		report = { "guid" : row[ 0 ], "service_name:" : row[ 1 ], "signature" : row[ 2 ], "time" : row[ 3 ] }
+		report = { "guid" : row[ 0 ], "service_name" : row[ 1 ], "signature" : row[ 2 ], "time" : row[ 3 ] }
 		reports.append( report )
 	return json.dumps( reports )
 
@@ -84,17 +96,17 @@ def GetDumpHandler(guid):
 @post('/submit')
 def SubmitHandler():
 	try:
-	  	dump_zip_file = request.files.get('dump_zip_file')
+		dump_zip_file = request.files.get('dump_zip_file')
 		if not dump_zip_file:
-	  		print "There is no dump_zip_file in request"
-	  		return json.dumps( { 'status' : 'fail' } )
+			print "There is no dump_zip_file in request"
+			return json.dumps( { 'status' : 'fail' } )
 		zipFileData = dump_zip_file.file.read()
 
-  		service_name = request.headers.get( 'service_name' )
-  		guid = request.headers.get( 'guid' )
+		service_name = request.headers.get( 'service_name' )
+		guid = request.headers.get( 'guid' )
 		if not guid or not service_name:
 			print "There is no service name or guid in headers"
-		  	return json.dumps( { 'status' : 'fail' } )
+			return json.dumps( { 'status' : 'fail' } )
 
 		if not re.match( r'^[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}$', guid):
 			print "Strange guid"
@@ -104,10 +116,10 @@ def SubmitHandler():
 			print "Strange service name"
 			return json.dumps( { 'status' : 'fail' } )
 
-	  	print 'Crash repot for %s GUID %s' % ( service_name, guid )
+		print 'Crash repot for %s GUID %s' % ( service_name, guid )
 
-	  	report_dir = os.path.join( REPORTS_DIR, guid )
-	  	if os.path.exists(report_dir):
+		report_dir = os.path.join( REPORTS_DIR, guid )
+		if os.path.exists(report_dir):
 			print 'Report %s already exists' % report_dir
 			return json.dumps( { 'status' : 'fail' } )
 
@@ -139,25 +151,25 @@ def SubmitHandler():
 			STACKWALK_FILENAME = os.path.join( report_dir, "stackwalk.txt" )
 			STACKWALK_ERRORS_FILENAME = os.path.join( report_dir, "stackwalk_errors.txt" )
 			result = os.system('%s -m %s %s >%s 2>%s' % (TOOL_NAME, dump_name, SYMBOLS_DIR, STACKWALK_FILENAME, STACKWALK_ERRORS_FILENAME))
-			if result != 0:				
+			if result != 0:
 				print 'stack walk failed: %d' % result
 				return json.dumps( { 'status' : 'fail' } )
 
 			parser = StackWalkParser()
-			parser.parse( STACKWALK_FILENAME )			
+			parser.parse( STACKWALK_FILENAME )
 		except:
 			print 'stack walk failed'
-		  	return json.dumps( { 'status' : 'fail' } )
+			return json.dumps( { 'status' : 'fail' } )
 
 		cursor = sqliteConn.cursor()
 		cursor.execute( "INSERT INTO reports VALUES ( '%s', '%s', '%s', '%s' )" % ( guid, service_name, parser.signature, strftime("%H %M %S", gmtime() ) ) )
 		sqliteConn.commit()
 
-	  	return json.dumps( { 'status' : 'ok' } )
+		return json.dumps( { 'status' : 'ok' } )
 
 	except:
 		print 'Something went wrong'
 		return False
-    
 
-run(host='0.0.0.0', port=1080)
+
+run(host='0.0.0.0', port=1080, debug=True, reloader=True)
