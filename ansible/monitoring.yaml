@@ -3,3 +3,4 @@
     - common
     - monitoring
     - monitoring_client
+    - logging_client

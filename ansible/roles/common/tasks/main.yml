@@ -36,6 +36,7 @@
     - iperf
     - mc
     - tmux
+    - nano
 
 - name: set limits
   copy: src=limits.conf dest=/etc/security/limits.conf

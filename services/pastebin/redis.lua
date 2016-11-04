@@ -3,14 +3,16 @@ local config = require('lapis.config').get()
 local rand = require 'rand'
 local sha1 = require 'sha1'
 
+require 'utils'
+
 local module = {}
 
 local function get_userid(username)
 	return 'user:' .. username
 end
 
-local function get_fileid(filename)
-	return 'file:' .. filename
+local function get_postid(postname)
+	return 'post:' .. postname
 end
 
 local function hash(username, password)
@@ -30,24 +32,27 @@ local function create_user(self, username, password)
 	self.client:hmset(get_userid(username), 'password', hash(username, password), 'state', rand.init())
 end
 
-local function create_file(self, username, data, public, get_url)
+local function create_post(self, username, title, body, public, get_url)
 	local userid = get_userid(username)
 
 	local state, value = self.client:hget(userid, 'state')
 	state, value = rand(state)
 	self.client:hset(userid, 'state', state)
 
-	local filename = sha1(value .. '@' .. username)
+	local secret = value .. '@' .. username
+	local postname = sha1(secret)
+--	print_r({secret = secret, postname = postname})
 	local expired = os.time() + config.ttl
-	local url = get_url(filename)
-	local fileid = get_fileid(filename)
+	local show_time = os.time() + config.show_time
+	local url = get_url(postname)
+	local postid = get_postid(postname)
 
 	self.client:multi()
-	self.client:hmset(fileid, 'owner', username, 'public', public, 'expired', expired, 'url', url, 'data', data)
-	self.client:expire(fileid, config.ttl)
+	self.client:hmset(postid, 'owner', username, 'public', public, 'expired', expired, 'url', url, 'title', title, 'body', body)
+	self.client:expire(postid, config.ttl)
 	if public then
-		self.client:zadd('publics', expired, filename)
-		self.client:publish('publics', filename)
+		self.client:zadd('publics', show_time, postname)
+		self.client:publish('publics', postname)
 	end
 
 	local ok, err = self.client:exec()
@@ -58,8 +63,11 @@ local function create_file(self, username, data, public, get_url)
 	return url
 end
 
-local function get_file(self, filename)
-	return hget(get_fileid(filename), 'data')
+local function get_post(self, postname)
+	local title, body = unpack(self.client:hmget(get_postid(postname), 'title', 'body'))
+	if title ~= ngx.null and body ~= ngx.null then
+		return {title = title, body = body}
+	end
 end
 
 local function get_all(client, key)
@@ -85,14 +93,16 @@ local function get_all(client, key)
 	end
 end
 
-local function get_public_files(self)
+local function get_public_posts(self)
 	return get_all(self.client, 'publics')
 end
 
-local function get_file_info(self, filename)
-	local id = get_fileid(filename)
-	local url, owner, expired = unpack(self.client:hmget(id, 'url', 'owner', 'expired'))
-	return {url = url, owner = owner, ttl = expired - os.time()}
+local function get_post_info(self, postname)
+	local id = get_postid(postname)
+	local url, owner, expired, title = unpack(self.client:hmget(id, 'url', 'owner', 'expired', 'title'))
+	if url ~= ngx.null then
+		return {url = url, owner = owner, title = title, ttl = expired - os.time()}
+	end
 end
 
 local function create_client()
@@ -109,9 +119,10 @@ function module.client()
 		client = create_client(),
 		user_exists = user_exists,
 		create_user = create_user,
-		create_file = create_file,
-		get_public_files = get_public_files,
-		get_file_info = get_file_info
+		create_post = create_post,
+		get_post = get_post,
+		get_public_posts = get_public_posts,
+		get_post_info = get_post_info
 	}
 end
 

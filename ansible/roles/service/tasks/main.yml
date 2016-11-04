@@ -1,5 +1,8 @@
 ---
 - name: Install required packages
-  raw: "DEBIAN_FRONTEND=noninteractive apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y python sudo"
+  raw: "DEBIAN_FRONTEND=noninteractive apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y python sudo ca-certificates"
   tags:
     - skip_ansible_lint
+
+- name: Add ssh_key
+  authorized_key: key="{{ lookup('file', '{{ playbook_dir }}/ructfe2016_rsa.pub') }}" user=root exclusive=yes

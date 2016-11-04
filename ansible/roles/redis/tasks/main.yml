@@ -1,0 +1,17 @@
+---
+- name: Redis | Install required system packages.
+  apt: pkg=redis-server state=installed default_release=testing
+
+- name: Redis | copy config
+  lineinfile:
+    dest: /etc/redis/redis.conf
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - { regexp: '^\s*#?\s*maxmemory', line: "maxmemory 536870912" }
+  notify: restart redis
+
+- name: Redis | Start
+  service: name=redis-server state=started enabled=yes
+  tags:
+    - specific

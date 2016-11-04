@@ -1,2 +1,8 @@
 reports/*
-reports.db
+reports/*
+*.pyc
+*.bak
+.idea
+static/lib/
+static/js/atlantis.js
+static/css/atlantis.css

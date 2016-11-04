@@ -1,0 +1,16 @@
+---
+- name: Install required system packages.
+  apt: pkg={{ item }} state=installed
+  with_items:
+    - clang
+    - libicu-dev
+    - python-dev
+    - libxml2-dev
+    - libcurl3
+
+- name: Download swift
+  unarchive:
+    src: "https://swift.org/builds/swift-3.0-release/ubuntu1404/swift-3.0-RELEASE/swift-3.0-RELEASE-ubuntu14.04.tar.gz"
+    dest: /opt/
+    copy: no
+    remote_src: yes
