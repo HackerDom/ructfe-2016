@@ -19,7 +19,7 @@ function loadCrashes() {
 			$row.append($("<td></td>").text(report.time));
 			$table.append($row);
 		}
-		$table.show();
+		$("#sevice-content-wrapper").show();
 	});
 }
 
@@ -27,8 +27,11 @@ function loadCrash() {
 	var guid = getUrlParameter("guid");
 	$("#crash_guid").text(guid);
 	$.getJSON('/' + guid).done(function (crash_data) {
+		if (crash_data.crash_address == "" && crash_data.crash_reason == "" && crash_data.crash_thread_stack.length == 0)
+			return;
 		$("#crash_reason").text(crash_data.crash_reason);
 		$("#crash_address").text(crash_data.crash_address);
+		$("#load-crash").attr("href", "/" + guid + "/get");
 		var $table = $("#crash-thread-stack-table");
 		for (var i=0; i<crash_data.crash_thread_stack.length; i++) {
 			var record = crash_data.crash_thread_stack[i];
@@ -40,6 +43,7 @@ function loadCrash() {
 			$row.append($("<td></td>").text(record.line));
 			$table.append($row);
 		}
+		$("#sevice-content-wrapper").show();
 	});
 }
 

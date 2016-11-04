@@ -15,6 +15,8 @@
 	</tr>
 </table>
 
+<a id="load-crash" class="btn btn-default btn-lg" href="#" role="button">Download</a>
+
 <h3>Crash thread stack</h3>
 <table id="crash-thread-stack-table">
 	<tr>

@@ -1,7 +1,10 @@
+#sevice-content-wrapper {
+	display: none;
+}
+
 #reports-table {
 	width: 100%;
 	border: 1px solid #ddc !important;
-	display: none;
 }
 
 #reports-table a:hover {
@@ -15,4 +18,8 @@
 
 #reports-table td, #report-props-table td, #crash-thread-stack-table td, #reports-table th, #report-props-table th, #crash-thread-stack-table th {
 	padding: 0 3px 0 3px;
+}
+
+#load-crash {
+	margin-top: 20px;
 }
