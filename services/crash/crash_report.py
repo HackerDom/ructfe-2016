@@ -8,6 +8,7 @@ import sqlite3
 import re
 import json
 from stack_walk_parser import StackWalkParser
+from io import BytesIO
 #[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{8}-[0-9a-z]{8}
 
 sqliteConn = sqlite3.connect( 'reports.db' )
@@ -42,23 +43,27 @@ def create_dir(name):
 	return True
 
 
-def safe_extract_zip(file_name, extract_path):
-	if not os.path.exists(extract_path):
+def safe_extract_zip(zip_bytes, extract_dir):
+	if not os.path.exists(extract_dir):
 		return False
 
-	if not zipfile.is_zipfile(file_name):
-		return False
-
-	zf = zipfile.ZipFile(file_name, "r")
-	for info in zf.infolist():
-		try:
-			data = zf.read(info.filename)
-			new_name = os.path.join(extract_path, info.filename)
-			create_dir( os.path.dirname( new_name ) )
-			if not os.path.exists( new_name ):
-				open(new_name, "wb").write(data)
-		except:
-			pass
+	try:
+		zf = zipfile.ZipFile( BytesIO( zip_bytes ) )
+		filesList = open( os.path.join( extract_dir, ".files_list" ), 'w' )
+		for info in zf.infolist():
+			try:
+				data = zf.read(info.filename)
+				file_path = os.path.join(extract_dir, info.filename)
+				create_dir( os.path.dirname( file_path ) )
+				if not os.path.exists( file_path ):
+					open(file_path, "wb").write(data)
+				filesList.write( info.filename + '\n' )
+			except:
+				pass
+		filesList.close()
+		zf.close()
+	except:
+		return False	
 
 	return True
 
@@ -85,12 +90,17 @@ def DumpDetailHandler(guid):
 @get('/<guid:re:[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}>/get')
 def GetDumpHandler(guid):
 	report_dir = os.path.join( REPORTS_DIR, guid )
-	f = open( os.path.join( report_dir, "minidump.zip" ), 'rb' )
-	zipdata = f.read()
-	f.close
+
+	inMemoryZip = BytesIO()
+	zf = zipfile.ZipFile( inMemoryZip, mode='w')
+	for line in open( os.path.join( report_dir, ".files_list" ), 'r' ):
+		zf.write( os.path.join( report_dir, line.strip() ), arcname = line.strip() )
+	zf.close()
+	inMemoryZip.seek(0)
+
 	response.content_type = "application/zip"
 	response.add_header('Content-Disposition', 'attachment; filename=%s.zip;' % guid )	
-	return zipdata
+	return inMemoryZip.read()
 
 
 @post('/submit')
@@ -127,21 +137,12 @@ def SubmitHandler():
 			print 'Can not create dir %s' % report_dir
 			return json.dumps( { 'status' : 'fail' } )
 
-		report_name = os.path.join(report_dir, "minidump.zip")
-		try:
-			f = open( report_name, "wb" )
-			f.write( zipFileData )
-			f.close()
-		except:
-			print 'Failed to save file %s' % report_name
-			return json.dumps( { 'status' : 'fail' } )
-
-		if not safe_extract_zip( report_name, report_dir ):
+		if not safe_extract_zip( zipFileData, report_dir ):
 			print 'Failed to extract zip file'
 			return json.dumps( { 'status' : 'fail' } )
 
-		dump_name = os.path.join(report_dir, guid + ".dmp")
-		if not os.path.exists( dump_name ):
+		dmp_path = os.path.join(report_dir, guid + ".dmp")
+		if not os.path.exists( dmp_path ):
 			print 'Where is minidump file?'
 			return json.dumps( { 'status' : 'fail' } )
 
@@ -150,7 +151,7 @@ def SubmitHandler():
 			TOOL_NAME = "./minidump_stackwalk"
 			STACKWALK_FILENAME = os.path.join( report_dir, "stackwalk.txt" )
 			STACKWALK_ERRORS_FILENAME = os.path.join( report_dir, "stackwalk_errors.txt" )
-			result = os.system('%s -m %s %s >%s 2>%s' % (TOOL_NAME, dump_name, SYMBOLS_DIR, STACKWALK_FILENAME, STACKWALK_ERRORS_FILENAME))
+			result = os.system('%s -m %s %s >%s 2>%s' % (TOOL_NAME, dmp_path, SYMBOLS_DIR, STACKWALK_FILENAME, STACKWALK_ERRORS_FILENAME))
 			if result != 0:
 				print 'stack walk failed: %d' % result
 				return json.dumps( { 'status' : 'fail' } )
@@ -172,4 +173,4 @@ def SubmitHandler():
 		return False
 
 
-run(host='0.0.0.0', port=1080, debug=True, reloader=True)
+run(server='tornado', host='0.0.0.0', port=1080, debug=True, reloader=True)
