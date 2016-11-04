@@ -21,7 +21,7 @@ SYMBOLS_DIR = "symbols/"
 def static(filepath):
 	return static_file(filepath, root='./static/')
 
-@route('/service.html')
+@route('/')
 def main_page():
 	return template('main_page.tpl')
 
@@ -67,7 +67,7 @@ def safe_extract_zip(zip_bytes, extract_dir):
 
 	return True
 
-@get('/')
+@get('/crashes')
 def Index():
 	cursor = sqliteConn.cursor()
 	reports = []

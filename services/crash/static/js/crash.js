@@ -1,5 +1,5 @@
 function loadCrashes() {
-	$.getJSON('/').done(function (reports_data) {
+	$.getJSON('/crashes').done(function (reports_data) {
 		if (reports_data.length === 0)
 			return;
 		var $table = $("#reports-table");
