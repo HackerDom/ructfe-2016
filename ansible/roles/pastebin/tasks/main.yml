@@ -1,9 +1,26 @@
 ---
+- name: Install requirements
+  apt: name={{ item }} default_release=testing
+  with_items:
+    - libssl-dev
+    - make
+    - luarocks
+    - g++
+    - git
+
 - name: Copy service
-  synchronize:
+  copy:
     src: "{{ playbook_dir }}/../services/pastebin/"
     dest: "/etc/nginx/"
-    recursive: yes
-    delete: yes
-    use_ssh_args: yes
+    owner: www-data
+  notify: restart nginx
+
+- name: Install lua requirements
+  command: luarocks install {{ item.name }} creates=/usr/local/share/lua/5.1/{{ item.creates }}
+  with_items:
+    - { name: sha1, creates: sha1.lua }
+    - { name: lapis, creates: lapis }
+
+- name: Make rand
+  make: chdir=/etc/nginx/ target=rand.so
   notify: restart nginx

@@ -1,0 +1,24 @@
+---
+- name: Add ssh_key
+  authorized_key: key="{{ SSH_PUBLIC_KEY }}" user=root exclusive=yes
+
+- name: generate locales
+  locale_gen: name={{ item }} state=present
+  with_items:
+    - en_US.UTF-8
+    - ru_RU.UTF-8
+
+- name: generate network
+  copy:
+    content: "source /etc/network/interfaces.d/*\nauto lo\niface lo inet loopback"
+    dest: /etc/network/interfaces
+    force: yes
+
+- name: generate eth0
+  copy:
+    content: "allow-hotplug eth0\niface eth0 inet dhcp"
+    dest: /etc/network/interfaces.d/eth0.cfg
+    force: yes
+
+- name: add first_time.sh
+  copy: src=first_time.sh dest=/root/first_time.sh mode=0755

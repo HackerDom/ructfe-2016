@@ -1,24 +1,31 @@
 ---
 - hosts: image
-  pre_tasks:
-    - name: generate locales
-      locale_gen: name={{ item }} state=present
-      with_items:
-        - en_US.UTF-8
-        - ru_RU.UTF-8
-    - name: remove trash
-      apt: name={{ item }} state=absent
-      with_items:
-        - cups
-        - cups-daemon
-        - exim4
-        - exim4-base
-        - nfs-common
-        - rpcbind
+  vars:
+     SSH_PUBLIC_KEY: "{{ lookup('file', '{{ playbook_dir }}/ructfe2016_rsa.pub') }}"
   roles:
+    - image
     - lxc
     - general_nginx
 
 - hosts: pastebin
   roles:
     - pastebin
+
+- hosts: crash
+  roles:
+    - crash
+
+- hosts: kost-service
+  roles:
+    - kost-service
+
+- hosts: image
+  tasks:
+    - name: Restart general_nginx
+      service: name=nginx state=restarted
+    - name: Use first_time.sh
+      lineinfile: dest=/root/.bashrc line="ONETIME=yes /root/first_time.sh"
+      when: "release is defined"
+    - name: Remove network file
+      file: dest=/etc/network/interfaces.d/eth0.cfg state=absent
+      when: "release is defined"
