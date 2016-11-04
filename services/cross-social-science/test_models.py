@@ -2,12 +2,13 @@ from sanic.response import json
 from sanic.utils import sanic_endpoint_test
 
 from main import make_app
-from models import make_models
+from models import initdb, KeyValue, make_manager
 
 
 def test_sync():
     app = make_app()
-    models, KeyValue = make_models()
+    models = make_manager()
+    initdb()
 
     async def clean_db():
         objs = await models.execute(KeyValue.select())
