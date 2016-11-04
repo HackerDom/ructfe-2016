@@ -250,6 +250,7 @@ open class RedBlackTree<Key : Comparable, Value> : ProbableType, Collection, Cus
 		:description:	Insert a key / value pair.
 		- returns:	Bool
 	*/
+	@discardableResult
 	open func insert(_ key: Key, value: Value?) -> Bool {
 		return sentinel !== internalInsert(key, value: value)
 	}
@@ -394,6 +395,7 @@ open class RedBlackTree<Key : Comparable, Value> : ProbableType, Collection, Cus
 		:description:	Insert a new node with the given key and value.
 		- returns:	RedBlackNode<Key, Value>
 	*/
+	@discardableResult
 	fileprivate func internalInsert(_ key: Key, value: Value?) -> RedBlackNode<Key, Value> {
 		if isUniquelyKeyed && sentinel !== internalFindNodeForKey(key) {
 			return sentinel;
@@ -481,6 +483,7 @@ open class RedBlackTree<Key : Comparable, Value> : ProbableType, Collection, Cus
 		node. If the value does not exist, the sentinel is returned.
 		- returns:	RedBlackNode<Key, Value>
 	*/
+	@discardableResult
 	fileprivate func internalRemoveValueForKey(_ key: Key) -> RedBlackNode<Key, Value> {
 		let z: RedBlackNode<Key, Value> = internalFindNodeForKey(key)
 		if z === sentinel {
