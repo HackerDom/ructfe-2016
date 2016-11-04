@@ -1,9 +1,11 @@
 public class User : Comparable {
-    var login: String?
+    var login: String
+    var passHash: String
     var comments = [Comment]()
 
-    init(_ login: String) {
+    init(_ login: String, _ passHash: String) {
         self.login = login
+        self.passHash = passHash
     }
 
     public func rating() -> Int {
@@ -14,10 +16,20 @@ public class User : Comparable {
     }
 
     public static func < (lhs: User, rhs: User) -> Bool {
-        return lhs.rating() < rhs.rating()
+        if(lhs == rhs){
+            return false;
+        }
+
+        let lhsRating = lhs.rating()
+        let rhsRating = rhs.rating()
+        if lhsRating != rhsRating {
+            return lhsRating < rhsRating
+        } else {
+            return lhs.login < rhs.login
+        }
     }
 
     public static func == (lhs: User, rhs: User) -> Bool {
-        return lhs.rating() == rhs.rating()
+        return lhs.login == rhs.login
     }
 }
