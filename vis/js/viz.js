@@ -7,6 +7,7 @@ var Viz = function(infoData, startScoreboard) {
 
 	var svgWrapperId = "svg-wrapper";
 	var svgId = "svg-viz";
+	var tooltipContentWrapperClass = "team-tooltip";
 	var NOT_STARTED = "0";
 	var PLAYING = "1";
 	var SUSPEND = "2";
@@ -23,6 +24,7 @@ var Viz = function(infoData, startScoreboard) {
 	var nodes;
 	var lastGradientId = 0;
 	var lastArrowId = 0;
+	var openedTooltipTeamId = undefined;
 
     var cur_round = -1;
     var prev_interval = -1;
@@ -81,6 +83,7 @@ var Viz = function(infoData, startScoreboard) {
 	}
 
 	// Если начался новый раунд, запрашивает данные за предыдущий и кладет события в pending_events
+	// При открытии для предыдущего раунда запрашивает данные сразу.
     function load_events() {
 		if (cur_round < 0) { cur_round = scoreboard.round - 1; }
 		if (cur_round === scoreboard.round) { return; }
@@ -127,6 +130,11 @@ var Viz = function(infoData, startScoreboard) {
 		for (i = 0; i < teams.length; i++) {
 			teams[i].score = scoreboard.table[teams[i].team_id];
 		}
+		setPlaces();
+		updateOpenedTooltip();
+	}
+
+	function setPlaces() {
 		var groupsHash = _.groupBy(teams, 'score');
 		groupsArray = [];
 		for (var groupKey in groupsHash) {
@@ -147,6 +155,14 @@ var Viz = function(infoData, startScoreboard) {
 			}
 			minPlace = maxPlace + 1;
 		}
+	}
+
+	function updateOpenedTooltip() {
+		if (openedTooltipTeamId == undefined)
+			return;
+		var team = teams[openedTooltipTeamId];
+		var html = createTooltipHtml(team);
+		$("." + tooltipContentWrapperClass).empty().append(html);
 	}
 
 	function setOptimalZoom() {
@@ -374,13 +390,25 @@ var Viz = function(infoData, startScoreboard) {
 		content: function() {
 			var node = d3.select(this);
 			var nodeData = node.data()[0];
-			var html = "<span><span class='header'>Team name:</span> <span class='value'>" + nodeData.name + "</span></span><br/>"
-				+ "<span><span class='header'>Place:</span> <span class='value'>" + nodeData.place + "</span></span><br/>"
-				+ "<span><span class='header'>Score:</span> <span class='value'>" + nodeData.score + "</span></span>";
-			return "<div class='team-tooltip'>" + html + "</div>";
+			var html = createTooltipHtml(nodeData);
+			openedTooltipTeamId = nodeData.id;
+			return "<div class='" + tooltipContentWrapperClass + "'>" + html + "</div>";
 		},
+		close: function() {
+			openedTooltipTeamId = undefined;
+		}
 	});
 	$(".ui-helper-hidden-accessible").remove();
+
+	function createTooltipHtml(nodeData) {
+		return "<span><span class='header'>Team name:</span> <span class='value'>" + htmlEncode(nodeData.name) + "</span></span><br/>"
+			+ "<span><span class='header'>Place:</span> <span class='value'>" + nodeData.place + "</span></span><br/>"
+			+ "<span><span class='header'>Score:</span> <span class='value'>" + nodeData.score + "</span></span>";
+	}
+
+	function htmlEncode(value){
+		return $('<div/>').text(value).html();
+	}
 
 	function createFilterPanel() {
 		var deselectionFlag = "deselected";
