@@ -1,17 +1,18 @@
 var Viz = function(infoData, startScoreboard) {
+	var LOAD_DATA_INTERVAL = 10*1000;
+	var EVENTS_VISUALIZATION_INTERVAL = 1*1000;
+	var COLOR_CONSTANTS = ["white", "red", "green", "orange", "magenta", "cyan", "yellow", "brown"];
+	var WIDTH = 1366; // Это базовый размер экрана. Для остальных экранов используем zoom относительно этого размера.
+	var HEIGHT = 662;
+
 	var svgWrapperId = "svg-wrapper";
 	var svgId = "svg-viz";
 	var NOT_STARTED = "0";
 	var PLAYING = "1";
 	var SUSPEND = "2";
 	var FINISHED = "3";
-	var width = 800; // Это базовый размер экрана. Для остальных экранов используем zoom относительно этого размера.
-	var height = 600; // TODO: Хороший вариант: 1366x662
-	var loopDelayInMs = 1 * 1000; // TODO: 60 * 1000
-	var timeForArrowAnimation = 1;
+	var timeForArrowAnimation = 1; // Изменение требует правок в less
 	var tracePortion = 0.2;
-
-	var colorConstants = ["white", "red", "green", "orange", "magenta", "cyan", "yellow", "brown"];
 
 	var info = infoData;
 	var scoreboard = startScoreboard;
@@ -20,13 +21,11 @@ var Viz = function(infoData, startScoreboard) {
 	var services = [];
 	var serviceIdToNum = {};
 	var nodes;
-	var arrows;
 	var lastGradientId = 0;
 	var lastArrowId = 0;
 
-    var LOAD_INTERVAL = 10*1000;
     var cur_round = -1;
-    var prev_second = -1;
+    var prev_interval = -1;
     var pending_events = [];
 
 	(function() {
@@ -42,7 +41,7 @@ var Viz = function(infoData, startScoreboard) {
 		for (var fieldName in info.services) {
 			if (info.services.hasOwnProperty(fieldName)) {
 				var id = services.length;
-				services.push({id: id, service_id: fieldName, name: info.services[fieldName], color: colorConstants[id], visible: true});
+				services.push({id: id, service_id: fieldName, name: info.services[fieldName], color: COLOR_CONSTANTS[id], visible: true});
 				serviceIdToNum[fieldName] = services.length - 1;
 			}
 		}
@@ -54,7 +53,7 @@ var Viz = function(infoData, startScoreboard) {
 	var container = svg.append("g").classed("container", true);
 	var defs = svg.append("defs");
 
-	var zoom = d3.behavior.zoom().scaleExtent([0.25, 3]).size([width, height]).on("zoom", function () {
+	var zoom = d3.behavior.zoom().scaleExtent([0.25, 3]).size([WIDTH, HEIGHT]).on("zoom", function () {
 		container.attr("transform", "translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")");
 	});
 	svg.call(zoom);
@@ -63,63 +62,64 @@ var Viz = function(infoData, startScoreboard) {
 	drawTeams();
 
 	setTimeout(function () {
-		loop();
-		setInterval(loop, loopDelayInMs);
+		events_visualization_loop();
+		setInterval(events_visualization_loop, EVENTS_VISUALIZATION_INTERVAL);
 	}, 0);
 
-    setTimeout(function () {
-        load_events();
-        setInterval(load_events, LOAD_INTERVAL);
-    }, 0);
+	setTimeout(function () {
+		load_data();
+		setInterval(load_data, LOAD_DATA_INTERVAL);
+	}, 0);
 
-    function load_events() {
-        $.getJSON('./scoreboard').done(function (rv) {
-            if (cur_round < 0) { cur_round = rv.round - 1; }
-            if (cur_round === rv.round) { return; }
-            next_round = rv.round;
 
-            $.getJSON('./events?from=' + cur_round).done(function (rv) {
-                for (var i = 0; i < rv.length; ++i) {
-                    if (cur_round <= rv[i][0] && rv[i][0] < next_round) {
-                        console.log('ADD ', rv[i]);
-                        pending_events.push(rv[i]);
-                    }
-                }
-                cur_round = next_round;
-            });
-        });
-    }
-
-	function loop() {
+	function load_data() {
 		$.getJSON("./scoreboard").done(function (scoreboardData) {
 			scoreboard = scoreboardData;
+			load_events();
 			updateScore();
 		});
+	}
 
-		if (scoreboard.status != NOT_STARTED) {
-            if (prev_second < 0 && pending_events.length > 0) {
-                prev_second = pending_events[0][1] - 1;
-            }
+	// Если начался новый раунд, запрашивает данные за предыдущий и кладет события в pending_events
+    function load_events() {
+		if (cur_round < 0) { cur_round = scoreboard.round - 1; }
+		if (cur_round === scoreboard.round) { return; }
+		var next_round = scoreboard.round;
 
-            var end = prev_second + loopDelayInMs;
-            var next_second = prev_second;
-            while (pending_events.length > 0 && pending_events[0][1] < end) {
-                var evt = pending_events.shift();
-                setTimeout(
-                    function (elem) {
-                        return function() { showArrow(elem); }
-                    }({
-                        from: teamIdToNum[evt[3]],
-                        to: teamIdToNum[evt[4]],
-                        svc: serviceIdToNum[evt[2]]
-                    }),
-                    evt[1] - prev_second
-                );
-                next_second = evt[1];
-            }
+		$.getJSON('./events?from=' + cur_round).done(function (eventsData) {
+			for (var i = 0; i < eventsData.length; ++i) {
+				if (cur_round <= eventsData[i][0] && eventsData[i][0] < next_round) {
+					pending_events.push(eventsData[i]);
+				}
+			}
+			cur_round = next_round;
+		});
+    }
 
-            prev_second = next_second;
+	function events_visualization_loop() {
+		if (scoreboard.status == NOT_STARTED)
+			return;
+
+		if (prev_interval < 0) {
+			if (pending_events.length > 0)
+				prev_interval = pending_events[0][1] - EVENTS_VISUALIZATION_INTERVAL;
+			else
+				return;
 		}
+
+		var prev_interval_end = prev_interval + EVENTS_VISUALIZATION_INTERVAL;
+		while (pending_events.length > 0 && pending_events[0][1] < prev_interval_end) {
+			var event = pending_events.shift();
+			var showArrowFunc = (function (arrowData) {
+					return function() { showArrow(arrowData); }
+				})({
+					from: teamIdToNum[event[3]],
+					to: teamIdToNum[event[4]],
+					svc: serviceIdToNum[event[2]]
+				});
+			setTimeout(showArrowFunc, event[1] - prev_interval);
+		}
+		prev_interval = prev_interval_end;
 	}
 
 	function updateScore() {
@@ -275,18 +275,18 @@ var Viz = function(infoData, startScoreboard) {
 			.charge(function(d, i) {
 				return i < 2 ? -15000 : -40;
 			})
-			.nodes([{x: width / 2, y: -1000, width: 0, height: 0, fixed: true}, {x: width / 2, y: height + 1000, width: 0, height: 0, fixed: true}].concat(teams))
-			.size([width, height])
+			.nodes([{x: WIDTH / 2, y: -1000, width: 0, height: 0, fixed: true}, {x: WIDTH / 2, y: HEIGHT + 1000, width: 0, height: 0, fixed: true}].concat(teams))
+			.size([WIDTH, HEIGHT])
 			.on("tick", tick);
 		force.start();
 		startTicks();
 
 		function setIslandSize(teamsCount) {
 			islandSquareSide = 10;
-			while (Math.floor(width / (islandSquareSide + 1)) * Math.floor(height / (islandSquareSide + 1)) > teamsCount)
+			while (Math.floor(WIDTH / (islandSquareSide + 1)) * Math.floor(HEIGHT / (islandSquareSide + 1)) > teamsCount)
 				islandSquareSide++;
-			columnsCount = Math.floor(width / islandSquareSide);
-			rowsCount = Math.floor(height / islandSquareSide);
+			columnsCount = Math.floor(WIDTH / islandSquareSide);
+			rowsCount = Math.floor(HEIGHT / islandSquareSide);
 		}
 	}
 
@@ -535,6 +535,7 @@ var Viz = function(infoData, startScoreboard) {
 	return {
 		getTeamsData: function() { return teams; },
 		getInfo: function() { return info; },
-		getScoreboard: function() { return scoreboard; }
+		getScoreboard: function() { return scoreboard; },
+		getPendingEvents: function() { return pending_events; }
 	}
 };
