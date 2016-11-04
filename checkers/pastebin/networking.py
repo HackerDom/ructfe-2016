@@ -7,8 +7,6 @@ import json
 import queue
 import asyncio
 
-PORT = 8080
-
 async def check_status(response):
 	if response.status != 200:
 		checker.mumble(error='status code is {}. Content: {}\n'.format(response.status, await response.text()))
@@ -61,7 +59,7 @@ class WSHelper:
 		self.connection.close()
 		
 class State:
-	def __init__(self, hostname, port=8080):
+	def __init__(self, hostname, port=80):
 		self.hostname = hostname
 		self.port = '' if port is None else ':' + str(port)
 		self.session = aiohttp.ClientSession()
