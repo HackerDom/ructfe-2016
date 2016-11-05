@@ -11,6 +11,7 @@
   with_items:
     - pip
     - bottle
+    - tornado
 
 - name: Create user
   user: createhome=yes name=crash
