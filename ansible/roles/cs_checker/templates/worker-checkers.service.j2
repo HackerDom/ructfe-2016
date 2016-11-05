@@ -8,7 +8,7 @@ User=cs
 WorkingDirectory=/home/cs/app/
 Environment=MOJO_MODE=production
 Environment=LANG=en_US.UTF-8
-ExecStart=/usr/bin/perl script/cs minion worker -q default -j {{ item.jobs }}
+ExecStart=/usr/bin/perl script/cs minion worker -q checker -j {{ item.jobs }}
 Restart=always
 RestartSec=15s
 
