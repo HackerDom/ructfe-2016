@@ -8,6 +8,8 @@ import queue
 import asyncio
 from crypto import Signer
 
+import UserAgents
+
 async def check_status(response):
 	if response.status != 200:
 		checker.mumble(error='status code is {}. Content: {}\n'.format(response.status, await response.text()))
@@ -62,8 +64,10 @@ class State:
 	def __init__(self, hostname, port=80):
 		self.hostname = hostname
 		self.port = '' if port is None else ':' + str(port)
-		self.session = aiohttp.ClientSession()
-		self.ua = 'browser'
+		self.session = aiohttp.ClientSession(headers={
+			'Referer': self.get_url(''), 
+			'User-Agent': UserAgents.get()
+		})
 		self.signer = Signer()
 	def __del__(self):
 		self.session.close()
