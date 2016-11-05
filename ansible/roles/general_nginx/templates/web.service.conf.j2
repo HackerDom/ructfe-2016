@@ -1,6 +1,6 @@
 server {
     listen  80;
-    server_name {{ item.name }}.{{ inventory_hostname }};
+    server_name ~^{{ item.name }}\.(?P<main_host>.+)$;
     location / {
         proxy_send_timeout          5;
         proxy_read_timeout          5;
@@ -14,5 +14,13 @@ server {
         proxy_set_header            Connection $connection_upgrade;
         client_max_body_size 50m;
         proxy_pass                  http://{{ item.name }}.lxc:{{ item.port }};
+    }
+
+    location /static/ {
+        try_files $uri @static;
+    }
+
+    location @static {
+        root /var/www/;
     }
 }

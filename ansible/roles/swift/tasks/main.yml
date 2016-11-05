@@ -3,10 +3,13 @@
   apt: pkg={{ item }} state=installed
   with_items:
     - clang
-    - libicu-dev
-    - python-dev
-    - libxml2-dev
+    - git
     - libcurl3
+    - libcurl4-openssl-dev
+    - libicu-dev
+    - libssl-dev
+    - libxml2-dev
+    - python-dev
 
 - name: Download swift
   unarchive:

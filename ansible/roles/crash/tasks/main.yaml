@@ -12,7 +12,7 @@
     - pip
     - bottle
 
-- name: Create
+- name: Create user
   user: createhome=yes name=crash
 
 - name: Copy service
