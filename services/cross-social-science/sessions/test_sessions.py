@@ -4,7 +4,8 @@ from sanic import Sanic
 from sanic.response import json
 from sanic.utils import sanic_endpoint_test
 
-from sessions.blueprint import get_session_service, bp, clear_session_services
+from sessions import get_session_service, clear_session_services
+from sessions import session_blueprint as bp
 
 
 DB = 'test'
