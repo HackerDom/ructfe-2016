@@ -1,9 +1,18 @@
-from sanic import Sanic
+import asyncio
 
+from sanic import Sanic
 from sanic.response import json, text, html
 from sanic.exceptions import ServerError
 
+from models import database
+
+try:
+    import uvloop as async_loop
+except ImportError:
+    async_loop = asyncio
+
 import settings
+from sessions.blueprint import bp as sessions
 
 
 def make_app():
@@ -66,6 +75,10 @@ def make_app():
              "status": exception.status_code},
             status=exception.status_code)
 
+    @app.middleware('response')
+    async def halt_response(request, response):
+        print('I halted the response')
+
     return app
 
 
@@ -74,5 +87,12 @@ def make_app():
 # ----------------------------------------------- #
 
 if __name__ == '__main__':
+    # loop
+    loop = async_loop.new_event_loop()
+    asyncio.set_event_loop(loop)
+    # database
+    database
+    # app
     app = make_app()
-    app.run(host="0.0.0.0", port=8000, debug=True, loop=None)
+    app.blueprint(sessions, db=database, db_name='sessions', loop=loop)
+    app.run(host="0.0.0.0", port=8000, loop=loop, debug=True)
