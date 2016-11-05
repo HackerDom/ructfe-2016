@@ -12,7 +12,7 @@ except ImportError:
     async_loop = asyncio
 
 import settings
-from sessions.blueprint import bp as sessions
+from sessions import session_blueprint as sessions
 
 
 def make_app():

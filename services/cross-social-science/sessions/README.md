@@ -1,8 +1,9 @@
 # get session data
 
+    form session import session_blueprint, get_session_service
     NAME = 'sessions'
     app = ...
-    app.blueprint(sessions, db=database, db_name=NAME, loop=None)
+    app.blueprint(session_blueprint, db=database, db_name=NAME, loop=None)
     
     @app.route('/')
     async def handler_get_data(request):
