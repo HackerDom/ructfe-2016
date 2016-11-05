@@ -4,7 +4,6 @@ import sys
 from checker import Checker
 import checker
 from networking import State
-import asyncio
 import random
 
 async def handler_check(hostname):
@@ -45,11 +44,9 @@ async def handler_put(hostname, id, flag):
 	await state.put_posts(username, random.randrange(3))
 	checker.ok(message="{}\n{}".format(username, private_id))
 
-async def main():
+def main():
 	checker = Checker(handler_check, [(handler_put, handler_get)])
-	await checker.process(sys.argv)
+	checker.process(sys.argv)
 
 if __name__ == "__main__":
-	loop = asyncio.get_event_loop()
-	loop.run_until_complete(main())
-	loop.close()
+	main()

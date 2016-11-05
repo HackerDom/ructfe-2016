@@ -5,6 +5,7 @@ import traceback
 import random
 import string
 import json
+import asyncio
 
 def ructf_error(status=110, message=None, error=None, exception=None):
 	if message:
@@ -71,11 +72,13 @@ class Checker:
 			'put' : self.put,
 			'get' : self.get
 		}
-	async def process(self, args):
+	def process(self, args):
 		handler = args[1]
 		if handler not in self.handlers:
 			raise ValueError('unknown query type')
-		await self.handlers[handler](args[2:])
+		loop = asyncio.get_event_loop()
+		loop.run_until_complete(self.handlers[handler](args[2:]))
+		loop.close()
 	def info(self, args):
 		ok(message='vulns: {}'.format(':'.join(map(lambda t : str(t[2]), self.flag_handlers))))
 	async def check(self, args):
