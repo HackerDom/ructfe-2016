@@ -1,0 +1,17 @@
+---
+- name: Create user
+  user: createhome=yes name=sapmarine
+
+- name: Copy service
+  copy:
+    src: "{{ playbook_dir }}/../services/sapmarine/"
+    dest: "/home/sapmarine/"
+    owner: sapmarine
+
+- name: Build project
+  command: swift build -c release --build-path /home/sapmarine/bin/
+  args:
+    chdir: /home/sapmarine/
+    creates: /home/sapmarine/bin/sapmarine
+  environment:
+    PATH: "/opt/swift-3.0-RELEASE-ubuntu14.04/usr/bin:{{ ansible_env.PATH }}"

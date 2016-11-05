@@ -1,5 +1,6 @@
 ---
 - hosts: image
+  gather_facts: True
   vars:
      SSH_PUBLIC_KEY: "{{ lookup('file', '{{ playbook_dir }}/ructfe2016_rsa.pub') }}"
   roles:
@@ -8,18 +9,22 @@
     - general_nginx
 
 - hosts: pastebin
+  gather_facts: True
   roles:
     - pastebin
 
 - hosts: crash
+  gather_facts: True
   roles:
     - crash
 
-- hosts: kost-service
+- hosts: sapmarine
+  gather_facts: True
   roles:
-    - kost-service
+    - sapmarine
 
 - hosts: image
+  gather_facts: True
   tasks:
     - name: Restart general_nginx
       service: name=nginx state=restarted

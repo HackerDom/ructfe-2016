@@ -1,6 +1,5 @@
 server {
     listen  80 default;
-    server_name static.{{ inventory_hostname }};
     root /var/www/;
     location / {
         autoindex off;

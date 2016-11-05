@@ -26,6 +26,7 @@
   with_items:
     - { name: pastebin, port: 80 }
     - { name: crash, port: 1080 }
+    - { name: sapmarine, port: 31337 }
 
 # - name: Install service conf
 #   template: src=service.conf.j2 dest=/etc/nginx/stream/{{ item.name }}.conf owner=www-data group=www-data
