@@ -1,18 +1,33 @@
 #!/usr/bin/python
-
-from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
-import cgi
+import sys
+from bottle import get, post, request, run, static_file, response, route, template
 import os
 import zipfile
 from time import gmtime, strftime
 import sqlite3
+import re
+import json
+from stack_walk_parser import StackWalkParser
+from io import BytesIO
+#[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{8}-[0-9a-z]{8}
 
 sqliteConn = sqlite3.connect( 'reports.db' )
 
-
-SERVICES = [ "test_app" ]
 REPORTS_DIR = "reports/"
 SYMBOLS_DIR = "symbols/"
+
+
+@route('/static/<filepath:path>')
+def static(filepath):
+	return static_file(filepath, root='./static/')
+
+@route('/')
+def main_page():
+	return template('main_page.tpl')
+
+@route('/report.html')
+def main_page():
+    return template('report.tpl')
 
 
 def create_dir(name):
@@ -28,137 +43,134 @@ def create_dir(name):
 	return True
 
 
-def safe_extract_zip(file_name, extract_path):
-	if not os.path.exists(extract_path):
+def safe_extract_zip(zip_bytes, extract_dir):
+	if not os.path.exists(extract_dir):
 		return False
 
-	if not zipfile.is_zipfile(file_name):
-		return False
-
-	zf = zipfile.ZipFile(file_name, "r")
-	for info in zf.infolist():
-		name = os.path.basename(info.filename)
-		if name == '':
-			# skip directories
-			continue
-		
-		try:
-			data = zf.read(info.filename)
-			new_name = os.path.join(extract_path, name)
-			open(new_name, "wb").write(data)
-		except:
-			pass
+	try:
+		zf = zipfile.ZipFile( BytesIO( zip_bytes ) )
+		filesList = open( os.path.join( extract_dir, ".files_list" ), 'w' )
+		for info in zf.infolist():
+			try:
+				data = zf.read(info.filename)
+				file_path = os.path.join(extract_dir, info.filename)
+				create_dir( os.path.dirname( file_path ) )
+				if not os.path.exists( file_path ):
+					open(file_path, "wb").write(data)
+				filesList.write( info.filename + '\n' )
+			except:
+				pass
+		filesList.close()
+		zf.close()
+	except:
+		return False	
 
 	return True
 
+@get('/crashes')
+def Index():
+	cursor = sqliteConn.cursor()
+	reports = []
+	for row in cursor.execute( "SELECT * FROM reports" ):
+		report = { "guid" : row[ 0 ], "service_name" : row[ 1 ], "signature" : row[ 2 ], "time" : row[ 3 ] }
+		reports.append( report )
+	return json.dumps( reports )
 
-class RequestHandler(BaseHTTPRequestHandler):
-    
-    def do_GET(self):
 
-        self.send_response(404)
-        
-    def do_POST(self):
-        
-        request_path = self.path
-        if request_path == '/submit':
-        	if self.SubmitHandler():
-        		self.send_response(200)
-        	else:
-        		self.send_response(404)
-        else:
-        	self.send_response(404)
+@get('/<guid:re:[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}>')
+def DumpDetailHandler(guid):
+	report_dir = os.path.join( REPORTS_DIR, guid )
+	stackwalk_file = os.path.join( report_dir, "stackwalk.txt" )
+	parser = StackWalkParser()
+	parser.parse( stackwalk_file )			
+	dump_detail = { "crash_reason" : parser.crash_reason, "crash_address" : parser.crash_address, "crash_thread_stack" : parser.crash_thread_stack }
+	return json.dumps( dump_detail )
 
-    def SubmitHandler(self):
-    	try:
-    		request_headers = self.headers
-        	form = cgi.FieldStorage(
-            				fp = self.rfile,
-            				headers = self.headers,
-            				environ = {'REQUEST_METHOD':'POST',
-                     			'CONTENT_TYPE' : self.headers['Content-Type'],
-                     			})
-        	if 'dump_zip_file' not in form:
-        		print "There is no dump_zip_file in request"
-        		return False
 
-        	try:
-        		service_name = request_headers.getheaders( 'service_name' )[ 0 ]
-        		guid = request_headers.getheaders( 'guid' )[ 0 ]
-        		secret_id = request_headers.getheaders( 'secret_id' )[ 0 ]
-        	except:
-        		print "There is no service name or guid in headers"
-        		return False
+@get('/<guid:re:[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}>/get')
+def GetDumpHandler(guid):
+	report_dir = os.path.join( REPORTS_DIR, guid )
 
-        	if service_name not in SERVICES:
-        		print 'Unknown service %s' % service_name
-        		return False
+	inMemoryZip = BytesIO()
+	zf = zipfile.ZipFile( inMemoryZip, mode='w')
+	for line in open( os.path.join( report_dir, ".files_list" ), 'r' ):
+		zf.write( os.path.join( report_dir, line.strip() ), arcname = line.strip() )
+	zf.close()
+	inMemoryZip.seek(0)
 
-        	zipFileData = form[ 'dump_zip_file' ].file.read()
+	response.content_type = "application/zip"
+	response.add_header('Content-Disposition', 'attachment; filename=%s.zip;' % guid )	
+	return inMemoryZip.read()
 
-        	print 'Crash repot for %s GUID %s ID %s' % ( service_name, guid, secret_id )
 
-		cur_time = gmtime()
-		cur_date_dir = os.path.join( REPORTS_DIR, strftime("%Y/%m/%d", cur_time ) )
-        	if not os.path.exists(cur_date_dir):
-        		if not create_dir(cur_date_dir):
-				print 'Can not create dir %s' % cur_date_dir
-				return False
+@post('/submit')
+def SubmitHandler():
+	try:
+		dump_zip_file = request.files.get('dump_zip_file')
+		if not dump_zip_file:
+			print "There is no dump_zip_file in request"
+			return json.dumps( { 'status' : 'fail' } )
+		zipFileData = dump_zip_file.file.read()
 
-        	report_dir = os.path.join( cur_date_dir, guid )
-        	if not os.path.exists(report_dir):
-			if not create_dir(report_dir):
-				print 'Can not create dir %s' % report_dir
-				return False
-		else:
-			print 'Report %s already exists, it will be overwritten' % report_dir
+		service_name = request.headers.get( 'service_name' )
+		guid = request.headers.get( 'guid' )
+		if not guid or not service_name:
+			print "There is no service name or guid in headers"
+			return json.dumps( { 'status' : 'fail' } )
 
-		report_name = os.path.join(report_dir, "minidump.zip")
-		try:
-			f = open( report_name, "wb" )
-			f.write( zipFileData )
-			f.close()
-		except:
-			print 'Failed to save file %s' % report_name
-			return False
+		if not re.match( r'^[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}$', guid):
+			print "Strange guid"
+			return json.dumps( { 'status' : 'fail' } )
 
-		if not safe_extract_zip( report_name, report_dir ):
+		if not re.match( r'^[0-9a-zA-Z_]+$', service_name):
+			print "Strange service name"
+			return json.dumps( { 'status' : 'fail' } )
+
+		print 'Crash repot for %s GUID %s' % ( service_name, guid )
+
+		report_dir = os.path.join( REPORTS_DIR, guid )
+		if os.path.exists(report_dir):
+			print 'Report %s already exists' % report_dir
+			return json.dumps( { 'status' : 'fail' } )
+
+		if not create_dir(report_dir):
+			print 'Can not create dir %s' % report_dir
+			return json.dumps( { 'status' : 'fail' } )
+
+		if not safe_extract_zip( zipFileData, report_dir ):
 			print 'Failed to extract zip file'
-			return False
+			return json.dumps( { 'status' : 'fail' } )
 
-		dump_name = os.path.join(report_dir, guid + ".dmp")
-		if not os.path.exists( dump_name ):
+		dmp_path = os.path.join(report_dir, guid + ".dmp")
+		if not os.path.exists( dmp_path ):
 			print 'Where is minidump file?'
-			return False
+			return json.dumps( { 'status' : 'fail' } )
 
 		try:
 			# google-breakpad/src/processor/minidump_stackwalk minidump.dmp ./symbols
 			TOOL_NAME = "./minidump_stackwalk"
 			STACKWALK_FILENAME = os.path.join( report_dir, "stackwalk.txt" )
 			STACKWALK_ERRORS_FILENAME = os.path.join( report_dir, "stackwalk_errors.txt" )
-			result = os.system('%s -m %s %s >%s 2>%s' % (TOOL_NAME, dump_name, SYMBOLS_DIR, STACKWALK_FILENAME, STACKWALK_ERRORS_FILENAME))
-			if result != 0:				
+			result = os.system('%s -m %s %s >%s 2>%s' % (TOOL_NAME, dmp_path, SYMBOLS_DIR, STACKWALK_FILENAME, STACKWALK_ERRORS_FILENAME))
+			if result != 0:
 				print 'stack walk failed: %d' % result
-				return False
+				return json.dumps( { 'status' : 'fail' } )
+
+			parser = StackWalkParser()
+			parser.parse( STACKWALK_FILENAME )
 		except:
 			print 'stack walk failed'
-			return False
+			return json.dumps( { 'status' : 'fail' } )
 
 		cursor = sqliteConn.cursor()
-		row = ( service_name, guid, secret_id )
-		cursor.execute( "INSERT INTO reports VALUES ( ?, ?, ? )", row )
+		cursor.execute( "INSERT INTO reports VALUES ( '%s', '%s', '%s', '%s' )" % ( guid, service_name, parser.signature, strftime("%H %M %S", gmtime() ) ) )
 		sqliteConn.commit()
 
-        	return True
+		return json.dumps( { 'status' : 'ok' } )
 
 	except:
 		print 'Something went wrong'
 		return False
-    
-    do_PUT = do_POST
-    do_DELETE = do_GET
-    
-port = 1080
-print('Listening on localhost:%s' % port)
-server = HTTPServer(('', port), RequestHandler)
-server.serve_forever()
+
+
+run(server='tornado', host='0.0.0.0', port=1080, debug=True, reloader=True)

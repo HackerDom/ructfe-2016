@@ -41,17 +41,16 @@ function OnLogout() {
 	return false;
 }
 
-function OnUpload() {
-	var $form = $('#upload')[0];
-	var data = new FormData($form);
+function OnPublish() {
+	var $form = $('#publish');
+	var title = $form.children('[name="title"]').val();
+	var body = $form.children('[name="body"]').val();	
+	var is_public = $form.children('[name="is_public"]').prop('checked') ? 'on' : '';
 
-	$.ajax('/upload', 
+	$.ajax('/publish', 
 	{
 		type: 'POST',
-		data: data,
-		cache: false,
-		contentType: false,
-		processData: false
+		data: {'title': title, 'body': body, 'is_public': is_public},
 	})
 	.always(function(data) {
 		console.log(data);
@@ -75,7 +74,7 @@ function OnLoadPublics() {
 		console.log(event.data);
 		var data = JSON.parse(event.data);
 		var owner = $('<td></td>').text(data.owner);
-		var link = $('<a></a>').text('download');
+		var link = $('<a></a>').text(data.title);
 		link.attr('href', data.url);
 		link = $('<td></td>').append(link);
 		var ttl = $('<td></td>').text(TTLToString(data.ttl));

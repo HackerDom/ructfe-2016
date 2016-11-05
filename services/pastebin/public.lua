@@ -4,8 +4,11 @@ local json = require 'cjson'
 
 local module = {}
 
-local function send_file(client, socket, file)
-	local data = client:get_file_info(file)
+local function send_post(client, socket, post)
+	local data = client:get_post_info(post)
+	if not data then
+		return true
+	end
 	local bytes, err = socket:send_text(json.encode(data))
 	return bytes and true or false 
 end
@@ -24,14 +27,14 @@ function module.process()
 	local listener = redis:listener()
 	local client = redis:client()
 
-	for file in client:get_public_files() do
-		if not send_file(client, socket, file) then
+	for post in client:get_public_posts() do
+		if not send_post(client, socket, post) then
 			break
 		end
 	end
 
-	for file in listener:get_news() do
-		if not send_file(client, socket, file) then
+	for post in listener:get_news() do
+		if not send_post(client, socket, post) then
 			break
 		end
 	end

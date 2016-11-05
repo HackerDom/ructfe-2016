@@ -4,3 +4,5 @@ nginx.conf.compiled
 *.o
 *.so
 *.swp
+*.out
+*.s

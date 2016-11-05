@@ -1,0 +1,4 @@
+- name: setup logging client
+  copy: dest="/etc/rsyslog.d/60-remote.conf" content="*.* @10.10.10.10:5140;RSYSLOG_SyslogProtocol23Format"
+  notify: restart rsyslog
+  tags: logging-client

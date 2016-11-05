@@ -41,6 +41,12 @@ http {
     tcp_nopush  on;
     charset     utf-8;
     server_tokens off;
+
+    map $http_upgrade $connection_upgrade {
+        default upgrade;
+        ''      close;
+    }
+
     include /etc/nginx/web/*;
 }
 
