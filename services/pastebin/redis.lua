@@ -1,7 +1,7 @@
 local redis = require 'resty.redis'
 local config = require('lapis.config').get()
 local rand = require 'rand'
-local sha1 = require 'sha1'
+local md5 = require 'md5'
 
 require 'utils'
 
@@ -16,7 +16,7 @@ local function get_postid(postname)
 end
 
 local function hash(username, password)
-	return sha1(username .. config.secret .. password)
+	return md5.sumhexa(username .. config.secret .. password)
 end
 
 local function user_exists(self, username, password)
@@ -40,7 +40,7 @@ local function create_post(self, username, title, body, public, sign, get_url)
 	self.client:hset(userid, 'state', state)
 
 	local secret = value .. '@' .. username
-	local postname = sha1(secret)
+	local postname = md5.sumhexa(secret)
 	local show_time = os.time() + config.show_time
 	local url = get_url(postname)
 	local postid = get_postid(postname)
