@@ -13,6 +13,12 @@
     - bottle
     - tornado
 
+- name: Copy breakpad binaries
+  copy: src={{ item }} dest=/usr/bin/{{ item }} mode=0755 owner=root
+  with_items:
+    - dump_syms
+    - minidump_stackwalk
+
 - name: Create user
   user: createhome=yes name=crash
 
