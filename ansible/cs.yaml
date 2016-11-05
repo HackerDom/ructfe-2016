@@ -1,4 +1,4 @@
-- hosts: checker
+- hosts: cs-checker
   tasks:
   - name: start checker
     command: systemctl start worker-checkers
@@ -7,7 +7,7 @@
     command: systemctl stop worker-checkers
     tags: ['stop', 'checker-stop']
 
-- hosts: checkermaster
+- hosts: cs-master
   tasks:
   - name: start manager
     command: systemctl start manager

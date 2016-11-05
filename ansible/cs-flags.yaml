@@ -1,8 +1,8 @@
-- hosts: checker
+- hosts: cs-flags
   roles:
     - common
     - { role: cs_common, tags: ['cs'] }
-    - { role: cs_checker, tags: ['cs'] }
+    - { role: cs_flags, tags: ['cs'] }
     - logging_client
   vars:
     cs_user: cs

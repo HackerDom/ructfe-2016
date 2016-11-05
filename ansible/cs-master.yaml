@@ -1,9 +1,10 @@
-- hosts: checkermaster
+- hosts: cs-master
   roles:
     - common
     - monitoring_client
     - { role: cs_common, tags: ['cs'] }
     - { role: cs_master, tags: ['cs'] }
+    - { role: cs_checker, tags: ['cs'] }
     - logging_client
   vars:
     cs_user: cs
