@@ -19,18 +19,10 @@ def make_app():
     app = Sanic(__name__)
     app.static('/static', settings.STATIC_DIR)
 
-    @app.route("/")
+    @app.route("/", methods=['GET'])
     async def test_index(request):
         from templates import render
         return html(render('index.html', name='variables'))
-
-    @app.route("/async")
-    async def test_async(request):
-        return json({"test": True})
-
-    @app.route("/sync", methods=['GET', 'POST'])
-    def test_sync(request):
-        return json({"test": True})
 
     @app.route("/dynamic/<name>/<id:int>")
     def test_params(request, name, id):
@@ -68,7 +60,7 @@ def make_app():
     # Exceptions
     # ----------------------------------------------- #
 
-    @app.exception(Exception)
+    @app.exception(ServerError)
     async def test(request, exception):
         return json(
             {"exception": "{}".format(exception),
