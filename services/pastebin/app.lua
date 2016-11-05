@@ -66,6 +66,7 @@ app:post('/publish', function(self)
 	local title = self.req.params_post.title
 	local body = self.req.params_post.body
 	local is_public = self.req.params_post.is_public
+	local sign = self.req.params_post.sign
 	local user = self.session.user
 
 	if not user then
@@ -84,7 +85,7 @@ app:post('/publish', function(self)
 	end
 
 	is_public = is_public == 'on' and true or false
-	local url = client:create_post(user, title, body, is_public, function(id) return self:url_for('view', {id = id}) end)
+	local url = client:create_post(user, title, body, is_public, sign, function(id) return self:url_for('view', {id = id}) end)
 
 	if url then
 		return {json = {url}}

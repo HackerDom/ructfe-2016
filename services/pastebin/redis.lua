@@ -32,7 +32,7 @@ local function create_user(self, username, password)
 	self.client:hmset(get_userid(username), 'password', hash(username, password), 'state', rand.init())
 end
 
-local function create_post(self, username, title, body, public, get_url)
+local function create_post(self, username, title, body, public, sign, get_url)
 	local userid = get_userid(username)
 
 	local state, value = self.client:hget(userid, 'state')
@@ -41,14 +41,12 @@ local function create_post(self, username, title, body, public, get_url)
 
 	local secret = value .. '@' .. username
 	local postname = sha1(secret)
---	print_r({secret = secret, postname = postname})
-	local expired = os.time() + config.ttl
 	local show_time = os.time() + config.show_time
 	local url = get_url(postname)
 	local postid = get_postid(postname)
 
 	self.client:multi()
-	self.client:hmset(postid, 'owner', username, 'public', public, 'expired', expired, 'url', url, 'title', title, 'body', body)
+	self.client:hmset(postid, 'owner', username, 'public', public, 'url', url, 'title', title, 'body', body, 'sign', sign)
 	self.client:expire(postid, config.ttl)
 	if public then
 		self.client:zadd('publics', show_time, postname)
@@ -64,9 +62,9 @@ local function create_post(self, username, title, body, public, get_url)
 end
 
 local function get_post(self, postname)
-	local title, body = unpack(self.client:hmget(get_postid(postname), 'title', 'body'))
+	local title, body, owner, sign = unpack(self.client:hmget(get_postid(postname), 'title', 'body', 'owner', 'sign'))
 	if title ~= ngx.null and body ~= ngx.null then
-		return {title = title, body = body}
+		return {title = title, body = body, owner = owner, sign = sign}
 	end
 end
 
@@ -99,9 +97,9 @@ end
 
 local function get_post_info(self, postname)
 	local id = get_postid(postname)
-	local url, owner, expired, title = unpack(self.client:hmget(id, 'url', 'owner', 'expired', 'title'))
+	local url, owner, title = unpack(self.client:hmget(id, 'url', 'owner', 'title'))
 	if url ~= ngx.null then
-		return {url = url, owner = owner, title = title, ttl = expired - os.time()}
+		return {url = url, owner = owner, title = title}
 	end
 end
 
