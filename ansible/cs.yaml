@@ -21,3 +21,9 @@
   - name: stop web
     command: systemctl stop web
     tags: ['stop', 'web-stop']
+  - name: start worker
+    command: systemctl start worker
+    tags: ['start', 'worker-start']
+  - name: stop worker
+    command: systemctl stop worker
+    tags: ['stop', 'worker-stop']
