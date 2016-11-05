@@ -67,12 +67,31 @@ function OnLoadPublics() {
 	socket.onmessage = function(event) {
 		console.log(event.data);
 		var data = JSON.parse(event.data);
-		var owner = $('<td></td>').text(data.owner);
-		var link = $('<a></a>').text(data.title);
-		link.attr('href', data.url);
-		link = $('<td></td>').append(link);
-		var tr = $('<tr></tr>').append(link, owner);
-		table.append(tr);
+		AppendPostInfo(table, data)
 	}
 	socket.onclose = OnLoadPublics;
+}
+
+function OnLoadMy() {
+	setInterval(function() {
+		var table = $('#my');
+		$.ajax('/all', 
+		{
+			type: 'GET'	
+		})
+		.done(function(data) {
+			table.empty();
+			data.forEach(function(item) {AppendPostInfo(table, item)});
+		})
+	},
+	60000);
+}
+
+function AppendPostInfo(table, data) {
+	var owner = $('<td></td>').text(data.owner);
+	var link = $('<a></a>').text(data.title);
+	link.attr('href', data.url);
+	link = $('<td></td>').append(link);
+	var tr = $('<tr></tr>').append(link, owner);
+	table.append(tr);
 }

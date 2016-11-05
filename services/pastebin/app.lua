@@ -108,7 +108,20 @@ app:get('view', '/post/:id', function(self)
 	end
 end)
 
-app:get('/all/:id', function(self)
+app:get('/all', function(self)
+	local client = redis:client()
+	local posts = {}
+	local user = self.session.user
+	if not user then
+		return {status = 401, json = {'need to login'}}
+	end	
+	for post in client:get_posts_for_user(user) do
+		local info = client:get_post_info(post)
+		if info then
+			table.insert(posts, info)
+		end	
+	end
+	return {json = posts}
 end)
 
 return app
