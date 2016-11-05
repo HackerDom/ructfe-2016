@@ -71,7 +71,7 @@ def safe_extract_zip(zip_bytes, extract_dir):
 def Index():
 	cursor = sqliteConn.cursor()
 	reports = []
-	for row in cursor.execute( "SELECT * FROM reports" ):
+	for row in cursor.execute( "SELECT * FROM reports ORDER BY ROWID DESC LIMIT 50" ):
 		report = { "guid" : row[ 0 ], "service_name" : row[ 1 ], "signature" : row[ 2 ], "time" : row[ 3 ] }
 		reports.append( report )
 	return json.dumps( reports )
