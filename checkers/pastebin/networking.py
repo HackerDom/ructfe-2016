@@ -3,7 +3,6 @@
 import checker
 import aiohttp
 import random
-import json
 import queue
 import asyncio
 from crypto import Signer
@@ -43,12 +42,12 @@ class WSHelper:
 					try:
 						data = msg.json(loads = lambda s : checker.parse_json(s, ['url', 'owner']))
 					except Exception as ex:
-						checher.corrupt(error='can\'t parse service responce', exception=ex)
+						checher.mumble(error='can\'t parse service responce', exception=ex)
 					await self.queue.put((data['url'], data['owner']))
 				elif msg.type == aiohttp.WSMsgType.CLOSED:
 					break
 				else:
-					checker.corrupt(error='get message with unexpected type {}\nmessage: {}'.format(msg.type, msg.text))
+					checker.mumble(error='get message with unexpected type {}\nmessage: {}'.format(msg.type, msg.text))
 	def want(self, url, owner):
 		self.wanted.add((url, owner))
 	def want_many(self, wanted):
@@ -138,10 +137,7 @@ class State:
 		if signed:
 			request['sign'] = self.signer.sign(self.hostname, username, request)
 		response = await self.post('publish', request)
-		try:
-			url = json.loads(response)[0]
-		except Exception as ex:
-			checker.mumble(error='fail parsing response', exception=ex)
+		url = checker.parse_json(response)[0]
 		return url, public, title, body
 	async def put_posts(self, username, count=1, signed=False):
 		wanted = set()	
@@ -154,10 +150,7 @@ class State:
 		return wanted, content
 	async def get_post(self, url, signed=False, username=None):
 		response = await self.get(url)
-		try:
-			data = json.loads(response)
-		except Exception as ex:
-			checker.mumble(error='fail parsing response for url {}'.format(url), exception=ex)
+		data = checker.parse_json(response, ['title', 'body'])
 		if signed and not self.signer.check(self.hostname, username, data):
 			checker.mumble(error='fail check sign for url {}'.format(url))
 		return data
@@ -167,8 +160,6 @@ class State:
 		self.get_publics(wanted, set())
 	async def get_content(self, url, title, body):
 		response = await self.get_post(url)
-		if 'title' not in response or 'body' not in response:
-			checker.mumble(error="no title or body on response for '{}': '{}'".format(url, response))
 		if response['title'] != title:
 			checker.mumble(error="wrong post title '{}': expexted '{}', found '{}'".format(url, title, response['title']))
 		if response['body'] != body:

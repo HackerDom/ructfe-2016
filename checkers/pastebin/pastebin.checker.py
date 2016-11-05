@@ -24,8 +24,6 @@ async def handler_get(hostname, id, flag):
 	state = State(hostname)
 	await state.get_post(id['public'], True, user)
 	file = await state.get_post(id['private'], True, user)
-	if 'body' not in file:
-		return checker.corrupt(message="Fail reciving post body")
 	if file['body'] != flag:
 		return checker.corrupt(message="Bad flag: expected {}, found {}".format(flag, file['body']))
 	checker.ok()
