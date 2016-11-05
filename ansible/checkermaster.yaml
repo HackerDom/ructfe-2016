@@ -2,7 +2,8 @@
   roles:
     - common
     - monitoring_client
-    - cs_common
+    - { role: cs_common, tags: ['cs'] }
+    - { role: cs_master, tags: ['cs'] }
     - logging_client
   vars:
     cs_user: cs

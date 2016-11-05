@@ -1,0 +1,19 @@
+- name: systemd configs
+  template: src=manager.service.j2 dest=/etc/systemd/system/manager.service
+
+- name: systemd configs
+  template: src=web.service.j2 dest=/etc/systemd/system/web.service
+
+- name: systemd configs
+  template: src=worker.service.j2 dest=/etc/systemd/system/worker.service
+
+- name: systemd reload
+  command: systemctl daemon-reload
+
+#- template: src=nginx.conf dest=/etc/nginx/sites-available/cs.conf
+
+#- file: src=/etc/nginx/sites-available/cs.conf dest=/etc/nginx/sites-enabled/cs.conf state=link
+
+#- file: path=/etc/nginx/sites-enabled/default state=absent
+
+#- service: name=nginx state=restarted
