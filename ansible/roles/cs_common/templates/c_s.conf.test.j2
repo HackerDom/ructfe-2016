@@ -1,5 +1,5 @@
 { pg => {uri => 'postgresql://cs:cohNgiesh6@172.16.6.8:5432/cs_big_test'},
-  hypnotoad => {listen => ['http://127.0.0.1:8080'], workers => 16},
+  hypnotoad => {listen => ['http://0.0.0.0:8080'], workers => 16},
   cs => {
     base_url => 'http://xxx.ructf.org/',
     time => {
@@ -528,9 +528,6 @@
     {name => 'team_511',	network => '10.61.255.0/24',	host => '10.61.255.2'},
   ],
   services => [
-    {name => 'bay',      path => 'checkers/bay.py',              timeout => 15},
-    {name => 'bay2',     path => 'checkers/bay.py',              timeout => 15},
-    {name => 'bay3',     path => 'checkers/bay.py',              timeout => 15},
     {name => 'selenium', path => 'checkers/selenium_checker.py', timeout => 15},
   ],
 }
