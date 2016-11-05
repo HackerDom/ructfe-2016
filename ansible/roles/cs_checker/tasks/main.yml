@@ -1,3 +1,11 @@
+- name: systemd configs
+  template: src=worker-checkers.service.j2 dest=/etc/systemd/system/worker-checkers.service
+  with_items:
+    - { jobs: 128 }
+
+- name: systemd reload
+  command: systemctl daemon-reload
+
 - name: catalog for checkers
   file: path={{cs_dir}}/app/checkers state=directory
 
@@ -22,3 +30,6 @@
 
 - name: selenium checker python deps
   pip: executable=pip3 name=selenium
+
+- name: crash checker
+  synchronize: src=../../../../checkers/crash/ dest={{cs_dir}}/app/checkers/crash
