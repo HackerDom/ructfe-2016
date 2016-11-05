@@ -1,0 +1,132 @@
+from json import loads, dumps
+from uuid import uuid4
+
+import peewee
+from sanic.response import json
+from sanic import Blueprint
+
+from sessions.models import make_models
+
+bp = Blueprint('sessions', '/sessions')
+_sessions = {}
+_last = None
+
+
+def get_session_service(db_name=None):
+    if db_name is None and _last:
+        return _sessions[_last]
+    elif db_name is None and _last is None:
+        raise ValueError("DefaultSessionService is not registered")
+    return _sessions[db_name]
+
+
+def clear_session_services():
+    global _sessions, _last
+    _sessions = {}
+    _last = None
+
+
+class SessionService:
+    def __init__(self, app, db_name, initdb, dropdb, manager, model):
+        self.app = app
+        self.manager = manager
+        self._db_name = db_name
+        self._initdb = initdb
+        self._dropdb = dropdb
+        self._model = model
+
+    def initdb(self):
+        self._initdb()
+
+    def dropdb(self):
+        self._dropdb()
+
+    async def get_request_session_data(self, request):
+        uid = request.cookies.get(self._db_name)
+        return await self.get_session_data(uid)
+
+    async def set_request_session_data(self, request, response, data):
+        uid = request.cookies.get(self._db_name)
+        if not uid:
+            uid = str(uuid4())
+        response.cookies[self._db_name] = uid
+        await self.set_session_data(uid, data)
+
+    async def get_session_data(self, uid):
+        if not uid:
+            return None
+        if not isinstance(uid, str):
+            raise TypeError('uid is not a str')
+        data = None
+        if uid:
+            try:
+                obj = await self.manager.get(self._model, key=uid)
+                if obj.value:
+                    try:
+                        data = loads(obj.value)
+                    except (ValueError, TypeError):
+                        pass
+            except peewee.DoesNotExist:
+                pass
+        return data
+
+    async def set_session_data(self, uid, data):
+        if not uid:
+            raise ValueError('bad uid')
+        if not isinstance(uid, str):
+            raise TypeError('uid is not a str')
+
+        data = dumps(data)
+        obj, _ = await self.manager.get_or_create(self._model, key=uid)
+        if obj.value != data:
+            obj.value = data
+            await self.manager.update(obj, only=['value'])
+
+    async def update_session_data(self, uid, data):
+        if not uid:
+            raise ValueError('bad uid')
+        if not isinstance(uid, str):
+            raise TypeError('uid is not a str')
+        if not isinstance(data, dict):
+            raise TypeError('data is not a dict')
+        current_data = await self.get_session_data(uid)
+        current_data.update(data)
+        await self.set_session_data(uid, current_data)
+        return current_data
+
+
+@bp.record
+def session_module_registered(state):
+    global _sessions, _last
+    app = state.app
+    db = state.options.get('db')
+    db_name = state.options.get('db_name')
+    loop = state.options.get('loop')
+
+    if not db_name:
+        raise RuntimeError(
+            "This blueprint expects you to provide database access! "
+            "Use: app.blueprint(bp, db_name=...)")
+    if db_name in _sessions:
+        raise RuntimeError(
+            "This blueprint already registered with this db_name! "
+            "Use other db_name: app.blueprint(bp, db_name=...)")
+    if not db:
+        raise RuntimeError(
+            "This blueprint expects you to provide database access! "
+            "Use: app.blueprint(bp, db=...)")
+
+    initdb, dropdb, manager, model = make_models(db, db_name, loop)  # noqa
+    service = SessionService(app, db_name, initdb, dropdb, manager, model)
+    _sessions[db_name] = service
+    _last = db_name
+
+
+@bp.route('/info')
+async def get_session_info(request):
+    return json({'session': 'blueprint'})
+
+
+@bp.middleware('request')
+async def session_middleware(request):
+    print("I am a spy")
