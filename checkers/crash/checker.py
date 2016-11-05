@@ -156,8 +156,10 @@ def not_found(*args):
 
 
 if __name__ == '__main__':
-    try:
-        COMMANDS.get(argv[1], not_found)(*argv[2:])
-    except Exception as e:
-        close(CHECKER_ERROR, "Evil checker", "INTERNAL ERROR: %s" % e)
+	try:
+		if not os.path.exists( "dumps/" ):
+			os.makedirs( "dumps/" )
+		COMMANDS.get(argv[1], not_found)(*argv[2:])
+	except Exception as e:
+		close(CHECKER_ERROR, "Evil checker", "INTERNAL ERROR: %s" % e)
 
