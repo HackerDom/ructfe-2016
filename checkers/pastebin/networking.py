@@ -77,13 +77,17 @@ class State:
 				return await response.text()
 		except Exception as ex:
 			checker.down(error=url, exception=ex)
-	async def post(self, url, data):
+	async def post(self, url, data, need_check_status=True):
 		url = self.get_url(url)
 		try:
 			async with self.session.post(url, data=data) as response:
-				await check_status(response)
+				if need_check_status:
+					await check_status(response)
 				check_cookie(self.session.cookie_jar)
-				return await response.text()
+				if need_check_status:
+					return await response.text()
+				else:
+					return response.status, await response.text()
 		except Exception as ex:
 			checker.down(error='{}\n{}'.format(url, data), exception=ex)
 	async def login(self, username, password):
@@ -91,12 +95,21 @@ class State:
 	async def logout(self):
 		await self.get('logout')
 	async def register(self, username=None, password=None):
+		can_retry = username is None
 		if username is None:
 			username = checker.get_rand_string(8)
 		if password is None:
 			password = checker.get_rand_string(16)
-		await self.post('register', {'user': username, 'password': password})
-		return username, password
+		status, text = await self.post('register', {'user': username, 'password': password}, need_check_status = False)
+		if status == 200:
+			return username, password
+		if status == 400 and can_retry:
+			while status == 400:
+				username = checker.get_rand_string(16)
+				password = checker.get_rand_string(32)
+				status, text = await self.post('register', {'user': username, 'password': password}, need_check_status = False)
+			return username, password
+		checker.mumble(error='error while register: status {}, response {}'.format(status, text))
 	async def get_private(self, url):
 		return await self.get(url)
 	def get_listener(self):
@@ -110,7 +123,7 @@ class State:
 		return helper
 	async def put_post(self, title=None, body=None, public=None, signed=False, username=None):
 		if title is None:
-			title = checker.get_rand_string(64)
+			title = checker.get_rand_string(16)
 		if body is None:
 			body = checker.get_rand_string(1024)
 		if public is None:
@@ -148,3 +161,14 @@ class State:
 		wanted = set()
 		wanted.add((url, username))
 		self.get_publics(wanted, set())
+	async def get_content(self, url, title, body):
+		response = await self.get_post(url)
+		if 'title' not in response or 'body' not in response:
+			checker.mumble(error="no title or body on response for '{}': '{}'".format(url, response))
+		if response['title'] != title:
+			checker.mumble(error="wrong post title '{}': expexted '{}', found '{}'".format(url, title, response['title']))
+		if response['body'] != body:
+			checker.mumble(error="wrong post body '{}': expexted '{}', found '{}'".format(url, body, response['body']))
+	async def get_contents(self, contents):
+		for url, title, body in contents:
+			await self.get_content(url, title, body)
