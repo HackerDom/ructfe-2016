@@ -59,12 +59,6 @@ function OnPublish() {
 	return false;
 }
 
-function TTLToString(time) {
-	var sec = time % 60;
-	var min = Math.floor(time / 60);
-	return ('0' + min).slice(-2) + ':' + ('0' + sec).slice(-2);
-}
-
 function OnLoadPublics() {
 	var url = 'ws://' + window.location.hostname + ':' + window.location.port + '/publics';
 	var table = $('#publics');
@@ -77,8 +71,7 @@ function OnLoadPublics() {
 		var link = $('<a></a>').text(data.title);
 		link.attr('href', data.url);
 		link = $('<td></td>').append(link);
-		var ttl = $('<td></td>').text(TTLToString(data.ttl));
-		var tr = $('<tr></tr>').append(link, ttl, owner);
+		var tr = $('<tr></tr>').append(link, owner);
 		table.append(tr);
 	}
 	socket.onclose = OnLoadPublics;

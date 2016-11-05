@@ -84,6 +84,10 @@ app:post('/publish', function(self)
 		return {status = 400, json = {'body too large'}}
 	end
 
+	if not sign then
+		sign = ''
+	end
+
 	is_public = is_public == 'on' and true or false
 	local url = client:create_post(user, title, body, is_public, sign, function(id) return self:url_for('view', {id = id}) end)
 
