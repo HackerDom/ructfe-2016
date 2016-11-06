@@ -106,14 +106,15 @@ class UserService:
             raise TypeError('meta is not a dict')
 
         username = self.clean_username(username)
-        password = self.clean_username(password)
+        password = self.clean_password(password)
         password_hash = self.hashing_password(password)
         raw_meta = dumps(meta) if meta else ''
         if await self.has_username(username):
             raise self.UserServiceError('Username already used')
         try:
             obj = await self.manager.create(
-                usename=username,
+                self._model,
+                username=username,
                 password_hash=password_hash,
                 raw_meta=raw_meta
             )
@@ -130,7 +131,7 @@ class UserService:
 
     async def validate_credentials_and_get_user(self, username, password):
         username = self.clean_username(username)
-        password = self.clean_username(password)
+        password = self.clean_password(password)
         password_hash = self.hashing_password(password)
         try:
             obj = await self.get_user(username)
@@ -157,5 +158,5 @@ class UserService:
 
         username = user.username if user and user.is_authenticated() else ''
         await sessions.update_request_session_data(request, response, {
-            self.sessions_db_name: username
+            self.sessions_key: username
         })

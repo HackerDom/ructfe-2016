@@ -17,8 +17,8 @@ class AnonymousUser:
 
 def make_models(db, db_name, loop):
     class User(peewee.Model):
-        username = peewee.CharField(unique=True, max_length=50)
-        password_hash = peewee.CharField(max_length=60)
+        username = peewee.CharField(unique=True, max_length=63)
+        password_hash = peewee.CharField(max_length=127)
         created = peewee.DateTimeField(default=datetime.now, index=True)
         raw_meta = peewee.TextField(default='')
 
