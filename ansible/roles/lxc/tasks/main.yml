@@ -60,14 +60,14 @@
 
 - name: Create lxc container
   lxc_container:
-    name: "{{ item }}"
+    name: "{{ item.name }}"
     template: debian
     state: started
     backing_store: loop
     fs_size: "4G"
     container_config:
-      - "lxc.cgroup.memory.limit_in_bytes = 512000000"
-      - "lxc.cgroup.memory.memsw.limit_in_bytes = 512000000"
+      - "lxc.cgroup.memory.limit_in_bytes = {{ item.mem | default(512000000) }}"
+      - "lxc.cgroup.memory.memsw.limit_in_bytes = {{ item.mem | default(512000000) }}"
     container_command: |
       DEBIAN_FRONTEND=noninteractive apt-get update
       DEBIAN_FRONTEND=noninteractive apt-get install -y python
@@ -76,4 +76,10 @@
       echo "{{ SSH_PUBLIC_KEY }}" > /root/.ssh/authorized_keys
       systemctl restart ssh
       bash
-  with_items: "{{ groups.services }}"
+  with_items:
+    - { name: build, mem: "1000000000" }
+    - { name: cartographer }
+    - { name: crash }
+    - { name: cross-social-science }
+    - { name: pastebin }
+    - { name: sapmarine }
