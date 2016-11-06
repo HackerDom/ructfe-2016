@@ -1,13 +1,13 @@
 from sanic import Blueprint
-from users_handler.models import make_models
-from users_handler.service import _has_session_service, RegistrationService, \
-    _set_default_session_service, _register_session_service
+from .models import make_models
+from .service import _has_user_service, UserService, \
+    _set_default_user_service, _register_user_service
 
-bp = Blueprint('Users Handler')
+bp = Blueprint('users')
 
 
 @bp.record
-def session_module_registered(state):
+def user_module_registered(state):
     app = state.app
     db = state.options.get('db')
     db_name = state.options.get('db_name')
@@ -17,7 +17,7 @@ def session_module_registered(state):
         raise RuntimeError(
             "This blueprint expects you to provide database access! "
             "Use: app.blueprint(bp, db_name=...)")
-    if _has_session_service(db_name):
+    if _has_user_service(db_name):
         raise RuntimeError(
             "This blueprint already registered with this db_name! "
             "Use other db_name: app.blueprint(bp, db_name=...)")
@@ -27,14 +27,15 @@ def session_module_registered(state):
             "Use: app.blueprint(bp, db=...)")
 
     initdb, dropdb, manager, model = make_models(db, db_name, loop)  # noqa
-    service = RegistrationService(app, db_name, initdb, dropdb, manager, model)
-    _register_session_service(db_name, service)
-    _set_default_session_service(db_name)
+    service = UserService(app, db_name, initdb, dropdb, manager, model)
+    _register_user_service(db_name, service)
+    _set_default_user_service(db_name)
 
-    @bp.route("/register")
-    def registration(request):
-        return service.registration(request)
 
-    @bp.route("/auth")
-    def authorization(request):
-        return service.authorization(request)
+# @bp.route("/register")
+# def registration(request):
+#     return service.registration(request)
+#
+# @bp.route("/auth")
+# def authorization(request):
+#     return service.authorization(request)

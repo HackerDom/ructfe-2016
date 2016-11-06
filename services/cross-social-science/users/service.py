@@ -6,45 +6,45 @@ from peewee import DoesNotExist
 
 import datetime
 
-_sessions = {}
+_users = {}
 _last = None
 
 
-def get_session_service(db_name=None):
+def get_user_service(db_name=None):
     if db_name is None and _last:
-        return _sessions[_last]
+        return _users[_last]
     elif db_name is None and _last is None:
-        raise ValueError("DefaultSessionService is not registered")
-    return _sessions[db_name]
+        raise ValueError("DefaultUserService is not registered")
+    return _users[db_name]
 
 
-def clear_session_services():
-    global _sessions, _last
-    _sessions = {}
+def clear_user_services():
+    global _users, _last
+    _users = {}
     _last = None
 
 
-def _has_session_service(db_name):
-    return db_name in _sessions
+def _has_user_service(db_name):
+    return db_name in _users
 
 
-def _set_default_session_service(db_name):
+def _set_default_user_service(db_name):
     if not isinstance(db_name, str):
         raise TypeError('db_name is not a str')
-    if db_name not in _sessions:
+    if db_name not in _users:
         raise ValueError('this db_name is not registered yet')
     global _last
     _last = db_name
 
 
-def _register_session_service(db_name, service):
-    global _sessions
-    if db_name in _sessions:
+def _register_user_service(db_name, service):
+    global _users
+    if db_name in _users:
         raise RuntimeError('service with same name is already registered')
-    _sessions[db_name] = service
+    _users[db_name] = service
 
 
-class RegistrationService:
+class UserService:
     def __init__(self, app, db_name, init_db, drop_db, manager, model):
         self.app = app
         self.manager = manager

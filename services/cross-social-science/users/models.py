@@ -9,9 +9,7 @@ def make_models(db, db_name, loop):
             db_table = db_name
 
     class User(BaseModel):
-        user_id = peewee.IntegerField(unique=True)
-
-        username = peewee.CharField(unique=True, max_length=20)
+        username = peewee.CharField(unique=True, max_length=40)
         password_hash = peewee.CharField()
         registration_date = peewee.DateField()
 
