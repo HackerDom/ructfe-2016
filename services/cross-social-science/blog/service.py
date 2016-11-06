@@ -1,7 +1,5 @@
-from json import dumps, loads
-from uuid import uuid4
+from json import dumps
 
-import peewee
 from slugify import slugify
 
 _blogs = {}
@@ -13,7 +11,9 @@ def get_blog_service(db_name=None):
         return _blogs[_last]
     elif db_name is None and _last is None:
         raise ValueError("DefaultSessionService is not registered")
-    return _blogs[db_name]
+    service = _blogs[db_name]
+    assert isinstance(service, BlogService)
+    return service
 
 
 def clear_blog_services():

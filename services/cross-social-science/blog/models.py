@@ -18,9 +18,9 @@ def make_models(db, db_name, loop):
         title = peewee.CharField()
         slug = peewee.CharField(unique=True)
         content = peewee.TextField(default='')
-        raw_meta = peewee.TextField(default='')
         is_published = peewee.BooleanField(default=False, index=True)
-        timestamp = peewee.DateTimeField(default=datetime.now, index=True)
+        created = peewee.DateTimeField(default=datetime.now, index=True)
+        raw_meta = peewee.TextField(default='')
 
         @property
         def meta(self):
