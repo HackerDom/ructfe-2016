@@ -24,3 +24,6 @@
 
 - name: Fix permissions
   file: name="/etc/nginx/" state=directory owner=www-data recurse=yes
+
+- name: Add startup for config.lua
+  lineinfile: dest=/etc/rc.local insertbefore="exit 0"  line="/etc/nginx/startup.sh"
