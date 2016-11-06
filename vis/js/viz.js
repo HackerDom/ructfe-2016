@@ -2,7 +2,7 @@ var Viz = function(infoData, startScoreboard) {
 	var LOAD_DATA_INTERVAL = 10*1000;
 	var EVENTS_VISUALIZATION_INTERVAL = 1*1000;
 	var COLOR_CONSTANTS = ["#ED953A", "#E5BD1F", "#3FE1D6", "#568AFF", "#8C41DA", "#BA329E"];
-	var RED_COLOR = "#DF2A34";
+	var RED_COLOR = "#E22A34";
 	var WIDTH = 1366; // Это базовый размер экрана. Для остальных экранов используем zoom относительно этого размера.
 	var HEIGHT = 662;
 
@@ -13,8 +13,9 @@ var Viz = function(infoData, startScoreboard) {
 	var PLAYING = "1";
 	var SUSPEND = "2";
 	var FINISHED = "3";
-	var timeForArrowAnimation = 0.8; // Изменение возможно требует правок в less
-	var tracePortion = 0.5;
+	var timeForArrowAnimation = 0.8;
+	var tracePortion = 0.4;
+	var whitePortion = 0.1;
 
 	var info = infoData;
 	var scoreboard = startScoreboard;
@@ -445,11 +446,12 @@ var Viz = function(infoData, startScoreboard) {
 		var startTime = svg[0][0].getCurrentTime();
 		var gradient = defs.append("linearGradient").attr("id", id);
 		var traceTime = timeForArrowAnimation * tracePortion;
-		var allTime = timeForArrowAnimation + traceTime;
+		var whiteTime = timeForArrowAnimation * whitePortion;
+		var allTime = timeForArrowAnimation + traceTime + whiteTime;
 
 		gradient.append("stop")
 			.attr("offset", 0)
-			.attr("stop-color", color)
+			.attr("stop-color", "white")
 			.attr("stop-opacity", 0);
 		var stop2 = gradient.append("stop")
 			.attr("offset", 0)
@@ -457,7 +459,7 @@ var Viz = function(infoData, startScoreboard) {
 			.attr("stop-opacity", 1);
 		stop2.append("animate")
 			.attr("attributeName", "stop-opacity")
-			.attr("begin", startTime)
+			.attr("begin", startTime + whiteTime)
 			.attr("dur", traceTime)
 			.attr("values", "1;0")
 			.attr("repeatCount", 1)
@@ -465,8 +467,8 @@ var Viz = function(infoData, startScoreboard) {
 		stop2.append("animate")
 			.attr("attributeName", "offset")
 			.attr("begin", startTime + traceTime)
-			.attr("dur", allTime - traceTime)
-			.attr("values", "0;" + (1 - tracePortion))
+			.attr("dur", timeForArrowAnimation)
+			.attr("values", "0;1")
 			.attr("repeatCount", 1)
 			.attr("fill", "freeze");
 		stop2.append("animate")
@@ -480,25 +482,39 @@ var Viz = function(infoData, startScoreboard) {
 			.attr("attributeName", "offset")
 			.attr("begin", startTime + allTime)
 			.attr("dur", "0.001s")
-			.attr("values", (1 - tracePortion) + ";0")
+			.attr("values", "1;0")
 			.attr("repeatCount", 1)
 			.attr("fill", "freeze");
 		var stop3 = gradient.append("stop")
 			.attr("offset", 0)
-			.attr("stop-color", color)
+			.attr("stop-color", "white")
 			.attr("stop-opacity", 1);
 		stop3.append("animate")
-			.attr("attributeName", "offset")
+			.attr("attributeName", "stop-color")
 			.attr("begin", startTime)
-			.attr("dur", allTime - traceTime)
+			.attr("dur", whiteTime)
+			.attr("values", "white;" + color)
+			.attr("repeatCount", 1)
+			.attr("fill", "freeze");
+		stop3.append("animate")
+			.attr("attributeName", "offset")
+			.attr("begin", startTime + whiteTime)
+			.attr("dur", timeForArrowAnimation)
 			.attr("values", "0;1")
 			.attr("repeatCount", 1)
 			.attr("fill", "freeze");
 		stop3.append("animate")
 			.attr("attributeName", "stop-opacity")
-			.attr("begin", startTime + allTime - traceTime)
+			.attr("begin", startTime + timeForArrowAnimation + whiteTime)
 			.attr("dur", traceTime)
 			.attr("values", "1;0")
+			.attr("repeatCount", 1)
+			.attr("fill", "freeze");
+		stop3.append("animate")
+			.attr("attributeName", "stop-color")
+			.attr("begin", startTime + allTime)
+			.attr("dur", "0.001s")
+			.attr("values", color + ";white")
 			.attr("repeatCount", 1)
 			.attr("fill", "freeze");
 		stop3.append("animate")
@@ -517,20 +533,20 @@ var Viz = function(infoData, startScoreboard) {
 			.attr("fill", "freeze");
 		var stop4 = gradient.append("stop")
 			.attr("offset", 0)
-			.attr("stop-color", color)
-			.attr("stop-opacity", 0);
+			.attr("stop-color", "white")
+			.attr("stop-opacity", 1);
 		stop4.append("animate")
 			.attr("attributeName", "offset")
 			.attr("begin", startTime)
-			.attr("dur", allTime - traceTime)
+			.attr("dur", timeForArrowAnimation)
 			.attr("values", "0;1")
 			.attr("repeatCount", 1)
 			.attr("fill", "freeze");
 		stop4.append("animate")
-			.attr("attributeName", "stop-opacity")
-			.attr("begin", startTime + allTime - traceTime)
-			.attr("dur", traceTime)
-			.attr("values", "1;0")
+			.attr("attributeName", "stop-color")
+			.attr("begin", startTime + timeForArrowAnimation)
+			.attr("dur", whiteTime)
+			.attr("values", "white;" + color)
 			.attr("repeatCount", 1)
 			.attr("fill", "freeze");
 		stop4.append("animate")
@@ -541,7 +557,25 @@ var Viz = function(infoData, startScoreboard) {
 			.attr("repeatCount", 1)
 			.attr("fill", "freeze");
 		stop4.append("animate")
-			.attr("attributeName", "stop-opacity")
+			.attr("attributeName", "stop-color")
+			.attr("begin", startTime + allTime)
+			.attr("dur", "0.001s")
+			.attr("values", color + ";white")
+			.attr("repeatCount", 1)
+			.attr("fill", "freeze");
+		var stop5 = gradient.append("stop")
+			.attr("offset", 0)
+			.attr("stop-color", "white")
+			.attr("stop-opacity", 0);
+		stop5.append("animate")
+			.attr("attributeName", "offset")
+			.attr("begin", startTime)
+			.attr("dur", timeForArrowAnimation)
+			.attr("values", "0;1")
+			.attr("repeatCount", 1)
+			.attr("fill", "freeze");
+		stop5.append("animate")
+			.attr("attributeName", "offset")
 			.attr("begin", startTime + allTime)
 			.attr("dur", "0.001s")
 			.attr("values", "1;0")
@@ -549,7 +583,7 @@ var Viz = function(infoData, startScoreboard) {
 			.attr("fill", "freeze");
 		gradient.append("stop")
 			.attr("offset", 1)
-			.attr("stop-color", color)
+			.attr("stop-color", "white")
 			.attr("stop-opacity", 0);
 	}
 
