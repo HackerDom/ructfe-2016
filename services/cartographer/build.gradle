@@ -42,9 +42,11 @@ dependencies {
     compile('org.jetbrains.kotlin:kotlin-stdlib:1.0.4')
     compile('org.springframework.boot:spring-boot-starter-web')
     compile('org.springframework.boot:spring-boot-starter-log4j2')
+
     compile('com.fasterxml.jackson.core:jackson-databind')
     compile('com.fasterxml.jackson.dataformat:jackson-dataformat-yaml')
+    compile('com.fasterxml.jackson.datatype:jackson-datatype-jsr310')
 
-    testCompile 'junit:junit:4.12'
+    testCompile('junit:junit:4.12')
     testCompile('org.springframework.boot:spring-boot-starter-test')
 }

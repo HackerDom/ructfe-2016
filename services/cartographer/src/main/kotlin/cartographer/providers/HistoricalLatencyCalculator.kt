@@ -13,11 +13,13 @@ import org.apache.logging.log4j.LogManager
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
+import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
 import java.net.InetAddress
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 
+@Component
 class HistoricalLatencyCalculator : LatencyCalculator {
     companion object {
         val movingAverageExponentSetting = DoubleSetting("latency_calculator.ema_exponent", 0.2)

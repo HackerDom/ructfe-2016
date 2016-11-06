@@ -2,8 +2,10 @@ package cartographer.providers
 
 import cartographer.settings.IntSetting
 import cartographer.settings.SettingsContainer
+import org.springframework.stereotype.Component
 import java.net.InetAddress
 
+@Component
 class AllPossibleAddressedProvider : AddressedProvider {
     companion object {
         val maxTeamNumberSetting = IntSetting("addresses_provider.max_team_number", 500)

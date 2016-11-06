@@ -5,16 +5,18 @@ import cartographer.helpers.PeriodicalAction
 import cartographer.settings.DurationSetting
 import cartographer.settings.IntSetting
 import cartographer.settings.SettingsContainer
+import org.springframework.stereotype.Component
 import java.net.InetAddress
 import java.time.Duration
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
+@Component
 class ClosestReplicasProvider : ReplicasProvider {
     companion object {
         val maxAllowedLatencySetting = DurationSetting("replicas_provider.max_latency", Duration.ofSeconds(1))
         val replicasUpdatePeriodSetting = DurationSetting("replicas_provider.update_period", Duration.ofMinutes(1))
-        val threadPoolSize = IntSetting("replicas_provider.thread_pool_size", 10)
+        val threadPoolSize = IntSetting("replicas_provider.thread_pool_size", 30)
 
         fun updateReplicas(latencyCalculator: LatencyCalculator,
                            executorService: ExecutorService,
