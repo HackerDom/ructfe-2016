@@ -94,18 +94,19 @@ def get(*args):
 	if len( zf.namelist() ) > 1: # tested
 		close( CORRUPT, "Service corrupted", "Invalid content, more than one file in zip" )
 
-	dmp_name = "tmp/%s.dmp" % flag_id
+	dmp_name = "%s.dmp" % flag_id
+	dmp_path = "/tmp/%s" % dmp_name
 	if not dmp_name in zf.namelist(): # tested
 		close( CORRUPT, "Service corrupted", "Invalid content, there is no minidump file in zip" )
 	try:
 		dmp = zf.read( dmp_name )
-		open( dmp_name, 'wb' ).write( dmp )
+		open( dmp_path, 'wb' ).write( dmp )
 	except Exception as e:
 		close(CHECKER_ERROR, "Evil checker", "INTERNAL ERROR: %s" % e)
 
 	# tested
 	try:
-		stackwalk = subprocess.check_output( './minidump_stackwalk -m %s symbols/ 2>/dev/null' % dmp_name, shell=True)
+		stackwalk = subprocess.check_output( './minidump_stackwalk -m %s symbols/ 2>/dev/null' % dmp_path, shell=True)
 	except subprocess.CalledProcessError as e:
 		close( CORRUPT, "Service corrupted", "Invalid minidump file: %s" % e )
 
@@ -116,7 +117,7 @@ def get(*args):
 		close( CORRUPT, "Service corrupted", "Invalid minidump file, callstack is too short %s" % parser.crash_thread_stack )
 	if len( parser.crash_thread_stack) > 32: # not tested
 		close( CORRUPT, "Service corrupted", "Invalid minidump file, callstack is too long" )
-	if parser.crash_thread_stack[ 16 ][ "signature" ] != 'main': # tested
+	if parser.crash_thread_stack[ 16 ][ "signature" ] != 'StartFlagProcessing()': # tested
 		close( CORRUPT, "Service corrupted", "Invalid minidump file, invalid callstack %s" % parser.crash_thread_stack )
 
 	first_part_flag = ''
