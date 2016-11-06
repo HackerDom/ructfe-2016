@@ -1,3 +1,6 @@
+from json import dumps
+
+import peewee
 from hashlib import sha256
 import re
 
@@ -6,8 +9,15 @@ from peewee import DoesNotExist
 
 import datetime
 
+from users.models import AnonymousUser
+
 _users = {}
 _last = None
+USERNAME_RE = re.compile('^[a-zA-Z0-9.-_@]{3,20}$')
+WEAK_PASSWORDS = {
+    'qwerty', '123456', 'asdfgh', 'password', 'admin123', 'qweasdzxc',
+    'qweqwe123', '123123123',
+}
 
 
 def get_user_service(db_name=None):
@@ -15,7 +25,9 @@ def get_user_service(db_name=None):
         return _users[_last]
     elif db_name is None and _last is None:
         raise ValueError("DefaultUserService is not registered")
-    return _users[db_name]
+    service = _users[db_name]
+    assert isinstance(service, UserService)
+    return service
 
 
 def clear_user_services():
@@ -45,6 +57,12 @@ def _register_user_service(db_name, service):
 
 
 class UserService:
+    sessions_db_name = None
+    sessions_key = '_username'
+
+    class UserServiceError(Exception):
+        pass
+
     def __init__(self, app, db_name, init_db, drop_db, manager, model):
         self.app = app
         self.manager = manager
@@ -59,62 +77,85 @@ class UserService:
     def dropdb(self):
         self._dropdb()
 
-    async def registration(self, request):
-        private_info = self.handle_form(request, "username", "password")
+    def clean_username(self, username):
+        if not USERNAME_RE.fullmatch(username):
+            raise self.UserServiceError('Invalid username pattern')
+        return username.lower()
 
-        if "error" not in private_info:
-            if not self.username_correct(private_info["username"]):
-                return json({"error": "bad username formatting"})
+    def clean_password(self, password):
+        if len(password) <= 5:
+            raise self.UserServiceError('Password is too short')
+        if len(password) > 100:
+            raise self.UserServiceError('Password is too large')
+        if password in WEAK_PASSWORDS:
+            raise self.UserServiceError('Password is too weak')
+        return password
 
-            try:
-                user = await self.manager.select(
-                    self._model, key=private_info["username"]
-                )
-                return {"error": "this username already exists"}
-            except DoesNotExist:
-                user = await self.manager.create(
-                    usename=private_info["username"],
-                    password_hash=self.get_sha256(private_info["password"]),
-                    registration_date=datetime.datetime.now()
-                )
-                success = await user.save()
-                if success:
-                    return json({"success": 'user "{}" created!'.format(private_info["username"])})
-        else:
-            return json({"error": "Not enough params for POST request!"})
+    def hashing_password(self, password, salt=''):
+        return str(sha256((password + salt).encode("utf-8")).hexdigest())
 
-    @staticmethod
-    def get_sha256(string):
-        return sha256(string.encode("utf-8")).hexdigest()
-
-    @staticmethod
-    def username_correct(username):
-        return re.fullmatch(r'[a-zA-Z0-9_]{1,16}', username) is not None
-
-    @staticmethod
-    def handle_form(request, *post_params):
+    async def get_user(self, username):
+        username = self.clean_username(username)
         try:
-            parsed_form = {
-                param: request.form.get(param) for param in post_params
-                }
-        except TypeError as e:
-            return {"error": e}
-        return parsed_form
+            return await self.manager.get(self._model, username=username)
+        except peewee.DoesNotExist:
+            raise self.UserServiceError('Username does not exist')
 
-    async def authorization(self, request):
-        private_info = self.handle_form(request, "username", "password")
+    async def create_user(self, username, password, meta=None):
+        if meta and not isinstance(meta, dict):
+            raise TypeError('meta is not a dict')
 
-        if "error" not in private_info:
-            if not self.username_correct(private_info["username"]):
-                return json({"error": "bad username formatting"})
-            try:
-                user_obj, _ = await  self.manager.get(self._model, key=private_info["username"])
-            except DoesNotExist:
-                return json({"error": "can't find such user"})
+        username = self.clean_username(username)
+        password = self.clean_username(password)
+        password_hash = self.hashing_password(password)
+        raw_meta = dumps(meta) if meta else ''
+        if await self.has_username(username):
+            raise self.UserServiceError('Username already used')
+        try:
+            obj = await self.manager.create(
+                usename=username,
+                password_hash=password_hash,
+                raw_meta=raw_meta
+            )
+        except peewee.IntegrityError:
+            raise self.UserServiceError('Username is recently already used')
+        return obj
 
-            if user_obj.password_hash == self.get_sha256(private_info["password"]):
-                return json({"success": 'User "{}" authorized'.format(private_info["password"])})
-            else:
-                return json({"error": "bad auth data"})
-        else:
-            return "Backend error: {}".format(private_info["error"])
+    async def has_username(self, username):
+        try:
+            await self.manager.get(self._model, username=username)
+        except peewee.DoesNotExist:
+            return False
+        return True
+
+    async def validate_credentials_and_get_user(self, username, password):
+        username = self.clean_username(username)
+        password = self.clean_username(password)
+        password_hash = self.hashing_password(password)
+        try:
+            obj = await self.get_user(username)
+        except peewee.DoesNotExist:
+            raise self.UserServiceError('Username is not registered yet')
+        if obj.password_hash != password_hash:
+            raise self.UserServiceError('Wrong password')
+        return obj
+
+    async def get_request_user(self, request):
+        from sessions import get_session_service
+        sessions = get_session_service(self.sessions_db_name)
+
+        data = await sessions.get_request_session_data(request)
+        if self.sessions_key in data:
+            username = data[self.sessions_key]
+            if username:
+                return await self.get_user(username)
+        return AnonymousUser()
+
+    async def set_request_user(self, request, response, user):
+        from sessions import get_session_service
+        sessions = get_session_service(self.sessions_db_name)
+
+        username = user.username if user and user.is_authenticated() else ''
+        await sessions.update_request_session_data(request, response, {
+            self.sessions_db_name: username
+        })

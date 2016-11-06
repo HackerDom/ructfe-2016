@@ -11,6 +11,7 @@ def user_module_registered(state):
     app = state.app
     db = state.options.get('db')
     db_name = state.options.get('db_name')
+    sessions_db_name = state.options.get('sessions_db_name')
     loop = state.options.get('loop')
 
     if not db_name:
@@ -28,6 +29,7 @@ def user_module_registered(state):
 
     initdb, dropdb, manager, model = make_models(db, db_name, loop)  # noqa
     service = UserService(app, db_name, initdb, dropdb, manager, model)
+    service.sessions_db_name = sessions_db_name
     _register_user_service(db_name, service)
     _set_default_user_service(db_name)
 
