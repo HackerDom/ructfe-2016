@@ -4,7 +4,7 @@
 
 - name: Copy service
   copy:
-    src: "{{ playbook_dir }}/../services/cartographer/.build/"
+    src: "/tmp/cartographer/"
     dest: "/home/cartographer/"
     owner: cartographer
 

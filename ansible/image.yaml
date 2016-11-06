@@ -37,10 +37,10 @@
   roles:
     - cross-social-science
 
-- hosts: cartographer-build
-  gather_facts: True
-  roles:
-    - cartographer-build
+# - hosts: cartographer-build
+#   gather_facts: True
+#   roles:
+#     - cartographer-build
 
 # - hosts: cartographer
 #   gather_facts: True

@@ -1,9 +1,15 @@
 ---
-# - name: Install requirements
-#   apt: name={{ item }} default_release=testing
-#   with_items:
-#     - python3.5
-#     - python3.5-venv
+- name: Add java repo
+  apt_repository: repo='deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main' state=present update_cache=yes
+
+- name: Add java repo key
+  apt_key: id=EEA14886 keyserver=hkp://keyserver.ubuntu.com:80
+
+- name: Install requirements
+  apt: name={{ item }}
+  with_items:
+    - oracle-java8-installer
+    - gradle
 
 - name: Copy service
   copy:
