@@ -37,3 +37,8 @@ echo
 echo "Network configuration is over"
 
 sed -i '/ONETIME/d' /root/.bashrc
+
+echo
+echo "Restart nginx with new dns"
+
+systemctl restart nginx
