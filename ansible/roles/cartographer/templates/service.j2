@@ -3,7 +3,7 @@ Description=cartographer
 After=network.target
 
 [Service]
-ExecStart=/home/cartographer/venv/bin/python /home/cartographer/main.py
+ExecStart=/usr/bin/java -jar cartographer.jar
 User=cartographer
 Restart=always
 RestartSec=5

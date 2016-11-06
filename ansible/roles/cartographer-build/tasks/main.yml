@@ -12,5 +12,5 @@
   args:
     chdir: /opt/cartographer/
 
-# - name: Fetch binary
-#   fetch: src=/opt/cartographer/ dest=/tmp/cartographer/ flat=yes
+- name: Fetch binary
+  fetch: src=/opt/cartographer/build/libs/cartographer-1.0.0.jar dest=/tmp/cartographer.jar flat=yes

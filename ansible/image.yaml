@@ -42,10 +42,10 @@
   roles:
     - cross-social-science
 
-# - hosts: cartographer
-#   gather_facts: True
-#   roles:
-#     - cartographer
+- hosts: cartographer
+  gather_facts: True
+  roles:
+    - cartographer
 
 - hosts: image
   gather_facts: True
