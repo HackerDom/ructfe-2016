@@ -8,7 +8,8 @@ body,
 }
 #svg-wrapper {
   overflow: hidden;
-  background: #1B1E3C;
+  background: url(/img/background.png) #1B1E3C;
+  background-size: cover;
 }
 #svg-viz {
   cursor: move;
