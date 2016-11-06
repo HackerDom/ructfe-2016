@@ -89,7 +89,7 @@ def parse_args():
     parser.add_argument('-n', '--teams', type=int, help='teams count',
                         default=20)
     parser.add_argument('-s', '--services', type=int, help='services count',
-                        default=7)
+                        default=6)
     parser.add_argument('-q', '--frequency', type=int, help='attack frequency',
                         default=2)
     return parser.parse_args()

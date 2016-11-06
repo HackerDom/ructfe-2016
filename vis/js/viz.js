@@ -1,7 +1,8 @@
 var Viz = function(infoData, startScoreboard) {
 	var LOAD_DATA_INTERVAL = 10*1000;
 	var EVENTS_VISUALIZATION_INTERVAL = 1*1000;
-	var COLOR_CONSTANTS = ["white", "red", "green", "orange", "magenta", "cyan", "yellow", "brown"];
+	var COLOR_CONSTANTS = ["#ED953A", "#E5BD1F", "#3FE1D6", "#568AFF", "#8C41DA", "#BA329E"];
+	var RED_COLOR = "#DF2A34";
 	var WIDTH = 1366; // Это базовый размер экрана. Для остальных экранов используем zoom относительно этого размера.
 	var HEIGHT = 662;
 
@@ -12,8 +13,8 @@ var Viz = function(infoData, startScoreboard) {
 	var PLAYING = "1";
 	var SUSPEND = "2";
 	var FINISHED = "3";
-	var timeForArrowAnimation = 1; // Изменение требует правок в less
-	var tracePortion = 0.2;
+	var timeForArrowAnimation = 0.8; // Изменение возможно требует правок в less
+	var tracePortion = 0.5;
 
 	var info = infoData;
 	var scoreboard = startScoreboard;
@@ -223,40 +224,32 @@ var Viz = function(infoData, startScoreboard) {
 			var dx = toX - fromX;
 			var dy = toY - fromY;
 			var length = Math.sqrt(dx * dx + dy * dy);
-			var angle = Math.atan2(dy, dx) * 180 / Math.PI;
+			var angleRad = Math.atan2(dy, dx);
+			var angle = angleRad * 180 / Math.PI;
 			var gradientId = "grad" + lastGradientId;
 			var color = service.color;
 			lastGradientId++;
-			link.append("line")
+			var lineFunction = d3.svg.line()
+				.x(function(d) { return d.x; })
+				.y(function(d) { return d.y; })
+				.interpolate("basis");
+			var vec_length = - length / 4; // Вектор из центра линии до кончика параболы.
+			var vec_x = vec_length * Math.sin(angleRad); // Изначальный ветор меняется только по y вверх.
+			var vec_y = vec_length * Math.cos(angleRad);
+			var lineData = [ { "x": fromX, "y": fromY}, { "x": fromX + length / 2 + vec_x, "y": fromY + vec_y}, { "x": fromX + length,  "y": fromY + 0.01} ];
+			link.append("path")
 				.attr("class", "arrow-line")
-				.attr("x1", fromX)
-				.attr("y1", fromY)
-				.attr("x2", fromX + length)
-				.attr("y2", fromY + 0.01)
-				.attr("stroke-width", "3")
+				.attr("d", lineFunction(lineData))
+				.attr("stroke-width", "4")
 				.attr("stroke-linecap", "round")
+				.attr("fill-opacity", "0")
 				.attr("stroke", "url(#" + gradientId + ")");
 			link.attr("transform", "rotate(" + angle + " " + fromX + " " + fromY + ")");
-			var rocket = link.append("circle")
-				.attr("class", "rocket")
-				.attr("r", 15)
-				.attr("cx", fromX)
-				.attr("cy", fromY)
-				.attr("fill", "url(#" + gradientId + "radial" + ")");
 			addGradient(gradientId, color);
-			addRadialGradient(gradientId + "radial", color);
-			setTimeout(function () {
-				rocket.attr("style", "transform: translate(" + length + "px)");
-			}, 0);
 			setTimeout(function () {
 				link.remove();
 				defs.select("#" + gradientId).remove();
-				defs.select("#" + gradientId + "radial").remove();
 			}, timeForArrowAnimation * 1000 * (1 + tracePortion));
-			setTimeout(function () {
-				rocket.remove();
-				defs.select("#" + gradientId + "radial").remove();
-			}, timeForArrowAnimation * 1000 * (1 + tracePortion / 2));
 		});
 	}
 

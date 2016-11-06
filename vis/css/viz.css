@@ -34,10 +34,6 @@ body,
 .ui-tooltip .team-tooltip .value {
   font-weight: bold;
 }
-circle.rocket {
-  -webkit-transition: 1s linear;
-  transition: 1s linear;
-}
 #filters-container {
   position: absolute;
   right: 20px;
