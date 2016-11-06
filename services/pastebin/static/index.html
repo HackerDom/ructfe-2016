@@ -14,6 +14,7 @@
 				<input type='submit' value='Register'>
 			</form>
 		</div>
+
 		<div>
 			<h1>Login</h1>
 			<form id='login' onsubmit='return OnLogin()'>
@@ -22,20 +23,29 @@
 				<input type='submit' value='Login'>
 			</form>
 		</div>
+
 		<div>
 			<h1>Logout</h1>
 			<form id='logout' onsubmit='return OnLogout()'>
 				<input type='submit' value='Logout'>
 			</form>
 		</div>
+
 		<div>
 			<h1>Upload</h1>
-			<form id='upload' enctype="multipart/form-data" onsubmit='return OnUpload()'>
-				<input type='checkbox' name='is_public' autocomplete='off'>
-				<input type='file' name='file' required autocomplete='off'>
-				<input type='submit' value='upload'>
+			<form id='publish' onsubmit='return OnPublish()'>
+				<input type='text' name='title' required autocomplete='off'><br>
+				<textarea name='body' required autocomplete='off'></textarea><br>
+				<input type='checkbox' name='is_public' id='is_public' autocomplete='off'> <label for='is_public'>Public</label><br>
+				<input type='submit' value='publish'>
 			</form>
 		</div>
+
+		<div>
+			<h1>My</h1>
+			<table id='my'></table>
+			<script type='text/javascript'>OnLoadMy();</script>
+		<div>
 
 		<div>
 			<h1>Publics</h1>

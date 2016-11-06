@@ -1,5 +1,5 @@
 Vulns:
-1. You can upload any file to arbitrary directory, but you can overwrite existing files(. See sploit.py
+1. You can upload any file to arbitrary directory, but you can't overwrite existing files(. See sploit.py
 2. SQL injection while report submiting
 
 Attack:

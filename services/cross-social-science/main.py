@@ -1,6 +1,6 @@
 from sanic import Sanic
 
-from sanic.response import json, text
+from sanic.response import json, text, html
 from sanic.exceptions import ServerError
 
 from hooks import after_start
@@ -9,6 +9,11 @@ from hooks import before_stop
 
 def make_app():
     app = Sanic(__name__)
+
+    @app.route("/index")
+    async def test_index(request):
+        from templates import render
+        return html(render('example.html', name='variables'))
 
     @app.route("/async")
     async def test_async(request):
@@ -54,7 +59,7 @@ def make_app():
     # Exceptions
     # ----------------------------------------------- #
 
-    @app.exception(ServerError)
+    @app.exception(Exception)
     async def test(request, exception):
         return json(
             {"exception": "{}".format(exception),
@@ -70,6 +75,6 @@ def make_app():
 
 if __name__ == '__main__':
     app = make_app()
-    app.run(host="0.0.0.0", port=8000, debug=True,
+    app.run(host="0.0.0.0", port=8000, debug=True, loop=None,
             after_start=after_start,
             before_stop=before_stop)

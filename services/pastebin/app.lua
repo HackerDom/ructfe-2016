@@ -61,45 +61,67 @@ app:get('/logout', function(self)
 	self.session.user = nil
 end)
 
-app:post('/upload', function(self)
+app:post('/publish', function(self)
 	local client = redis:client()
-	local file = self.req.params_post.file
+	local title = self.req.params_post.title
+	local body = self.req.params_post.body
 	local is_public = self.req.params_post.is_public
+	local sign = self.req.params_post.sign
 	local user = self.session.user
 
 	if not user then
 		return {status = 401, json = {'need to login'}}
 	end
-	if not file then
-		return {status = 400, json = {'file required'}}
+	if not title then
+		return {status = 400, json = {'title required'}}
 	end
 
-	local data = file.content
-	if string.len(data) > 65536 then
-		return {status = 400, json = {'file too large'}}
+	if string.len(title) > 1024 then
+		return {status = 400, json = {'title too large'}}
 	end
 
-	is_public = is_public and true or false
-	local url = client:create_file(user, data, is_public, function(filename) return self:url_for('download', {id = filename}) end)
+	if string.len(body) > 65536 then
+		return {status = 400, json = {'body too large'}}
+	end
+
+	if not sign then
+		sign = ''
+	end
+
+	is_public = is_public == 'on' and true or false
+	local url = client:create_post(user, title, body, is_public, sign, function(id) return self:url_for('view', {id = id}) end)
 
 	if url then
 		return {json = {url}}
 	else
-		return {status = 500, json = {'error while process file'}}
+		return {status = 500, json = {'error while process notice'}}
 	end
 end)
 
-app:get('download', '/file/:id', function(self)
+app:get('view', '/post/:id', function(self)
 	local client = redis:client()
-	local data = client:get_file(self.params.id)
+	local data = client:get_post(self.params.id)
 	if not data then
 		return {status = 404}
 	else
-		self:write(data, {content_type = 'text/plain'})
+		return {json = data}
 	end
 end)
 
-app:get('/all/:id', function(self)
+app:get('/all', function(self)
+	local client = redis:client()
+	local posts = {}
+	local user = self.session.user
+	if not user then
+		return {status = 401, json = {'need to login'}}
+	end	
+	for post in client:get_posts_for_user(user) do
+		local info = client:get_post_info(post)
+		if info then
+			table.insert(posts, info)
+		end	
+	end
+	return {json = posts}
 end)
 
 return app

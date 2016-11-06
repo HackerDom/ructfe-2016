@@ -1,0 +1,10 @@
+- hosts: cs-flags
+  roles:
+    - common
+    - { role: cs_common, tags: ['cs'] }
+    - { role: cs_flags, tags: ['cs'] }
+    - logging_client
+  vars:
+    cs_user: cs
+    cs_dir: /home/cs
+    cs_conf: c_s.conf.test.j2

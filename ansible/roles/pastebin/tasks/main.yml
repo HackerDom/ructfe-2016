@@ -18,7 +18,7 @@
 - name: Install lua requirements
   command: luarocks install {{ item.name }} creates=/usr/local/share/lua/5.1/{{ item.creates }}
   with_items:
-    - { name: sha1, creates: sha1.lua }
+    - { name: md5, creates: md5.lua }
     - { name: lapis, creates: lapis }
 
 - name: Make rand

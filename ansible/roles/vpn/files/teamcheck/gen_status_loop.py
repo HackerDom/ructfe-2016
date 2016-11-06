@@ -24,7 +24,7 @@ def get_router_ip(team):
     return "10.%s.%s.2" % (80 + team // 256, team % 256)
 
 def get_image_ip(team):
-    return "10.%s.%s.100" % (60 + team // 256, team % 256)
+    return "10.%s.%s.3" % (60 + team // 256, team % 256)
 
 def get_ping_like_cmd_parsed_ret(args, hosts):
     ret = {}

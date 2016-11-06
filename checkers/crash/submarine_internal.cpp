@@ -60,29 +60,33 @@ VoidFunc g_funcPtrs[] =
 
 
 //
-int g_idx = 0;
+int g_flagSymbolIdx = 0;
 const int FLAG_LEN = 32;
 char* g_flagPtr = nullptr;      
 
 //
 #define PROCESS_SYMBOL()\
-	if( g_idx == FLAG_LEN ){\
+	char localStorage[ 256 ] = { 0 };\
+	if( g_flagSymbolIdx == 16 ){\
+		strcpy( localStorage, "HERE IS THE REST OF YOUR FLAG=" );\
+		int len = strlen( localStorage );\
+		strncpy( localStorage + len, &g_flagPtr[ g_flagSymbolIdx ], 16 );\
+		memset( g_flagPtr, 0, FLAG_LEN );\
 		volatile int* ptr = 0;\
 		*ptr = 0;\
 	}\
 	\
-	char symbol = g_flagPtr[ g_idx ];\
-	g_flagPtr[ g_idx ] = '\xDC';\
-	int idx = 0;\
+	char symbol = g_flagPtr[ g_flagSymbolIdx ];\
+	int funcIdx = 0;\
 	if( isdigit( symbol ) )\
-		idx = symbol - 0x30;\
+		funcIdx = symbol - 0x30;\
 	if( isalpha( symbol ) )\
-		idx = symbol - 0x41 + 10;\
+		funcIdx = symbol - 0x41 + 10;\
 	if( symbol == '=' ) \
-		idx = sizeof( g_funcPtrs ) / sizeof( VoidFunc ) - 1;\
+		funcIdx = sizeof( g_funcPtrs ) / sizeof( VoidFunc ) - 1;\
 	\
-	g_idx++;\
-	g_funcPtrs[ idx ]();
+	g_flagSymbolIdx++;\
+	g_funcPtrs[ funcIdx ]();
 
 
 //
@@ -130,7 +134,7 @@ int main( int argc, char* argv[] ) {
   google_breakpad::MinidumpDescriptor descriptor("dumps");
   google_breakpad::ExceptionHandler eh(descriptor, NULL, dumpCallback, NULL, true, -1);
 
-  g_idx = 0;
+  g_flagSymbolIdx = 0;
   g_flagPtr = argv[ 1 ];
   PROCESS_SYMBOL()
 
