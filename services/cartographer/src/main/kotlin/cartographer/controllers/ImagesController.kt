@@ -1,7 +1,7 @@
 package cartographer.controllers
 
-import cartographer.configs.CryptographyConfig
 import cartographer.crypto.ChunkCryptography
+import cartographer.crypto.KeyDeserializer
 import cartographer.crypto.KeyGenerator
 import cartographer.crypto.KeyStorage
 import cartographer.data.DecryptImageRequest
@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
 import java.util.*
-import javax.crypto.spec.SecretKeySpec
 
 @RestController
 class ImagesController(val chunkStorage: ChunkStorage,
@@ -28,7 +27,8 @@ class ImagesController(val chunkStorage: ChunkStorage,
                        val chunkCryptography: ChunkCryptography,
                        val throttler: Throttler,
                        val replicasProvider: ReplicasProvider,
-                       val chunkReplicator: ChunkReplicator) {
+                       val chunkReplicator: ChunkReplicator,
+                       val keyDeserialized: KeyDeserializer) {
     @RequestMapping("/images/encrypt", method = arrayOf(RequestMethod.POST))
     fun EncryptImage(@RequestBody image: ByteArray): ResponseEntity<EncryptImageResponse> {
         return throttle(throttler) {
@@ -46,7 +46,7 @@ class ImagesController(val chunkStorage: ChunkStorage,
         }
     }
 
-    @RequestMapping("/images/encrypt", method = arrayOf(RequestMethod.POST))
+    @RequestMapping("/images/decrypt", method = arrayOf(RequestMethod.POST))
     fun DencryptImage(@RequestBody request: DecryptImageRequest): ResponseEntity<ByteArray> {
         return throttle(throttler) {
             val id = parseUuidSafe(request.id)
@@ -56,9 +56,10 @@ class ImagesController(val chunkStorage: ChunkStorage,
 
             val chunk = request.chunk ?: chunkStorage.getChunk(id!!) ?: return ResponseEntity(HttpStatus.NOT_FOUND)
 
-            val sessionKey = SecretKeySpec(request.key, CryptographyConfig.keySpec)
+            val sessionKey = keyDeserialized.deserialize(request.key)
             val masterKey = masterKeyStorage.get()
             return ResponseEntity.ok(chunkCryptography.decrypt(sessionKey, masterKey, chunk))
         }
     }
 }
+

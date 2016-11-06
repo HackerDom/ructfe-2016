@@ -1,16 +1,16 @@
 package cartographer.crypto
 
-import cartographer.configs.CryptographyConfig
 import cartographer.data.ChunkMetadata
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.stereotype.Component
 import java.nio.ByteBuffer
 import java.security.InvalidKeyException
 import java.security.Key
-import javax.crypto.spec.SecretKeySpec
 
 @Component
-class DefaultChunkCryptography(val cryptography: Cryptography, val objectMapper: ObjectMapper) : ChunkCryptography {
+class DefaultChunkCryptography(val cryptography: Cryptography,
+                               val keyDeserializer: KeyDeserializer,
+                               val objectMapper: ObjectMapper) : ChunkCryptography {
     override fun encrypt(sessionKey: Key, masterKey: Key, plaintext: ByteArray): ByteArray {
         val metadata = ChunkMetadata(sessionKey.encoded)
         val metadataSerialized = objectMapper.writeValueAsBytes(metadata)
@@ -30,7 +30,7 @@ class DefaultChunkCryptography(val cryptography: Cryptography, val objectMapper:
         val metadataSerialized = cryptography.decrypt(masterKey, metadataEncrypted)
         val metadata = objectMapper.readValue(metadataSerialized, ChunkMetadata::class.java)
 
-        val decryptedSessionKey = SecretKeySpec(metadata.sessionKey, CryptographyConfig.keySpec)
+        val decryptedSessionKey = keyDeserializer.deserialize(metadata.sessionKey)
         if (decryptedSessionKey != sessionKey) {
             throw InvalidKeyException()
         }

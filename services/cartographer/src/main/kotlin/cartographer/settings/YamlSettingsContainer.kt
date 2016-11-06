@@ -12,7 +12,7 @@ class YamlSettingsContainer : SettingsContainer {
     companion object {
         val logger = LogManager.getFormatterLogger()!!
 
-        val defaultFilePath = "config.yaml"
+        val defaultFilePath = "config/cartographer.yaml"
         val filePathPropertyName = "yaml.settings.container.file.path"
     }
 
