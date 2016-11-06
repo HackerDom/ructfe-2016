@@ -13,6 +13,7 @@ except ImportError:
 
 import settings
 from sessions import session_blueprint as sessions
+from users_handler import user_blueprint as users
 
 
 def make_app():
@@ -87,4 +88,5 @@ if __name__ == '__main__':
     # app
     app = make_app()
     app.blueprint(sessions, db=database, db_name='sessions', loop=loop)
+    app.blueprint(users, db=database, db_name='users', loop=loop)
     app.run(host="0.0.0.0", port=8000, loop=loop, debug=True)
