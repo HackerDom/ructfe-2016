@@ -4,6 +4,9 @@
     src: "{{ playbook_dir }}/../services/cartographer/"
     dest: "/opt/cartographer/"
 
+- name: Add executable bit to gradlew
+  file: name=/opt/cartographer/gradlew mode=0755
+
 - name: Build project
   command: ./gradlew build
   args:
