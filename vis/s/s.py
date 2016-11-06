@@ -67,7 +67,7 @@ def update_events():
         events.append([
             (evt_time - start)//ROUND_TIME + 1,
             evt_time,
-            service_(random.randint(1, args.services)),
+            service_(random.randint(0, args.services - 1)),
             team_(attacker), team_(victim)
         ])
         scores[team_(attacker)] += 1
@@ -87,11 +87,11 @@ def events_page():
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-n', '--teams', type=int, help='teams count',
-                        default=20)
+                        default=300)
     parser.add_argument('-s', '--services', type=int, help='services count',
                         default=6)
     parser.add_argument('-q', '--frequency', type=int, help='attack frequency',
-                        default=2)
+                        default=10)
     return parser.parse_args()
 
 
