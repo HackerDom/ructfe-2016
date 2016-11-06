@@ -7,22 +7,22 @@ from main import make_app
 def test_sync():
     app = make_app()
 
-    @app.route('/')
+    @app.route('/test')
     def handler(request):
         return text('Hello')
 
-    request, response = sanic_endpoint_test(app, uri='/')
+    request, response = sanic_endpoint_test(app, uri='/test')
 
     assert response.text == 'Hello'
 
 
-def test_text():
+def test_async():
     app = make_app()
 
-    @app.route('/')
+    @app.route('/test')
     async def handler(request):
         return text('Hello')
 
-    request, response = sanic_endpoint_test(app, uri='/')
+    request, response = sanic_endpoint_test(app, uri='/test')
 
     assert response.text == 'Hello'
