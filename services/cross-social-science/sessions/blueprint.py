@@ -1,9 +1,10 @@
 from sanic.response import json
 from sanic import Blueprint
 
-from sessions.models import make_models
-from sessions.service import _has_session_service, SessionService, \
-    _set_default_session_service, _register_session_service
+from .models import make_models
+from .service import _has_session_service, SessionService, \
+    _set_default_session_service, _register_session_service, \
+    get_session_service
 
 bp = Blueprint('sessions')
 
@@ -28,7 +29,7 @@ def session_module_registered(state):
             "This blueprint expects you to provide database access! "
             "Use: app.blueprint(bp, db=...)")
 
-    initdb, dropdb, manager, model = make_models(db, db_name, loop)  # noqa
+    initdb, dropdb, manager, model = make_models(db, db_name, loop)
     service = SessionService(app, db_name, initdb, dropdb, manager, model)
     _register_session_service(db_name, service)
     _set_default_session_service(db_name)
@@ -36,9 +37,6 @@ def session_module_registered(state):
 
 @bp.route('/info')
 async def get_session_info(request):
-    return json({'session': 'blueprint'})
-
-
-@bp.middleware('request')
-async def session_middleware(request):
-    print("I am a spy")
+    session = get_session_service()
+    data = await session.get_request_session_data(request)
+    return json({'data': data})

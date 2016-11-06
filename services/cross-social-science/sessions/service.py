@@ -67,6 +67,13 @@ class SessionService:
         response.cookies[self._db_name] = uid
         await self.set_session_data(uid, data)
 
+    async def update_request_session_data(self, request, response, data):
+        uid = request.cookies.get(self._db_name)
+        if not uid:
+            uid = str(uuid4())
+        response.cookies[self._db_name] = uid
+        await self.update_session_data(uid, data)
+
     async def get_session_data(self, uid):
         if not uid:
             return None
