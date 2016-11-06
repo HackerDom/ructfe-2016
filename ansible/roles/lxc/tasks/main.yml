@@ -60,25 +60,19 @@
 
 - name: Create lxc container
   lxc_container:
-    name: "{{ item.name }}"
+    name: "{{ item }}"
     template: debian
     state: started
     backing_store: loop
     fs_size: "4G"
-    container_log: true
     container_config:
-      - "lxc.cgroup.memory.limit_in_bytes = {{ item.mem }}"
-      - "lxc.cgroup.memory.memsw.limit_in_bytes = {{ item.mem }}"
+      - "lxc.cgroup.memory.limit_in_bytes = 512000000"
+      - "lxc.cgroup.memory.memsw.limit_in_bytes = 512000000"
     container_command: |
+      DEBIAN_FRONTEND=noninteractive apt-get install -y python
       sed -i 's/PermitRootLogin\s*without-password/PermitRootLogin yes/g' /etc/ssh/sshd_config
-      systemctl restart ssh
       mkdir -p /root/.ssh/
-      echo "{{ SSH_PUBLIC_KEY }}" >> /root/.ssh/authorized_keys
-      DEBIAN_FRONTEND=noninteractive apt-get update
-      DEBIAN_FRONTEND=noninteractive apt-get install -y python sudo ca-certificates
+      echo "{{ SSH_PUBLIC_KEY }}" > /root/.ssh/authorized_keys
+      systemctl restart ssh
       bash
-  with_items:
-    - { name: crash, mem: "512000000" }
-    - { name: pastebin, mem: "512000000" }
-    - { name: sapmarine, mem: "512000000" }
-    - { name: cross-social-science, mem: "512000000" }
+  with_items: "{{ groups.services }}"

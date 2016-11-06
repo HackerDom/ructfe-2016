@@ -1,0 +1,13 @@
+[Unit]
+Description=cartographer
+After=network.target
+
+[Service]
+ExecStart=/home/cartographer/venv/bin/python /home/cartographer/main.py
+User=cartographer
+Restart=always
+RestartSec=5
+WorkingDirectory=/home/cartographer/
+
+[Install]
+WantedBy=multi-user.target

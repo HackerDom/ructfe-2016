@@ -6,7 +6,6 @@
   copy:
     src: "{{ playbook_dir }}/../services/sapmarine/"
     dest: "/home/sapmarine/"
-    owner: sapmarine
 
 - name: Build project
   command: swift build -c release --build-path /home/sapmarine/bin/

@@ -2,8 +2,13 @@
 - name: Install requirements
   apt: name={{ item }} default_release=testing
   with_items:
+    - build-essential
+    - libpq-dev
     - python3.5
+    - python3.5-dev
     - python3.5-venv
+    - python-psycopg2
+    - postgresql
 
 - name: Create user
   user: createhome=yes name=cross-social-science
@@ -12,7 +17,11 @@
   copy:
     src: "{{ playbook_dir }}/../services/cross-social-science/"
     dest: "/home/cross-social-science/"
-    owner: cross-social-science
+    owner: root
+    mode: 0755
+
+- name: Set permissions
+  file: name="/home/cross-social-science" state=directory owner=root recurse=yes
 
 - name: Create venv
   pip:
@@ -21,8 +30,18 @@
     virtualenv: /home/cross-social-science/venv
     virtualenv_command: pyvenv-3.5
 
-- name: Fix permissions
-  file: name="/home/cross-social-science" state=directory owner=cross-social-science recurse=yes
+- name: Create __data__
+  file: name="/home/cross-social-science/__data__" state=directory owner=cross-social-science recurse=yes
+
+- name: Ensure database is created
+  become: yes
+  become_user: postgres
+  postgresql_db: name=test
+
+- name: Ensure user has access to the database
+  become: yes
+  become_user: postgres
+  postgresql_user: db=test name=cross-social-science priv=ALL state=present
 
 - name: Add systemd service
   template: src=service.j2 dest=/lib/systemd/system/cross-social-science.service
