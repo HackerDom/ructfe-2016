@@ -1,5 +1,6 @@
 package cartographer.helpers
 
+import cartographer.providers.DateTimeProvider
 import org.apache.logging.log4j.LogManager
 import java.io.Closeable
 import java.time.*
@@ -16,21 +17,21 @@ class PeriodicalAction : Closeable {
         workingThread.interrupt()
     }
 
-    constructor(period: Duration, action: () -> Unit) {
+    constructor(period: Duration, dateTimeProvider: DateTimeProvider, action: () -> Unit) {
         workingThread = thread {
             try {
                 while (true) {
-                    val startTime = ZonedDateTime.now(ZoneOffset.UTC)
+                    val startTime = dateTimeProvider.get()
 
                     try {
                         action()
                     } catch (t: InterruptedException) {
-                        break;
+                        break
                     } catch (t: Throwable) {
                         logger.error("Failed to execute action $action", t)
                     }
 
-                    val endTime = ZonedDateTime.now(ZoneOffset.UTC)
+                    val endTime = dateTimeProvider.get()
                     val runDuration = durationBetween(startTime, endTime)
                     val toWait = period.minus(runDuration)
 

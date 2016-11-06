@@ -1,7 +1,8 @@
 package cartographer.settings
 
 class IntSetting : Setting<Int> {
-    constructor(key: String) : super(key, { str -> Integer.parseInt(str) })
+    constructor(key: String) : super(key, String::toInt)
 
-    constructor(key: String, defaultValue: Int) : super(key, { str -> Integer.parseInt(str) }, defaultValue)
+    constructor(key: String, defaultValue: Int) : super(key, String::toInt, defaultValue)
 }
+

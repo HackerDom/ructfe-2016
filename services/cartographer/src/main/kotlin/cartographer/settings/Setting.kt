@@ -28,7 +28,7 @@ open class Setting<TValue> {
                 throw RequiredSettingMissingException(key)
             }
 
-            return getDefaultValue!!();
+            return getDefaultValue!!()
         }
 
         try {

@@ -24,7 +24,7 @@ class ClosestReplicasProvider : ReplicasProvider {
             val closestReplicas = addressedProvider.getAddresses()
                     .map {
                         addr -> executorService.submit({
-                            Pair(addr, latencyCalculator.CalcLatency(addr, maxAllowedLatency))
+                            Pair(addr, latencyCalculator.CalcLatency(addr))
                         })
                     }
                     .filter { future -> maxAllowedLatency > (future.get() as Pair<*, *>).second as Duration }
@@ -39,14 +39,15 @@ class ClosestReplicasProvider : ReplicasProvider {
 
     private var closestReplicas = emptyList<Replica>()
 
-    constructor(latencyCalculator: LatencyCalculator,
+    constructor(dateTimeProvider: DateTimeProvider,
+                latencyCalculator: LatencyCalculator,
                 addressedProvider: AddressedProvider,
                 settingsContainer: SettingsContainer) {
         val maxAllowedLatency = maxAllowedLatencySetting.getValue(settingsContainer)
         val replicasUpdatePeriod = replicasUpdatePeriodSetting.getValue(settingsContainer)
         val executorService = Executors.newFixedThreadPool(threadPoolSize.getValue(settingsContainer))
 
-        updateReplicasAction = PeriodicalAction(replicasUpdatePeriod) {
+        updateReplicasAction = PeriodicalAction(replicasUpdatePeriod, dateTimeProvider) {
             closestReplicas = updateReplicas(latencyCalculator, executorService, addressedProvider, maxAllowedLatency)
         }
     }

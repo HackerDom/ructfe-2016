@@ -1,13 +1,12 @@
 package cartographer.testhelpers
 
 import java.time.Duration
-import java.time.ZoneOffset
-import java.time.ZonedDateTime
+import java.time.Instant
 import java.util.concurrent.TimeoutException
 
 fun waitUntil(duration: Duration, action: () -> Boolean) {
-    val testEnd = ZonedDateTime.now(ZoneOffset.UTC).plus(duration)
-    while (ZonedDateTime.now(ZoneOffset.UTC).isBefore(testEnd)) {
+    val testEnd = Instant.now().plus(duration)
+    while (Instant.now().isBefore(testEnd)) {
         if (action()) {
             return
         }
