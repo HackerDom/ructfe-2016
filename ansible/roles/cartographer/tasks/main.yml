@@ -1,0 +1,21 @@
+---
+- name: Create user
+  user: createhome=yes name=cartographer
+
+- name: Copy service
+  copy:
+    src: "{{ playbook_dir }}/../services/cartographer/.build/"
+    dest: "/home/cartographer/"
+    owner: cartographer
+
+- name: Fix permissions
+  file: name="/home/cartographer" state=directory owner=cartographer recurse=yes
+
+- name: Add systemd service
+  template: src=service.j2 dest=/lib/systemd/system/cartographer.service
+
+- name: Enable service
+  service: name=cartographer enabled=yes
+
+- name: Start service
+  service: name=cartographer state=started

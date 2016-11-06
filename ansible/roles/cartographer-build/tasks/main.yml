@@ -1,0 +1,21 @@
+---
+# - name: Install requirements
+#   apt: name={{ item }} default_release=testing
+#   with_items:
+#     - python3.5
+#     - python3.5-venv
+
+- name: Copy service
+  copy:
+    src: "{{ playbook_dir }}/../services/cartographer/"
+    dest: "/opt/cartographer/"
+
+# - name: Build project
+#   command: swift build -c release --build-path /home/sapmarine/bin/
+#   args:
+#     chdir: /home/sapmarine/
+#   environment:
+#     PATH: "/opt/swift-3.0-RELEASE-ubuntu14.04/usr/bin:{{ ansible_env.PATH }}"
+
+# - name: Fetch binary
+#   fetch: src=/opt/cartographer/ dest=/tmp/cartographer/ flat=yes

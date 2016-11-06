@@ -18,6 +18,11 @@
   roles:
     - crash
 
+- hosts: sapmarine-build
+  gather_facts: True
+  roles:
+    - sapmarine-build
+
 - hosts: sapmarine
   gather_facts: True
   roles:
@@ -28,14 +33,48 @@
   roles:
     - cross-social-science
 
+- hosts: cartographer-build
+  gather_facts: True
+  roles:
+    - cartographer-build
+
+# - hosts: cartographer
+#   gather_facts: True
+#   roles:
+#     - cartographer
+
+- hosts: services
+  gather_facts: True
+  tasks:
+    - name: Fill zeros
+      when: "release is defined"
+      command: dd if=/dev/zero of=/zero
+    - name: Remove zeros
+      when: "release is defined"
+      file: name=/zero state=absent
+
 - hosts: image
   gather_facts: True
   tasks:
     - name: Restart general_nginx
       service: name=nginx state=restarted
+    - name: Remove build lxc containers
+      when: "release is defined"
+      lxc_container:
+        name: "{{ item }}"
+        state: absent
+      with_items:
+        - cartographer-build
+        - sapmarine-build
     - name: Use first_time.sh
       lineinfile: dest=/root/.bashrc line="ONETIME=yes /root/first_time.sh"
       when: "release is defined"
     - name: Remove network file
       file: dest=/etc/network/interfaces.d/eth0.cfg state=absent
       when: "release is defined"
+    - name: Fill zeros
+      when: "release is defined"
+      command: dd if=/dev/zero of=/zero
+    - name: Remove zeros
+      when: "release is defined"
+      file: name=/zero state=absent

@@ -70,15 +70,21 @@
       - "lxc.cgroup.memory.limit_in_bytes = {{ item.mem }}"
       - "lxc.cgroup.memory.memsw.limit_in_bytes = {{ item.mem }}"
     container_command: |
+      DEBIAN_FRONTEND=noninteractive apt-get update
+      DEBIAN_FRONTEND=noninteractive apt-get install -y python sudo ca-certificates
       sed -i 's/PermitRootLogin\s*without-password/PermitRootLogin yes/g' /etc/ssh/sshd_config
       systemctl restart ssh
       mkdir -p /root/.ssh/
-      echo "{{ SSH_PUBLIC_KEY }}" >> /root/.ssh/authorized_keys
-      DEBIAN_FRONTEND=noninteractive apt-get update
-      DEBIAN_FRONTEND=noninteractive apt-get install -y python sudo ca-certificates
+      echo "{{ SSH_PUBLIC_KEY }}" > /root/.ssh/authorized_keys
       bash
   with_items:
+    - { name: cartographer, mem: "512000000" }
+    - { name: cartographer-build, mem: "512000000" }
     - { name: crash, mem: "512000000" }
+    - { name: cross-social-science, mem: "512000000" }
     - { name: pastebin, mem: "512000000" }
     - { name: sapmarine, mem: "512000000" }
-    - { name: cross-social-science, mem: "512000000" }
+    - { name: sapmarine-build, mem: "512000000" }
+
+- name: Wait for lxc initialized
+  pause: seconds=15
