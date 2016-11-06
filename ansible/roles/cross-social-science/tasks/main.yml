@@ -2,7 +2,9 @@
 - name: Install requirements
   apt: name={{ item }} default_release=testing
   with_items:
+    - build-essential
     - python3.5
+    - python3.5-dev
     - python3.5-venv
 
 - name: Create user

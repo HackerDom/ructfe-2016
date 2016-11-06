@@ -3,11 +3,11 @@ Description=Sapmarine
 After=network.target
 
 [Service]
-ExecStart=/home/sapmarine/sapmarine
+ExecStart=/home/sapmarine/bin/release/sapmarine
 User=sapmarine
 Restart=always
 RestartSec=5
-WorkingDirectory=/home/sapmarine/
+WorkingDirectory=/home/sapmarine/bin/release/
 
 [Install]
 WantedBy=multi-user.target

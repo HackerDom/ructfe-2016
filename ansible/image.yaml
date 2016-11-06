@@ -8,6 +8,15 @@
     - lxc
     - general_nginx
 
+- hosts: services
+  tasks:
+    - name: Install ansible requirements
+      apt: name={{ item }} update_cache=yes
+      with_items:
+        - python
+        - sudo
+        - ca-certificates
+
 - hosts: pastebin
   gather_facts: True
   roles:
@@ -17,11 +26,6 @@
   gather_facts: True
   roles:
     - crash
-
-- hosts: sapmarine-build
-  gather_facts: True
-  roles:
-    - sapmarine-build
 
 - hosts: sapmarine
   gather_facts: True
@@ -65,7 +69,6 @@
         state: absent
       with_items:
         - cartographer-build
-        - sapmarine-build
     - name: Use first_time.sh
       lineinfile: dest=/root/.bashrc line="ONETIME=yes /root/first_time.sh"
       when: "release is defined"
