@@ -13,10 +13,6 @@ body,
 #svg-viz {
   cursor: move;
 }
-.island {
-  fill: brown;
-  cursor: default;
-}
 .ui-tooltip {
   position: absolute !important;
 }
@@ -51,7 +47,19 @@ body,
 #filters-container .filter.deselected {
   text-decoration: line-through;
 }
-circle.explosion {
+.island {
+  fill-opacity: 0;
+  stroke: #3D7278;
+  stroke-width: 2px;
+  cursor: default;
+}
+.explosion {
   -webkit-transition: 0.4s linear;
   transition: 0.4s linear;
+  fill-opacity: 1;
+}
+.arrow-line {
+  stroke-linecap: round;
+  stroke-width: 3px;
+  fill-opacity: 0;
 }

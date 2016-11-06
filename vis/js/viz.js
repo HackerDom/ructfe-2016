@@ -5,6 +5,7 @@ var Viz = function(infoData, startScoreboard) {
 	var RED_COLOR = "#EC2B34";
 	var WIDTH = 1366; // Это базовый размер экрана. Для остальных экранов используем zoom относительно этого размера.
 	var HEIGHT = 662;
+	var IslandWidth = 60;
 
 	var svgWrapperId = "svg-wrapper";
 	var svgId = "svg-viz";
@@ -62,7 +63,6 @@ var Viz = function(infoData, startScoreboard) {
 	});
 	svg.call(zoom);
 
-	var force;
 	drawTeams();
 
 	setTimeout(function () {
@@ -172,7 +172,7 @@ var Viz = function(infoData, startScoreboard) {
 		var realHeight = $svg.height();
 		var realWidth = $svg.width();
 		var cad = getCetnerAndDelta(teams);
-		var size = teams[0].size;
+		var size = Math.max(teams[0].width, teams[0].height);
 		cad.dx += size * 2;
 		cad.dy += size * 2;
 		cad.x += size * 0.5;
@@ -218,10 +218,10 @@ var Viz = function(infoData, startScoreboard) {
 			var linkData = link.data()[0];
 			var teamFrom = teams[linkData.from];
 			var teamTo = teams[linkData.to];
-			var fromX = teamFrom.x + teamFrom.size / 2;
-			var fromY = teamFrom.y + teamFrom.size / 2;
-			var toX = teamTo.x + teamTo.size / 2;
-			var toY = teamTo.y + teamTo.size / 2;
+			var fromX = teamFrom.x + teamFrom.width / 2;
+			var fromY = teamFrom.y + teamFrom.height / 2;
+			var toX = teamTo.x + teamTo.width / 2;
+			var toY = teamTo.y + teamTo.height / 2;
 			var dx = toX - fromX;
 			var dy = toY - fromY;
 			var length = Math.sqrt(dx * dx + dy * dy);
@@ -241,9 +241,6 @@ var Viz = function(infoData, startScoreboard) {
 			link.append("path")
 				.attr("class", "arrow-line")
 				.attr("d", lineFunction(lineData))
-				.attr("stroke-width", "3")
-				.attr("stroke-linecap", "round")
-				.attr("fill-opacity", "0")
 				.attr("stroke", "url(#" + gradientId + ")");
 			link.attr("transform", "rotate(" + angle + " " + fromX + " " + fromY + ")");
 			addGradient(gradientId, color);
@@ -255,10 +252,9 @@ var Viz = function(infoData, startScoreboard) {
 				addRadialGradient(gradientId + "radial", color);
 				var explosion = container.append("circle")
 					.attr("class", "explosion")
-					.attr("r", teamTo.size / 3)
+					.attr("r", teamTo.width / 3)
 					.attr("cx", toX)
 					.attr("cy", toY)
-					.style("fill-opacity", 1)
 					.attr("fill", "url(#" + gradientId + "radial" + ")");
 				setTimeout(function () {
 					explosion.style("fill-opacity", 0);
@@ -272,12 +268,7 @@ var Viz = function(infoData, startScoreboard) {
 	}
 
 	function drawTeams() {
-		var columnsCount;
-		var rowsCount;
-		var islandSquareSide;
-		var spaceBetweenIslands = 10;
-
-		setIslandSize(teams.length);
+		var coordsForTeams = getCoordsForTeams(teams.length);
 
 		nodes = container.selectAll(".node")
 			.data(teams)
@@ -288,27 +279,42 @@ var Viz = function(infoData, startScoreboard) {
 		nodes.each(function () {
 			var node = d3.select(this);
 			var nodeData = node.data()[0];
-			nodeData.size = islandSquareSide - spaceBetweenIslands;
-			nodeData.width = nodeData.size + 10;
-			nodeData.height = nodeData.size + 10;
-			nodeData.x = (nodeData.id % columnsCount) * islandSquareSide + spaceBetweenIslands / 2;
-			nodeData.y =  Math.floor(nodeData.id / columnsCount) * islandSquareSide + spaceBetweenIslands / 2;
-			node.append("rect")
+			nodeData.width = IslandWidth;
+			nodeData.height = IslandWidth * 0.866; // sqrt(3)/2
+			var coords = coordsForTeams.shift();
+			nodeData.x = coords.x; //(nodeData.id % columnsCount) * islandSquareSide + spaceBetweenIslands / 2;
+			nodeData.y = coords.y; //Math.floor(nodeData.id / columnsCount) * islandSquareSide + spaceBetweenIslands / 2;
+			var poly =
+			   [{"x": nodeData.width / 4 , "y": 0},
+				{"x": nodeData.width * 3 / 4, "y": 0},
+				{"x": nodeData.width, "y": nodeData.height / 2},
+				{"x": nodeData.width * 3 / 4, "y": nodeData.height},
+				{"x": nodeData.width / 4 , "y": nodeData.height},
+				{"x": 0 , "y": nodeData.height / 2}];
+			node.append("polygon")
 				.classed("island", true)
-				.attr("width", nodeData.size)
-				.attr("height", nodeData.size)
+				.attr("points", poly.map(function(d) { return [d.x, d.y].join(",");	}).join(" "))
 				.attr("transform", "translate(" + nodeData.x + ", " + nodeData.y + ")");
+			
 		});
 
 		setOptimalZoom();
+	}
 
-		function setIslandSize(teamsCount) {
-			islandSquareSide = 10;
-			while (Math.floor(WIDTH / (islandSquareSide + 1)) * Math.floor(HEIGHT / (islandSquareSide + 1)) > teamsCount)
-				islandSquareSide++;
-			columnsCount = Math.floor(WIDTH / islandSquareSide);
-			rowsCount = Math.floor(HEIGHT / islandSquareSide);
+	function getCoordsForTeams(count) {
+		var nodeWidth = IslandWidth;
+		var nodeHeight = IslandWidth * 0.866;
+		var coords = [];
+		var columnsCount = 10;
+		for (var i = 0; i < count; i++) {
+			var row = Math.floor(i / columnsCount);
+			var column = i % columnsCount;
+			var isEvenRow = row % 2 === 0;
+			var y = nodeHeight / 2 * row;
+			var x = nodeWidth * 1.5 * column + (isEvenRow ? 0 : (nodeWidth * 3 / 4));
+			coords.push({"x": x, "y": y});
 		}
+		return coords;
 	}
 
 	function randomInteger(min, max) {
