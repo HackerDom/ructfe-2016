@@ -11,7 +11,7 @@ class DefaultKeyGenerator : cartographer.crypto.KeyGenerator {
         val keyGeneratorSpec = "AES (128)"
     }
 
-    val secureRandom = SecureRandom()
+    private val secureRandom = SecureRandom()
 
     override fun generate(): Key {
         val keyGenerator = KeyGenerator.getInstance(keyGeneratorSpec)

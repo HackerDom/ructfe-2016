@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 open class CryptographyConfig {
     companion object {
-        private val cipherSpecSetting = StringSetting("cryptography.cipher_spec", "")
+        private val cipherSpecSetting = StringSetting("cryptography.cipher_spec", "AES/CBC/PKCS5Padding")
         private val keySpecSetting = StringSetting("cryptography.key_spec", "AES (128)")
 
         lateinit var cipherSpec: String

@@ -11,20 +11,20 @@ import javax.crypto.spec.SecretKeySpec
 @Component
 class PersistentKeyStorage : KeyStorage {
     companion object {
-        val keyFileNameSetting = StringSetting("key_storage.key_file_name", "master.key")
+        private val keyFileNameSetting = StringSetting("key_storage.key_file_name", "master.key")
 
-        val logger = LogManager.getFormatterLogger()!!
+        private val logger = LogManager.getFormatterLogger()!!
     }
 
-    val keyFileName: String
-    val keyGenerator: KeyGenerator
+    private val keyFileName: String
+    private val keyGenerator: KeyGenerator
 
-    val locker: Any = Any()
+    private val locker: Any = Any()
 
     @Volatile
-    lateinit var key: Key
+    private lateinit var key: Key
     @Volatile
-    var initialized: Boolean = false
+    private var initialized: Boolean = false
 
     constructor(settingsContainer: SettingsContainer, keyGenerator: KeyGenerator) {
         keyFileName = keyFileNameSetting.getValue(settingsContainer)
@@ -49,6 +49,8 @@ class PersistentKeyStorage : KeyStorage {
                 key = keyGenerator.generate()
                 saveToFile(key, keyFileName)
             }
+
+            initialized = true
 
             return key
         }
