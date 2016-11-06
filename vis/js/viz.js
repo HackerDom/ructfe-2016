@@ -274,22 +274,16 @@ var Viz = function(infoData, startScoreboard) {
 			nodeData.size = islandSquareSide - spaceBetweenIslands;
 			nodeData.width = nodeData.size + 10;
 			nodeData.height = nodeData.size + 10;
+			nodeData.x = (nodeData.id % columnsCount) * islandSquareSide + spaceBetweenIslands / 2;
+			nodeData.y =  Math.floor(nodeData.id / columnsCount) * islandSquareSide + spaceBetweenIslands / 2;
 			node.append("rect")
 				.classed("island", true)
 				.attr("width", nodeData.size)
-				.attr("height", nodeData.size);
+				.attr("height", nodeData.size)
+				.attr("transform", "translate(" + nodeData.x + ", " + nodeData.y + ")");
 		});
 
-		force = d3.layout.force()
-			.gravity(0.05)
-			.charge(function(d, i) {
-				return i < 2 ? -15000 : -40;
-			})
-			.nodes([{x: WIDTH / 2, y: -1000, width: 0, height: 0, fixed: true}, {x: WIDTH / 2, y: HEIGHT + 1000, width: 0, height: 0, fixed: true}].concat(teams))
-			.size([WIDTH, HEIGHT])
-			.on("tick", tick);
-		force.start();
-		startTicks();
+		setOptimalZoom();
 
 		function setIslandSize(teamsCount) {
 			islandSquareSide = 10;
@@ -298,72 +292,6 @@ var Viz = function(infoData, startScoreboard) {
 			columnsCount = Math.floor(WIDTH / islandSquareSide);
 			rowsCount = Math.floor(HEIGHT / islandSquareSide);
 		}
-	}
-
-	function tick() {
-		var q = d3.geom.quadtree(teams),
-			i = 0,
-			n = teams.length;
-
-		while (++i < n) {
-			q.visit(collide(teams[i]));
-		}
-	}
-
-	function collide(node) {
-		return function(quad, x1, y1, x2, y2) {
-			var updated = false;
-			if (quad.point && (quad.point !== node)) {
-
-				var x = node.x - quad.point.x,
-					y = node.y - quad.point.y,
-					xSpacing = (quad.point.width + node.width) / 2,
-					ySpacing = (quad.point.height + node.height) / 2,
-					absX = Math.abs(x),
-					absY = Math.abs(y),
-					l,
-					lx,
-					ly;
-
-				if (absX < xSpacing && absY < ySpacing) {
-					l = Math.sqrt(x * x + y * y);
-
-					lx = (absX - xSpacing) / l;
-					ly = (absY - ySpacing) / l;
-
-					if (Math.abs(lx) > Math.abs(ly)) {
-						lx = 0;
-					} else {
-						ly = 0;
-					}
-
-					node.x -= x *= lx;
-					node.y -= y *= ly;
-					quad.point.x += x;
-					quad.point.y += y;
-
-					updated = true;
-				}
-			}
-			return updated;
-		};
-	}
-
-	function startTicks() {
-		force.tick();
-		if(force.alpha() > 0.015) {
-			startTicks();
-		} else {
-			force.stop();
-			updatePicture();
-		}
-	}
-
-	function updatePicture() {
-		svg.selectAll('.island')
-			.attr('x', function(d) { return d.x; })
-			.attr('y', function(d) { return d.y; });
-		setOptimalZoom();
 	}
 
 	function randomInteger(min, max) {
