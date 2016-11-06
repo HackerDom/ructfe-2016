@@ -1,0 +1,34 @@
+---
+- name: Install requirements
+  apt: name={{ item }} default_release=testing
+  with_items:
+    - python3.5
+    - python3.5-venv
+
+- name: Create user
+  user: createhome=yes name=cross-social-science
+
+- name: Copy service
+  copy:
+    src: "{{ playbook_dir }}/../services/cross-social-science/"
+    dest: "/home/cross-social-science/"
+    owner: cross-social-science
+
+- name: Create venv
+  pip:
+    requirements: /home/cross-social-science/requirements.txt
+    state: latest
+    virtualenv: /home/cross-social-science/venv
+    virtualenv_command: pyvenv-3.5
+
+- name: Fix permissions
+  file: name="/home/cross-social-science" state=directory owner=cross-social-science recurse=yes
+
+- name: Add systemd service
+  template: src=service.j2 dest=/lib/systemd/system/cross-social-science.service
+
+- name: Enable service
+  service: name=cross-social-science enabled=yes
+
+- name: Start service
+  service: name=cross-social-science state=started

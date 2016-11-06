@@ -1,7 +1,7 @@
 local redis = require 'resty.redis'
 local config = require('lapis.config').get()
 local rand = require 'rand'
-local sha1 = require 'sha1'
+local md5 = require 'md5'
 
 require 'utils'
 
@@ -15,8 +15,12 @@ local function get_postid(postname)
 	return 'post:' .. postname
 end
 
+local function get_listid(username)
+	return 'posts:user:' .. username
+end
+
 local function hash(username, password)
-	return sha1(username .. config.secret .. password)
+	return md5.sumhexa(username .. config.secret .. password)
 end
 
 local function user_exists(self, username, password)
@@ -40,14 +44,17 @@ local function create_post(self, username, title, body, public, sign, get_url)
 	self.client:hset(userid, 'state', state)
 
 	local secret = value .. '@' .. username
-	local postname = sha1(secret)
+	local postname = md5.sumhexa(secret)
 	local show_time = os.time() + config.show_time
+	local expired = os.time() + config.ttl
 	local url = get_url(postname)
 	local postid = get_postid(postname)
+	local listid = get_listid(username)
 
 	self.client:multi()
 	self.client:hmset(postid, 'owner', username, 'public', public, 'url', url, 'title', title, 'body', body, 'sign', sign)
 	self.client:expire(postid, config.ttl)
+	self.client:zadd(listid, expired, postname)
 	if public then
 		self.client:zadd('publics', show_time, postname)
 		self.client:publish('publics', postname)
@@ -103,6 +110,11 @@ local function get_post_info(self, postname)
 	end
 end
 
+local function get_posts_for_user(self, user)
+	local listid = get_listid(user)
+	return get_all(self.client, listid)
+end
+
 local function create_client()
 	local client = redis:new()
 	local ok, err = client:connect(config.redis.host, config.redis.port)
@@ -120,7 +132,8 @@ function module.client()
 		create_post = create_post,
 		get_post = get_post,
 		get_public_posts = get_public_posts,
-		get_post_info = get_post_info
+		get_post_info = get_post_info,
+		get_posts_for_user = get_posts_for_user
 	}
 end
 

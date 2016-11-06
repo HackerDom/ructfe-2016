@@ -81,3 +81,4 @@
     - { name: crash, mem: "512000000" }
     - { name: pastebin, mem: "512000000" }
     - { name: sapmarine, mem: "512000000" }
+    - { name: cross-social-science, mem: "512000000" }

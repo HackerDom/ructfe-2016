@@ -23,6 +23,11 @@
   roles:
     - sapmarine
 
+- hosts: cross-social-science
+  gather_facts: True
+  roles:
+    - cross-social-science
+
 - hosts: image
   gather_facts: True
   tasks:

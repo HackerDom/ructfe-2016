@@ -31,10 +31,14 @@
 open class SortedSet<Element : Comparable> : ProbableType, Collection, Comparable, Equatable, CustomStringConvertible {
 	public typealias Iterator = AnyIterator<Element>
 	
-    open func index(after i: Int) -> Int {
-        return i + 1;
-    }
-    
+	open func index(after i: Int) -> Int {
+		return i + 1;
+	}
+
+	open func find(_ element: Element) -> Element? {
+		return tree.findValueForKey(element)
+	}
+
 	/**
 	Total number of elements within the RedBlackTree
 	*/

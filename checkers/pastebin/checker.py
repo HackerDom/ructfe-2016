@@ -5,6 +5,7 @@ import traceback
 import random
 import string
 import json
+import asyncio
 
 def ructf_error(status=110, message=None, error=None, exception=None):
 	if message:
@@ -41,17 +42,17 @@ def make_err_message(message, request, reply):
 def get_rand_string(l):
 	return ''.join(random.choice(string.ascii_lowercase) for _ in range(l + random.randint(-l//2, l//2)))
 
-def parse_json(string, expected):
+def parse_json(string, expected=[]):
 	try:
 		data = json.loads(string)
 	except Exception as ex:
-		corrupt(error='can\'t parse string "{}" as json'.format(string), exception=ex)
+		mumble(error='can\'t parse string "{}" as json'.format(string), exception=ex)
 	errors = []
 	for field in expected:
 		if field not in data:
 			errors.append(field)
 	if len(errors) > 0:
-		corrupt(error='not all expected fields have founded in json. {}'.format(str(errors)))
+		mumble(error='not all expected fields have founded in json. {}'.format(str(errors)))
 	return data
 
 class Checker:
@@ -71,11 +72,13 @@ class Checker:
 			'put' : self.put,
 			'get' : self.get
 		}
-	async def process(self, args):
+	def process(self, args):
 		handler = args[1]
 		if handler not in self.handlers:
 			raise ValueError('unknown query type')
-		await self.handlers[handler](args[2:])
+		loop = asyncio.get_event_loop()
+		loop.run_until_complete(self.handlers[handler](args[2:]))
+		loop.close()
 	def info(self, args):
 		ok(message='vulns: {}'.format(':'.join(map(lambda t : str(t[2]), self.flag_handlers))))
 	async def check(self, args):

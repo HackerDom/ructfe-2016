@@ -4,4 +4,8 @@ server {
     location / {
         autoindex off;
     }
+
+    location ~ ^/(?P<service>{{ groups['services'] | join('|') }})$ {
+        rewrite ^ http://$service.$host redirect;
+    }
 }
