@@ -3,9 +3,11 @@
   apt: name={{ item }} default_release=testing
   with_items:
     - build-essential
+    - libpq-dev
     - python3.5
     - python3.5-dev
     - python3.5-venv
+    - python-psycopg2
     - postgresql
 
 - name: Create user
@@ -30,6 +32,16 @@
 
 - name: Create __data__
   file: name="/home/cross-social-science/__data__" state=directory owner=cross-social-science recurse=yes
+
+- name: Ensure database is created
+  become: yes
+  become_user: postgres
+  postgresql_db: name=test
+
+- name: Ensure user has access to the database
+  become: yes
+  become_user: postgres
+  postgresql_user: db=test name=cross-social-science priv=ALL state=present
 
 - name: Add systemd service
   template: src=service.j2 dest=/lib/systemd/system/cross-social-science.service
