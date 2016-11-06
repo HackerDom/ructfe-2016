@@ -3,21 +3,20 @@ from peewee_async import Manager
 
 
 def make_models(db, db_name, loop):
-    class BaseModel(peewee.Model):
-        class Meta:
-            database = db
-            db_table = db_name
-
-    class User(BaseModel):
+    class User(peewee.Model):
         username = peewee.CharField(unique=True, max_length=40)
         password_hash = peewee.CharField()
         registration_date = peewee.DateField()
 
-    def init_db():
+        class Meta:
+            database = db
+            db_table = db_name
+
+    def initdb():
         with db.allow_sync():
             User.create_table(True)
 
-    def drop_db():
+    def dropdb():
         with db.allow_sync():
             User.drop_table(True)
 
@@ -26,4 +25,4 @@ def make_models(db, db_name, loop):
         manager.database.allow_sync = False
         return manager
 
-    return init_db, drop_db, make_manager(), User
+    return initdb, dropdb, make_manager(), User
