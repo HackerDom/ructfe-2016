@@ -1,3 +1,18 @@
+@font-face {
+	font-family: 'Atlantean1';
+	src:url('/fonts/Atlantean1.ttf.woff') format('woff'),
+	url('/fonts/Atlantean1.ttf.svg#Atlantean1') format('svg'),
+	url('/fonts/Atlantean1.ttf.eot'),
+	url('/fonts/Atlantean1.ttf.eot?#iefix') format('embedded-opentype');
+	font-weight: normal;
+	font-style: normal;
+}
+
+body {
+	background: url(/img/background.png) #1B1E3C;
+	background-size: cover;
+}
+
 html, body, #svg-wrapper, #svg-viz  {
 	width: 100%;
 	height: 100%;
@@ -6,8 +21,7 @@ html, body, #svg-wrapper, #svg-viz  {
 
 #svg-wrapper {
 	overflow: hidden;
-	background: url(/img/background.png) #1B1E3C;
-	background-size: cover
+	position: absolute;
 }
 
 #svg-viz {
@@ -48,6 +62,31 @@ html, body, #svg-wrapper, #svg-viz  {
 			text-decoration: line-through;
 		}
 	}
+}
+
+#atlantis {
+	font-family: 'Roboto', sans-serif;
+	font-weight: 100;
+	position: absolute;
+	width: 500px;
+	left: 50%;
+	margin-left: -250px;
+	top: 20px;
+	color: #4E7B92;
+	font-size: 85px;
+	text-align: center;
+}
+
+#alphabet {
+	font-family: 'Atlantean1', serif;
+	position: absolute;
+	width: 500px;
+	left: 50%;
+	margin-left: -250px;
+	top: 120px;
+	color: #4E7B92;
+	font-size: 30px;
+	text-align: center;
 }
 
 .node {
