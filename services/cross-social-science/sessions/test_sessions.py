@@ -1,4 +1,6 @@
 import asyncio
+from json import loads
+
 from peewee_async import PostgresqlDatabase
 from sanic import Sanic
 from sanic.response import json
@@ -31,6 +33,15 @@ def get_session_value(app, key):
     app.db.allow_sync = True
     obj = session._model.get(key=key)
     return obj
+
+
+def get_response_session_data(app, response):
+    assert response.text == '{"status":"ok"}'
+    uid = response.cookies[DB_NAME].value
+    obj = get_session_value(app, uid)
+    if obj.value:
+        return loads(obj.value)
+    return {}
 
 
 def test_set_and_get_request_session_data():
@@ -81,11 +92,7 @@ def test_set_request_session_data():
         return response
 
     request, response = sanic_endpoint_test(app, uri='/')
-    assert response.text == '{"status":"ok"}'
-    uid = response.cookies[DB_NAME].value
-    obj = get_session_value(app, uid)
-    assert obj.key == uid
-    assert obj.value == '{"x": 1}'
+    assert get_response_session_data(app, response) == {"x": 1}
 
 
 def test_get_request_session_data_then_set_request_session_data():
