@@ -5,9 +5,7 @@
 {% block content %}
     <form action="" method="POST">
         {{ forms.input_with_errors(form.username, style='font-weight: bold') }}
-        {{ forms.input_with_errors(form.email, style='font-weight: bold') }}
         {{ forms.input_with_errors(form.password, style='font-weight: bold') }}
-        {{ forms.input_with_errors(form.accept_rules, style='font-weight: bold') }}
         <button type="submit" class="btn btn-default">Submit</button>
     </form>
 {% endblock %}

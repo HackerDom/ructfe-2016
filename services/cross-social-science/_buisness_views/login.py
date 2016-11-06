@@ -43,4 +43,4 @@ async def login(request):
             return response
         except service.UserServiceError as e:
             form.username.errors.append(str(e))
-    return html(bp.view.render('registration', {'form': form}))
+    return html(bp.view.render('login', {'form': form}))
