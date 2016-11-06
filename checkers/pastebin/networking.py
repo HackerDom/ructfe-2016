@@ -80,7 +80,7 @@ class State:
 				return await response.text()
 		except Exception as ex:
 			checker.down(error=url, exception=ex)
-	async def post(self, url, data, need_check_status=True):
+	async def post(self, url, data={}, need_check_status=True):
 		url = self.get_url(url)
 		try:
 			async with self.session.post(url, data=data) as response:
@@ -96,7 +96,7 @@ class State:
 	async def login(self, username, password):
 		await self.post('login', {'user': username, 'password': password})
 	async def logout(self):
-		await self.get('logout')
+		await self.post('logout')
 	async def register(self, username=None, password=None):
 		can_retry = username is None
 		if username is None:
