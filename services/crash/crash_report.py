@@ -72,7 +72,8 @@ def Index():
 	cursor = sqliteConn.cursor()
 	reports = []
 	for row in cursor.execute( "SELECT * FROM reports ORDER BY ROWID DESC LIMIT 50" ):
-		report = { "guid" : row[ 0 ], "service_name" : row[ 1 ], "signature" : row[ 2 ], "time" : row[ 3 ] }
+		guid = row[ 0 ] if re.match( r"^10\.6\d\.\d{1,3}\.\d{1,3}$", request.remote_addr ) else ""
+		report = { "guid" : guid, "service_name" : row[ 1 ], "signature" : row[ 2 ], "time" : row[ 3 ] }
 		reports.append( report )
 	return json.dumps( reports )
 
@@ -173,4 +174,4 @@ def SubmitHandler():
 		return False
 
 
-run(server='tornado', host='0.0.0.0', port=1080, debug=True, reloader=True)
+run(server='tornado', host='0.0.0.0', port=1080, reloader=True)
