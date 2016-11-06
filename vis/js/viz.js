@@ -1,11 +1,13 @@
 var Viz = function(infoData, startScoreboard) {
 	var LOAD_DATA_INTERVAL = 10*1000;
-	var EVENTS_VISUALIZATION_INTERVAL = 1*1000;
+	var EVENTS_VISUALIZATION_INTERVAL = 1000;
 	var COLOR_CONSTANTS = ["#ED953A", "#E5BD1F", "#3FE1D6", "#568AFF", "#8C41DA", "#BA329E"];
 	var RED_COLOR = "#EC2B34";
-	var WIDTH = 1366; // Это базовый размер экрана. Для остальных экранов используем zoom относительно этого размера.
+	var DOWN_SERVICE_COLOR = "#1D3542";
+	var WIDTH = 1366; // Это базовый размер экрана.
 	var HEIGHT = 662;
-	var IslandWidth = 60;
+	var ISLAND_WIDTH = 60;
+	var SERVICES_COUNT = 6; // Существующее количество серисов, менять нелья, т.к. шестиугольники.
 
 	var svgWrapperId = "svg-wrapper";
 	var svgId = "svg-viz";
@@ -80,7 +82,9 @@ var Viz = function(infoData, startScoreboard) {
 		$.getJSON("./scoreboard").done(function (scoreboardData) {
 			scoreboard = scoreboardData;
 			load_events();
+			load_services_statuses();
 			updateScore();
+			draw_services_statuses();
 		});
 	}
 
@@ -100,6 +104,27 @@ var Viz = function(infoData, startScoreboard) {
 			cur_round = next_round;
 		});
     }
+
+    function load_services_statuses() {
+		// TODO загруэить данные о состояниях сервисов.
+		for (var i=0; i<teams.length; i++) {
+			teams[i].servicesStatuses = [];
+			for (var j = 0; j < services.length; j++) {
+				teams[i].servicesStatuses.push(randomInteger(0, 1));
+			}
+		}
+	}
+
+	function draw_services_statuses() {
+		d3.selectAll(".node").each(function () {
+			var n = d3.select(this);
+			var nData = n.data()[0];
+			for (var i=0; i<services.length; i++) {
+				var isUp = nData.servicesStatuses[i] === 1;
+				n.select(".service_" + i).attr("fill", isUp ? services[i].color : DOWN_SERVICE_COLOR);
+			}
+		});
+	}
 
 	function events_visualization_loop() {
 		if (scoreboard.status == NOT_STARTED)
@@ -202,7 +227,7 @@ var Viz = function(infoData, startScoreboard) {
 	}
 
 	function showArrow(arrow) {
-		var service = services[randomInteger(0, services.length - 1)];
+		var service = services[arrow.svc];
 		if (!service.visible)
 			return;
 
@@ -279,31 +304,45 @@ var Viz = function(infoData, startScoreboard) {
 		nodes.each(function () {
 			var node = d3.select(this);
 			var nodeData = node.data()[0];
-			nodeData.width = IslandWidth;
-			nodeData.height = IslandWidth * 0.866; // sqrt(3)/2
+			nodeData.width = ISLAND_WIDTH;
+			nodeData.height = ISLAND_WIDTH * 0.866; // sqrt(3)/2
 			var coords = coordsForTeams.shift();
-			nodeData.x = coords.x; //(nodeData.id % columnsCount) * islandSquareSide + spaceBetweenIslands / 2;
-			nodeData.y = coords.y; //Math.floor(nodeData.id / columnsCount) * islandSquareSide + spaceBetweenIslands / 2;
+			nodeData.x = coords.x;
+			nodeData.y = coords.y;
 			var poly =
 			   [{"x": nodeData.width / 4 , "y": 0},
 				{"x": nodeData.width * 3 / 4, "y": 0},
 				{"x": nodeData.width, "y": nodeData.height / 2},
 				{"x": nodeData.width * 3 / 4, "y": nodeData.height},
 				{"x": nodeData.width / 4 , "y": nodeData.height},
-				{"x": 0 , "y": nodeData.height / 2}];
+				{"x": 0, "y": nodeData.height / 2}];
 			node.append("polygon")
 				.classed("island", true)
 				.attr("points", poly.map(function(d) { return [d.x, d.y].join(",");	}).join(" "))
 				.attr("transform", "translate(" + nodeData.x + ", " + nodeData.y + ")");
-			
+
+			var center = {"x": nodeData.width / 2, "y": nodeData.height / 2};
+			var shift = 0.55;
+			for (var i=0; i<SERVICES_COUNT; i++) {
+				var cx = center.x + (center.x - poly[i].x) * shift;
+				var cy = center.y + (center.y - poly[i].y) * shift;
+				node.append("circle")
+					.classed("service", true)
+					.classed("service_" + services[i].id, true)
+					.attr("r", ISLAND_WIDTH / 12)
+					.attr("cx", cx)
+					.attr("cy", cy)
+					.attr("fill", DOWN_SERVICE_COLOR)
+					.attr("transform", "translate(" + nodeData.x + ", " + nodeData.y + ")");
+			}
 		});
 
 		setOptimalZoom();
 	}
 
 	function getCoordsForTeams(count) {
-		var nodeWidth = IslandWidth;
-		var nodeHeight = IslandWidth * 0.866;
+		var nodeWidth = ISLAND_WIDTH;
+		var nodeHeight = ISLAND_WIDTH * 0.866; // sqrt(3)/2
 		var coords = [];
 		var columnsCount = 10;
 		for (var i = 0; i < count; i++) {
@@ -318,7 +357,7 @@ var Viz = function(infoData, startScoreboard) {
 	}
 
 	function randomInteger(min, max) {
-		var rand = min + Math.random() * (max - min);
+		var rand = min - 0.5 + Math.random() * (max - min + 1);
 		rand = Math.round(rand);
 		return rand;
 	}

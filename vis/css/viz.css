@@ -47,11 +47,13 @@ body,
 #filters-container .filter.deselected {
   text-decoration: line-through;
 }
+.node {
+  cursor: default;
+}
 .island {
   fill-opacity: 0;
   stroke: #3D7278;
   stroke-width: 2px;
-  cursor: default;
 }
 .explosion {
   -webkit-transition: 0.4s linear;
