@@ -76,6 +76,3 @@
       systemctl restart ssh
       bash
   with_items: "{{ groups.services }}"
-
-- name: Wait for lxc initialized
-  pause: seconds=25
