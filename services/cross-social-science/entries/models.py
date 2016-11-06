@@ -15,7 +15,7 @@ oembed_providers = bootstrap_basic(OEmbedCache())
 
 def make_models(db, db_name, loop):
     class Entry(peewee.Model):
-        title = peewee.CharField()
+        title = peewee.CharField(default='')
         slug = peewee.CharField(unique=True)
         content = peewee.TextField(default='')
         is_published = peewee.BooleanField(default=False, index=True)
@@ -35,7 +35,7 @@ def make_models(db, db_name, loop):
         @property
         def html_content(self):
             """
-            Generate HTML representation of the markdown-formatted blog entry,
+            Generate HTML representation of the markdown-formatted entry,
             and also convert any media URLs into rich media objects such as
             video players or images.
             """

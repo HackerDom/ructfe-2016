@@ -2,47 +2,47 @@ from json import dumps
 
 from slugify import slugify
 
-_blogs = {}
+_entries = {}
 _last = None
 
 
-def get_blog_service(db_name=None):
+def get_entry_service(db_name=None):
     if db_name is None and _last:
-        return _blogs[_last]
+        return _entries[_last]
     elif db_name is None and _last is None:
         raise ValueError("DefaultSessionService is not registered")
-    service = _blogs[db_name]
-    assert isinstance(service, BlogService)
+    service = _entries[db_name]
+    assert isinstance(service, EntryService)
     return service
 
 
-def clear_blog_services():
-    global _blogs, _last
-    _blogs = {}
+def clear_entry_services():
+    global _entries, _last
+    _entries = {}
     _last = None
 
 
-def _has_blog_service(db_name):
-    return db_name in _blogs
+def _has_entry_service(db_name):
+    return db_name in _entries
 
 
-def _set_default_blog_service(db_name):
+def _set_default_entry_service(db_name):
     if not isinstance(db_name, str):
         raise TypeError('db_name is not a str')
-    if db_name not in _blogs:
+    if db_name not in _entries:
         raise ValueError('this db_name is not registered yet')
     global _last
     _last = db_name
 
 
-def _register_blog_service(db_name, service):
-    global _blogs
-    if db_name in _blogs:
+def _register_entry_service(db_name, service):
+    global _entries
+    if db_name in _entries:
         raise RuntimeError('service with same name is already registered')
-    _blogs[db_name] = service
+    _entries[db_name] = service
 
 
-class BlogService:
+class EntryService:
     def __init__(self, app, db_name, initdb, dropdb, manager, model):
         self.app = app
         self.manager = manager
@@ -57,15 +57,15 @@ class BlogService:
     def dropdb(self):
         self._dropdb()
 
-    async def get_blog_entries(self, limit=100, **kwargs):
+    async def get_entries(self, limit=100, **kwargs):
         query = self._model.select()
         conditions = [getattr(self._model, k) == v for k, v in kwargs.items()]
         if conditions:
             query = query.where(*conditions)
         return await self.manager.execute(query.limit(limit))
 
-    async def create_blog_entry(self, title, content, meta=None,
-                                slug=None, is_published=False):
+    async def create_entry(self, title, content, meta=None,
+                           slug=None, is_published=False):
         if meta and not isinstance(meta, dict):
             raise TypeError('meta is not a dict')
         raw_meta = dumps(meta) if meta else ''

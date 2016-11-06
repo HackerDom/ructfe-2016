@@ -1,14 +1,14 @@
 from sanic import Blueprint
 
 from .models import make_models
-from .service import _has_blog_service, BlogService, \
-    _set_default_blog_service, _register_blog_service
+from .service import _has_entry_service, EntryService, \
+    _set_default_entry_service, _register_entry_service
 
-bp = Blueprint('blog')
+bp = Blueprint('entries')
 
 
 @bp.record
-def blog_module_registered(state):
+def module_registered(state):
     app = state.app
     db = state.options.get('db')
     db_name = state.options.get('db_name')
@@ -18,7 +18,7 @@ def blog_module_registered(state):
         raise RuntimeError(
             "This blueprint expects you to provide database access! "
             "Use: app.blueprint(bp, db_name=...)")
-    if _has_blog_service(db_name):
+    if _has_entry_service(db_name):
         raise RuntimeError(
             "This blueprint already registered with this db_name! "
             "Use other db_name: app.blueprint(bp, db_name=...)")
@@ -28,6 +28,6 @@ def blog_module_registered(state):
             "Use: app.blueprint(bp, db=...)")
 
     initdb, dropdb, manager, model = make_models(db, db_name, loop)
-    service = BlogService(app, db_name, initdb, dropdb, manager, model)
-    _register_blog_service(db_name, service)
-    _set_default_blog_service(db_name)
+    service = EntryService(app, db_name, initdb, dropdb, manager, model)
+    _register_entry_service(db_name, service)
+    _set_default_entry_service(db_name)

@@ -5,20 +5,20 @@ from sanic import Sanic
 from sanic.response import json
 from sanic.utils import sanic_endpoint_test
 
-from . import get_blog_service, clear_blog_services
-from . import blog_blueprint as bp
+from . import get_entry_service, clear_entry_services
+from . import entry_blueprint as bp
 
 
 DB = 'test'
-DB_NAME = 'test_blog'
+DB_NAME = 'test_entries'
 
 
-def make_blog_test_app():
-    clear_blog_services()
+def make_test_app():
+    clear_entry_services()
     app = Sanic(__name__)
     database = PostgresqlDatabase(database=DB)
     app.blueprint(bp, db=database, db_name=DB_NAME, loop=None)
-    service = get_blog_service()
+    service = get_entry_service()
     service.dropdb()
     service.initdb()
     database.close()
@@ -27,41 +27,41 @@ def make_blog_test_app():
     return app
 
 
-def get_blog_value(app, slug):
-    blog = get_blog_service()
+def get_entry(app, slug):
+    service = get_entry_service()
     app.db.allow_sync = True
-    obj = blog._model.get(slug=slug)
+    obj = service._model.get(slug=slug)
     return obj
 
 
-def test_get_blog_entries_0th():
-    app = make_blog_test_app()
+def test_get_entries_0th():
+    app = make_test_app()
 
     @app.route('/')
     async def handler(request):
-        blog = get_blog_service()
-        entries = await blog.get_blog_entries()
+        service = get_entry_service()
+        entries = await service.get_entries()
         return json({'entries': entries})
 
     request, response = sanic_endpoint_test(app, uri='/')
     assert response.text == '{"entries":[]}'
 
 
-def test_get_blog_entries_4th():
-    app = make_blog_test_app()
+def test_get_entries_4th():
+    app = make_test_app()
 
     async def create_4th_entries():
-        blog = get_blog_service()
-        await blog.create_blog_entry('hello1!', '*some* _content_')
-        await blog.create_blog_entry('hello2!', '*some* _content_')
-        await blog.create_blog_entry('hello3!', '*some* _content_')
-        await blog.create_blog_entry('hello4!', '*some* _content_')
+        service = get_entry_service()
+        await service.create_entry('hello1!', '*some* _content_')
+        await service.create_entry('hello2!', '*some* _content_')
+        await service.create_entry('hello3!', '*some* _content_')
+        await service.create_entry('hello4!', '*some* _content_')
 
     @app.route('/')
     async def handler(request):
         await create_4th_entries()
-        blog = get_blog_service()
-        entries = await blog.get_blog_entries()
+        service = get_entry_service()
+        entries = await service.get_entries()
         return json({'entries': entries})
 
     request, response = sanic_endpoint_test(app, uri='/')
@@ -90,21 +90,21 @@ def test_get_blog_entries_4th():
     ]}
 
 
-def test_get_blog_entries_with_only_2th_of_4th_published():
-    app = make_blog_test_app()
+def test_get_entries_with_only_2th_of_4th_published():
+    app = make_test_app()
 
     async def create_4th_entries():
-        blog = get_blog_service()
-        await blog.create_blog_entry('hello1!', '*some*', is_published=False)
-        await blog.create_blog_entry('hello2!', '*some*', is_published=False)
-        await blog.create_blog_entry('hello3!', '*some*', is_published=True)
-        await blog.create_blog_entry('hello4!', '*some*', is_published=True)
+        service = get_entry_service()
+        await service.create_entry('hello1!', '*some*', is_published=False)
+        await service.create_entry('hello2!', '*some*', is_published=False)
+        await service.create_entry('hello3!', '*some*', is_published=True)
+        await service.create_entry('hello4!', '*some*', is_published=True)
 
     @app.route('/')
     async def handler(request):
         await create_4th_entries()
-        blog = get_blog_service()
-        entries = await blog.get_blog_entries(is_published=True)
+        service = get_entry_service()
+        entries = await service.get_entries(is_published=True)
         return json({'entries': entries})
 
     request, response = sanic_endpoint_test(app, uri='/')

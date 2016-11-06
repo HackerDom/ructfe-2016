@@ -15,7 +15,7 @@ from _buisness_views.login import bp as login
 from _buisness_views.logout import bp as logout
 from sessions import session_blueprint as sessions, get_session_service
 from users import user_blueprint as users, get_user_service
-from blog import blog_blueprint as blog, get_blog_service
+from entries import entry_blueprint as entries, get_entry_service
 from views import View
 import settings
 
@@ -101,7 +101,7 @@ def main(debug=False):
     app.blueprint(sessions, db=database, db_name='sessions', loop=loop)
     app.blueprint(users, db=database, db_name='users', loop=loop,
                   sessions_db_name='sessions')
-    app.blueprint(blog, db=database, db_name='blog', loop=loop)
+    app.blueprint(entries, db=database, db_name='blog', loop=loop)
     app.blueprint(registration, view=view)
     app.blueprint(login, view=view)
     app.blueprint(logout, view=view)
@@ -113,7 +113,7 @@ def main(debug=False):
     service = get_session_service()
     service.dropdb()
     service.initdb()
-    service = get_blog_service()
+    service = get_entry_service()
     service.dropdb()
     service.initdb()
 

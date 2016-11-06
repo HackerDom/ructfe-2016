@@ -13,7 +13,7 @@ from . import user_blueprint as bp
 
 DB = 'test'
 DB_NAME = 'test_users'
-DB_SESSION_NAME = DB_NAME + '_session'
+DB_SESSION_NAME = DB_NAME + '_sessions'
 
 
 def make_test_app():

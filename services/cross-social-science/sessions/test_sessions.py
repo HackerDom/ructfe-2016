@@ -14,7 +14,7 @@ DB = 'test'
 DB_NAME = 'test_sessions'
 
 
-def make_session_test_app():
+def make_test_app():
     clear_session_services()
     app = Sanic(__name__)
     database = PostgresqlDatabase(database=DB)
@@ -45,7 +45,7 @@ def get_response_session_data(app, response):
 
 
 def test_set_and_get_request_session_data():
-    app = make_session_test_app()
+    app = make_test_app()
     uid = '1ef9bf84-6ead-43ff-9a38-07222e3cb7d9'
 
     async def set_session_data():
@@ -67,7 +67,7 @@ def test_set_and_get_request_session_data():
 
 
 def test_get_request_session_data_without_set():
-    app = make_session_test_app()
+    app = make_test_app()
 
     @app.route('/')
     async def handler(request):
@@ -81,7 +81,7 @@ def test_get_request_session_data_without_set():
 
 
 def test_set_request_session_data():
-    app = make_session_test_app()
+    app = make_test_app()
 
     @app.route('/')
     async def handler(request):
@@ -96,7 +96,7 @@ def test_set_request_session_data():
 
 
 def test_get_request_session_data_then_set_request_session_data():
-    app = make_session_test_app()
+    app = make_test_app()
 
     @app.route('/')
     async def handler(request):
@@ -117,7 +117,7 @@ def test_get_request_session_data_then_set_request_session_data():
 
 
 def test_update_session_data():
-    make_session_test_app()
+    make_test_app()
     uid = '1ef92222-6ead-43ff-9a38-07222e3cb7d9'
 
     async def set_and_update():

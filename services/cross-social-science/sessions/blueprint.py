@@ -10,7 +10,7 @@ bp = Blueprint('sessions')
 
 
 @bp.record
-def session_module_registered(state):
+def module_registered(state):
     app = state.app
     db = state.options.get('db')
     db_name = state.options.get('db_name')
