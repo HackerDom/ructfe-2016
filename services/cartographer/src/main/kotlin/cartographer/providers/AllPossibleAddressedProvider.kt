@@ -25,6 +25,6 @@ class AllPossibleAddressedProvider : AddressedProvider {
 
     private fun makeInetAddress(no: Int): InetAddress {
         // TODO: Implement
-        throw NotImplementedError()
+        return InetAddress.getLocalHost()
     }
 }
