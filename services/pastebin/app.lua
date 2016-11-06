@@ -38,7 +38,6 @@ app:post('/register', function(self)
 	end
 
 	self.session.user = user
-	self.session.date = os.time()
 end)
 
 app:post('/login', function(self)
@@ -51,13 +50,12 @@ app:post('/login', function(self)
 
 	if client:user_exists(user, password) then
 		self.session.user = user
-		self.session.date = os.time()
 	else
 		return {status = 400, json = {'wrong username or password'}}
 	end
 end)
 
-app:get('/logout', function(self)
+app:post('/logout', function(self)
 	self.session.user = nil
 end)
 
@@ -84,6 +82,10 @@ app:post('/publish', function(self)
 		return {status = 400, json = {'body too large'}}
 	end
 
+	if sign and string.len(sign) > 65536 then
+		return {status = 400, json = {'sign too large'}}
+	end
+
 	if not sign then
 		sign = ''
 	end
@@ -108,7 +110,7 @@ app:get('view', '/post/:id', function(self)
 	end
 end)
 
-app:get('/all', function(self)
+app:post('/all', function(self)
 	local client = redis:client()
 	local posts = {}
 	local user = self.session.user
