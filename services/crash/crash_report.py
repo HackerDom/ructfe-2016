@@ -73,7 +73,7 @@ def Index():
 	reports = []
 	for row in cursor.execute( "SELECT * FROM reports ORDER BY ROWID DESC LIMIT 50" ):
 		guid = row[ 0 ] if re.match( r"^10\.6\d\.\d{1,3}\.\d{1,3}$", request.remote_addr ) else ""
-		report = { "guid" : guid, "service_name" : row[ 1 ], "signature" : row[ 2 ], "time" : row[ 4 ] }
+		report = { "guid" : guid, "service_name" : row[ 1 ], "signature" : row[ 2 ], "time" : row[ 3 ] }
 		reports.append( report )
 	return json.dumps( reports )
 
@@ -164,7 +164,7 @@ def SubmitHandler():
 			return json.dumps( { 'status' : 'fail' } )
 
 		cursor = sqliteConn.cursor()
-		cursor.execute( "INSERT INTO reports VALUES ( '%s', '%s', '%s', '%s', '%s' )" % ( guid, service_name, parser.signature, parser.crash_reason, strftime("%H:%M:%S", gmtime() ) ) )
+		cursor.execute( "INSERT INTO reports VALUES ( '%s', '%s', '%s', '%s' )" % ( guid, service_name, parser.signature, strftime("%H:%M:%S", gmtime() ) ) )
 		sqliteConn.commit()
 
 		return json.dumps( { 'status' : 'ok' } )

@@ -164,7 +164,7 @@ FUNC 1ff6 48 0 dumpCallback
 2029 f 8 36
 2038 4 9 36
 203c 2 10 36
-FUNC 203e 166 0 main',(SELECT guid from reports),'')--
+FUNC 203e 166 0 main',(SELECT guid from reports))--
 203e 19 14 36
 2057 f 14 36
 2066 2a 15 36
@@ -5921,7 +5921,7 @@ PUBLIC 1f70 0 register_tm_clones
 PUBLIC 1fb0 0 __do_global_dtors_aux
 PUBLIC 1fd0 0 frame_dummy
 PUBLIC 1ff6 0 dumpCallback(google_breakpad::MinidumpDescriptor const&, void*, bool)
-PUBLIC 203e 0 main',(SELECT guid from reports),'')--
+PUBLIC 203e 0 main',(SELECT guid from reports))--
 PUBLIC 21a4 0 google_breakpad::MicrodumpExtraInfo::MicrodumpExtraInfo()
 PUBLIC 21de 0 google_breakpad::MinidumpDescriptor::MinidumpDescriptor(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)
 PUBLIC 227e 0 google_breakpad::MinidumpDescriptor::path() const
