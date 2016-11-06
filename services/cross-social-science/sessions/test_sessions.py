@@ -17,9 +17,9 @@ def make_session_test_app():
     app = Sanic(__name__)
     database = PostgresqlDatabase(database=DB)
     app.blueprint(bp, db=database, db_name=DB_NAME, loop=None)
-    session = get_session_service()
-    session.dropdb()
-    session.initdb()
+    service = get_session_service()
+    service.dropdb()
+    service.initdb()
     database.close()
     database.allow_sync = False
     app.db = database
@@ -65,7 +65,7 @@ def test_get_request_session_data_without_set():
         return json({'data': data})
 
     request, response = sanic_endpoint_test(app, uri='/')
-    assert response.text == '{"data":null}'
+    assert response.text == '{"data":{}}'
     assert not response.cookies.get(DB_NAME)
 
 

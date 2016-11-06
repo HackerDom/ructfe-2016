@@ -59,9 +59,7 @@ class SessionService:
         self._dropdb()
 
     async def get_session_data(self, uid):
-        if not uid:
-            return None
-        if not isinstance(uid, str):
+        if uid and not isinstance(uid, str):
             raise TypeError('uid is not a str')
         data = None
         if uid:
@@ -74,6 +72,8 @@ class SessionService:
                         pass
             except peewee.DoesNotExist:
                 pass
+        if not data:
+            return {}
         return data
 
     async def set_session_data(self, uid, data):
@@ -81,6 +81,8 @@ class SessionService:
             raise ValueError('bad uid')
         if not isinstance(uid, str):
             raise TypeError('uid is not a str')
+        if not isinstance(data, dict):
+            raise TypeError('data is not a dict')
 
         data = dumps(data)
         obj, _ = await self.manager.get_or_create(self._model, key=uid)
