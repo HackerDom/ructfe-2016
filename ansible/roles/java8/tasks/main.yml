@@ -1,0 +1,14 @@
+---
+- name: Add java repo
+  apt_repository: repo='deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main' state=present update_cache=yes
+
+- name: Add java repo key
+  apt_key: id=EEA14886 keyserver=hkp://keyserver.ubuntu.com:80
+
+- name: License agree
+  debconf: name=oracle-java8-installer question="shared/accepted-oracle-license-v1-1" value='true' vtype='select'
+
+- name: Install requirements
+  apt: name={{ item }}
+  with_items:
+    - oracle-java8-installer

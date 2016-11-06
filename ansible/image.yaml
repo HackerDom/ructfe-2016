@@ -16,6 +16,12 @@
         - sudo
         - ca-certificates
 
+- hosts: build
+  gather_facts: True
+  roles:
+    - pastebin-build
+    - cartographer-build
+
 - hosts: pastebin
   gather_facts: True
   roles:
@@ -36,44 +42,21 @@
   roles:
     - cross-social-science
 
-# - hosts: cartographer-build
-#   gather_facts: True
-#   roles:
-#     - cartographer-build
-
 # - hosts: cartographer
 #   gather_facts: True
 #   roles:
 #     - cartographer
-
-- hosts: services
-  gather_facts: True
-  tasks:
-    - name: Fill zeros
-      when: "release is defined"
-      command: dd if=/dev/zero of=/zero
-      ignore_errors: yes
-    - name: Remove zeros
-      when: "release is defined"
-      file: name=/zero state=absent
 
 - hosts: image
   gather_facts: True
   tasks:
     - name: Restart general_nginx
       service: name=nginx state=restarted
-    - name: Remove build lxc containers
+    - name: Remove build lxc container
       when: "release is defined"
-      lxc_container:
-        name: "{{ item }}"
-        state: absent
-      with_items:
-        - cartographer-build
+      lxc_container: name=build state=absent
     - name: Use first_time.sh
       lineinfile: dest=/root/.bashrc line="ONETIME=yes /root/first_time.sh"
-      when: "release is defined"
-    - name: Remove network file
-      file: dest=/etc/network/interfaces.d/eth0.cfg state=absent
       when: "release is defined"
     - name: Fill zeros
       when: "release is defined"
@@ -83,17 +66,6 @@
       when: "release is defined"
       file: name=/zero state=absent
     - name: Poweroff
-      command: poweroff
+      shell: rm -f /etc/network/interfaces.d/eth0.cfg && poweroff
       when: "release is defined"
       ignore_errors: yes
-
-- hosts: localhost
-  connection: local
-  become: no
-  tasks:
-    - name: Stop image
-      when: "release is defined"
-      command: VBoxManage controlvm RuCTFE2016_Image poweroff
-    - name: Compact disk
-      when: "release is defined"
-      command: VBoxManage modifyhd b9ab708f-a12c-432c-a113-13e2122d58c3 --compact
