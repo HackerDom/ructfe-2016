@@ -65,7 +65,6 @@
     state: started
     backing_store: loop
     fs_size: "4G"
-    container_log: true
     container_config:
       - "lxc.cgroup.memory.limit_in_bytes = 512000000"
       - "lxc.cgroup.memory.memsw.limit_in_bytes = 512000000"

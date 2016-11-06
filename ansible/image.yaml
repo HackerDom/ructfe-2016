@@ -53,6 +53,7 @@
     - name: Fill zeros
       when: "release is defined"
       command: dd if=/dev/zero of=/zero
+      ignore_errors: yes
     - name: Remove zeros
       when: "release is defined"
       file: name=/zero state=absent
@@ -77,6 +78,7 @@
       when: "release is defined"
     - name: Fill zeros
       when: "release is defined"
+      ignore_errors: yes
       command: dd if=/dev/zero of=/zero
     - name: Remove zeros
       when: "release is defined"
