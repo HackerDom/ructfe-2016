@@ -11,6 +11,8 @@ except ImportError:
     async_loop = asyncio
 
 from _buisness_views.registration import bp as registration
+from _buisness_views.login import bp as login
+from _buisness_views.logout import bp as logout
 from sessions import session_blueprint as sessions, get_session_service
 from users import user_blueprint as users, get_user_service
 from blog import blog_blueprint as blog, get_blog_service
@@ -100,8 +102,9 @@ def main(debug=False):
     app.blueprint(users, db=database, db_name='users', loop=loop,
                   sessions_db_name='sessions')
     app.blueprint(blog, db=database, db_name='blog', loop=loop)
-    registration.view = view
-    app.blueprint(registration)
+    app.blueprint(registration, view=view)
+    app.blueprint(login, view=view)
+    app.blueprint(logout, view=view)
 
     # init db
     service = get_user_service()
