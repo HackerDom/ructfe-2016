@@ -1,27 +1,16 @@
 ---
-- name: Add java repo
-  apt_repository: repo='deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main' state=present update_cache=yes
-
-- name: Add java repo key
-  apt_key: id=EEA14886 keyserver=hkp://keyserver.ubuntu.com:80
-
-- name: Install requirements
-  apt: name={{ item }}
-  with_items:
-    - oracle-java8-installer
-    - gradle
-
 - name: Copy service
   copy:
     src: "{{ playbook_dir }}/../services/cartographer/"
     dest: "/opt/cartographer/"
 
-# - name: Build project
-#   command: swift build -c release --build-path /home/sapmarine/bin/
-#   args:
-#     chdir: /home/sapmarine/
-#   environment:
-#     PATH: "/opt/swift-3.0-RELEASE-ubuntu14.04/usr/bin:{{ ansible_env.PATH }}"
+- name: Add executable bit to gradlew
+  file: name=/opt/cartographer/gradlew mode=0755
 
-# - name: Fetch binary
-#   fetch: src=/opt/cartographer/ dest=/tmp/cartographer/ flat=yes
+- name: Build project
+  command: ./gradlew build
+  args:
+    chdir: /opt/cartographer/
+
+- name: Fetch binary
+  fetch: src=/opt/cartographer/build/libs/cartographer-1.0.0.jar dest=/tmp/cartographer.jar flat=yes
