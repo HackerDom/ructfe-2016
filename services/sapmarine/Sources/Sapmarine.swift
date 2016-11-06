@@ -1,9 +1,14 @@
 import Foundation
 
 import KituraSession
+import KituraStencil
 import SwiftyJSON
 import Kitura
 import Cryptor
+
+#if os(Linux)
+    import Glibc
+#endif
 
 public class Sapmarine {
 
@@ -19,6 +24,32 @@ public class Sapmarine {
         router.all(middleware: session)
 
         router.all(middleware: BodyParser())
+
+        router.all("/static", middleware: StaticFileServer(path: "./static"))
+
+        router.add(templateEngine: StencilTemplateEngine())
+
+        router.get("/") { request, response, next in
+            defer {
+                next()
+            }
+
+            let context: [String: Any] = [
+                "users": self.usersSet.map { ["name":$0.name, "rating":$0.rating()] }
+            ]
+
+            try response.render("index.stencil", context: context).end()
+        }
+
+        router.get("/") { request, response, next in
+            let sess = request.session
+
+            if let sess = sess, let user = sess["user"].string {
+                try response.send("User '\(user)'").end()
+            } else {
+               try response.send("No user logged in").end()
+            }
+        }
 
         router.get("/login") { request, response, next in
             let user = self.FindParam(request, "user")
@@ -108,7 +139,7 @@ public class Sapmarine {
             if let trip = self.processingTrips.removeValue(forKey: tripId) {
                 let passengerName = trip.passenger
 
-                print("Finishing trip '\(tripId)' for passenger '\(passengerName)'")
+                // print("Finishing trip '\(tripId)' for passenger '\(passengerName)'")
 
                 let passengerOptional = self.usersDict[passengerName]
                 if(passengerOptional == nil){
@@ -117,16 +148,11 @@ public class Sapmarine {
                     return
                 }
 
-                print("removing passenger")
-
                 // TODO create method addAfterRemove
                 self.usersSet.remove(passengerOptional!)
-                print("appending comment")
                 passengerOptional!.comments.append(Comment(driverNameOptional!, passengerName, comment, markOptional!))
-                print("inserting passenger")
                 self.usersSet.insert(passengerOptional!)
 
-                print("finishing response")
                 try response.end()
             } else {
                 response.statusCode = .notFound
@@ -141,17 +167,6 @@ public class Sapmarine {
             }
             try response.send(result).end()
         }
-
-        router.get("/") { request, response, next in
-            let sess = request.session
-
-            if let sess = sess, let user = sess["user"].string {
-                try response.send("User '\(user)'").end()
-            } else {
-               try response.send("No user logged in").end()
-            }
-        }
-
     }
 
     public func Run(port: Int){
