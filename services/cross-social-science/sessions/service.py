@@ -12,7 +12,9 @@ def get_session_service(db_name=None):
         return _sessions[_last]
     elif db_name is None and _last is None:
         raise ValueError("DefaultSessionService is not registered")
-    return _sessions[db_name]
+    service = _sessions[db_name]
+    assert isinstance(service, SessionService)
+    return service
 
 
 def clear_session_services():
@@ -56,24 +58,6 @@ class SessionService:
     def dropdb(self):
         self._dropdb()
 
-    async def get_request_session_data(self, request):
-        uid = request.cookies.get(self._db_name)
-        return await self.get_session_data(uid)
-
-    async def set_request_session_data(self, request, response, data):
-        uid = request.cookies.get(self._db_name)
-        if not uid:
-            uid = str(uuid4())
-        response.cookies[self._db_name] = uid
-        await self.set_session_data(uid, data)
-
-    async def update_request_session_data(self, request, response, data):
-        uid = request.cookies.get(self._db_name)
-        if not uid:
-            uid = str(uuid4())
-        response.cookies[self._db_name] = uid
-        await self.update_session_data(uid, data)
-
     async def get_session_data(self, uid):
         if not uid:
             return None
@@ -115,3 +99,21 @@ class SessionService:
         current_data.update(data)
         await self.set_session_data(uid, current_data)
         return current_data
+
+    async def get_request_session_data(self, request):
+        uid = request.cookies.get(self._db_name)
+        return await self.get_session_data(uid)
+
+    async def set_request_session_data(self, request, response, data):
+        uid = request.cookies.get(self._db_name)
+        if not uid:
+            uid = str(uuid4())
+        response.cookies[self._db_name] = uid
+        await self.set_session_data(uid, data)
+
+    async def update_request_session_data(self, request, response, data):
+        uid = request.cookies.get(self._db_name)
+        if not uid:
+            uid = str(uuid4())
+        response.cookies[self._db_name] = uid
+        await self.update_session_data(uid, data)
