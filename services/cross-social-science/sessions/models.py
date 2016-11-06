@@ -3,7 +3,7 @@ from peewee_async import Manager
 
 
 def make_models(db, db_name, loop):
-    class KeyValue(peewee.Model):
+    class SessionStorage(peewee.Model):
         key = peewee.CharField(max_length=40, unique=True)
         value = peewee.TextField(default='')
 
@@ -13,11 +13,11 @@ def make_models(db, db_name, loop):
 
     def initdb():
         with db.allow_sync():
-            KeyValue.create_table(True)
+            SessionStorage.create_table(True)
 
     def dropdb():
         with db.allow_sync():
-            KeyValue.drop_table(True)
+            SessionStorage.drop_table(True)
 
     def make_manager():
         # create table synchronously
@@ -27,4 +27,4 @@ def make_models(db, db_name, loop):
         manager.database.allow_sync = False
         return manager
 
-    return initdb, dropdb, make_manager(), KeyValue
+    return initdb, dropdb, make_manager(), SessionStorage
