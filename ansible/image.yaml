@@ -13,7 +13,6 @@
     - name: Install ansible requirements
       apt: name={{ item }} update_cache=yes
       with_items:
-        - python
         - sudo
         - ca-certificates
 
@@ -83,3 +82,18 @@
     - name: Remove zeros
       when: "release is defined"
       file: name=/zero state=absent
+    - name: Poweroff
+      command: poweroff
+      when: "release is defined"
+      ignore_errors: yes
+
+- hosts: localhost
+  connection: local
+  become: no
+  tasks:
+    - name: Stop image
+      when: "release is defined"
+      command: VBoxManage controlvm RuCTFE2016_Image poweroff
+    - name: Compact disk
+      when: "release is defined"
+      command: VBoxManage modifyhd b9ab708f-a12c-432c-a113-13e2122d58c3 --compact
