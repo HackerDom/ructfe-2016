@@ -25,7 +25,7 @@ def make_app():
         return html(render('index.html', name='variables'))
 
     @app.route("/dynamic/<name>/<id:int>")
-    def test_params(request, name, id):
+    def test_params(request, name, id:int):
         return text("yeehaww {} {}".format(name, id))
 
     @app.route("/exception")
