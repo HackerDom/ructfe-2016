@@ -51,3 +51,7 @@ body,
 #filters-container .filter.deselected {
   text-decoration: line-through;
 }
+circle.explosion {
+  -webkit-transition: 0.4s linear;
+  transition: 0.4s linear;
+}

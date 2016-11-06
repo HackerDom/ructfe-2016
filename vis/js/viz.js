@@ -2,7 +2,7 @@ var Viz = function(infoData, startScoreboard) {
 	var LOAD_DATA_INTERVAL = 10*1000;
 	var EVENTS_VISUALIZATION_INTERVAL = 1*1000;
 	var COLOR_CONSTANTS = ["#ED953A", "#E5BD1F", "#3FE1D6", "#568AFF", "#8C41DA", "#BA329E"];
-	var RED_COLOR = "#E22A34";
+	var RED_COLOR = "#EC2B34";
 	var WIDTH = 1366; // Это базовый размер экрана. Для остальных экранов используем zoom относительно этого размера.
 	var HEIGHT = 662;
 
@@ -241,7 +241,7 @@ var Viz = function(infoData, startScoreboard) {
 			link.append("path")
 				.attr("class", "arrow-line")
 				.attr("d", lineFunction(lineData))
-				.attr("stroke-width", "4")
+				.attr("stroke-width", "3")
 				.attr("stroke-linecap", "round")
 				.attr("fill-opacity", "0")
 				.attr("stroke", "url(#" + gradientId + ")");
@@ -250,7 +250,24 @@ var Viz = function(infoData, startScoreboard) {
 			setTimeout(function () {
 				link.remove();
 				defs.select("#" + gradientId).remove();
-			}, timeForArrowAnimation * 1000 * (1 + tracePortion));
+			}, timeForArrowAnimation * 1000 * (1 + tracePortion + whitePortion));
+			setTimeout(function () {
+				addRadialGradient(gradientId + "radial", color);
+				var explosion = container.append("circle")
+					.attr("class", "explosion")
+					.attr("r", teamTo.size / 3)
+					.attr("cx", toX)
+					.attr("cy", toY)
+					.style("fill-opacity", 1)
+					.attr("fill", "url(#" + gradientId + "radial" + ")");
+				setTimeout(function () {
+					explosion.style("fill-opacity", 0);
+				}, 100);
+				setTimeout(function () {
+					defs.select("#" + gradientId + "radial").remove();
+					explosion.remove();
+				}, timeForArrowAnimation * 1000 * (tracePortion + whitePortion) )
+			}, timeForArrowAnimation * 1000);
 		});
 	}
 
@@ -357,13 +374,13 @@ var Viz = function(infoData, startScoreboard) {
 	function addRadialGradient(id, color) {
 		var gradient = defs.append("radialGradient").attr("id", id);
 		gradient.append("stop")
-			.attr("offset", 0)
-			.attr("stop-color", color)
+			.attr("offset", 0.02)
+			.attr("stop-color", "white")
 			.attr("stop-opacity", 1);
 		gradient.append("stop")
-			.attr("offset", 0.5)
+			.attr("offset", 0.37)
 			.attr("stop-color", color)
-			.attr("stop-opacity", 0.2);
+			.attr("stop-opacity", 1);
 		gradient.append("stop")
 			.attr("offset", 1)
 			.attr("stop-color", color)
