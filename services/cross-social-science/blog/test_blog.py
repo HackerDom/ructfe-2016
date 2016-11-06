@@ -18,9 +18,9 @@ def make_blog_test_app():
     app = Sanic(__name__)
     database = PostgresqlDatabase(database=DB)
     app.blueprint(bp, db=database, db_name=DB_NAME, loop=None)
-    session = get_blog_service()
-    session.dropdb()
-    session.initdb()
+    service = get_blog_service()
+    service.dropdb()
+    service.initdb()
     database.close()
     database.allow_sync = False
     app.db = database
