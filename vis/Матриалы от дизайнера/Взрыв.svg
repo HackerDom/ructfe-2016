@@ -1,0 +1,17 @@
+<svg width="33" height="33" viewBox="0 0 33 33" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:figma="http://www.figma.com/figma/ns">
+<title>&#208;&#146;&#208;&#183;&#209;&#128;&#209;&#139;&#208;&#178;</title>
+<desc>Created using Figma</desc>
+<g id="Canvas" transform="translate(311 1454)" figma:type="canvas">
+<g id="&#208;&#146;&#208;&#183;&#209;&#128;&#209;&#139;&#208;&#178;" style="mix-blend-mode:normal;" figma:type="ellipse">
+<use xlink:href="#path0_fill" transform="translate(-311 -1454)" fill="url(#paint0_radial)" style="mix-blend-mode:normal;"/>
+</g>
+</g>
+<defs>
+<radialGradient id="paint0_radial" cx="0.5" cy="0.5" r="0.5" gradientUnits="userSpaceOnUse" gradientTransform="matrix(2.02067e-15 33 -33 2.02067e-15 33 -2.02067e-15)">
+<stop offset="0.02" stop-color="#FFFFFF"/>
+<stop offset="0.37" stop-color="#EC2B34"/>
+<stop offset="1" stop-color="#EC2B34" stop-opacity="0"/>
+</radialGradient>
+<path id="path0_fill" d="M 33 16.5C 33 25.6127 25.6127 33 16.5 33C 7.3873 33 0 25.6127 0 16.5C 0 7.3873 7.3873 0 16.5 0C 25.6127 0 33 7.3873 33 16.5Z"/>
+</defs>
+</svg>
