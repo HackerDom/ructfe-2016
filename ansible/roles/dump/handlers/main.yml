@@ -1,0 +1,2 @@
+- name: enable and restart dump
+  shell: /bin/bash -c "/bin/systemctl enable dump@{0..767}; /bin/systemctl restart dump@{0..767}"

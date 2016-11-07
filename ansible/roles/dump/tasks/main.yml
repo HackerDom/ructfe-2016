@@ -1,0 +1,22 @@
+- name: install wireshark-common package
+  apt: name=wireshark-common state=latest
+  tags: dump
+
+- name: create dump directory
+  file: path=/home/dump state=directory
+  tags: dump
+
+- name: copy start_dump.sh
+  copy: src=start_dump.sh dest=/home/dump/start_dump.sh mode=0755
+  tags: dump
+
+- name: copy get_pkg_stat.sh
+  copy: src=get_pkg_stat.sh dest=/home/dump/get_pkg_stat.sh mode=0755
+  tags: dump
+
+- name: copy dump systemd service
+  copy: src=dump@.service dest=/etc/systemd/system/dump@.service
+  notify: enable and restart dump
+  tags: dump
+
+
