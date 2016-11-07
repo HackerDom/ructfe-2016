@@ -52,8 +52,6 @@ public class Sapmarine {
                 "trips": driversTripsArray + allTripsArray
             ]
 
-            print(context);
-
             try response.render("index.stencil", context: context).end()
         }
 
