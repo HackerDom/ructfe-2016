@@ -20,7 +20,7 @@ server {
 
     location /common/static/ {
         internal;
-        root /var/www/;
+        alias /var/www/static/;
     }
 
     location /home {
