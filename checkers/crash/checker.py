@@ -54,7 +54,7 @@ def put(*args):
 	# submit report
 	url = 'http://%s:%s/submit' % ( addr, PORT )
 	files = { 'dump_zip_file': inMemoryZip.read() }
-	headers = { 'service_name' : SERVICE_NAME, 'guid' : flag_id }
+	headers = { 'Service-Name' : SERVICE_NAME, 'GUID' : flag_id }
 	try:
 		r = requests.post(url, files=files, headers=headers )
 		if r.status_code != 200:

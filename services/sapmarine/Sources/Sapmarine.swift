@@ -35,9 +35,24 @@ public class Sapmarine {
                 next()
             }
 
+            let userNameOptional = try self.GetUserFromSessionOrCancelRequest(request, response)
+            if userNameOptional == nil {
+                response.statusCode = .badRequest
+                try response.end()
+                return
+            }
+
+            let allTripsArray = self.newTrips.map { (key, value) in ["passenger": key, "description": value] }
+            let driversTripsArray = self.processingTrips
+                .filter { (key, value) in value.driver == userNameOptional!}
+                .map { (key, value) in ["passenger": value.passenger, "driver": value.driver, "id": value.id] }
+
             let context: [String: Any] = [
-                "users": self.usersSet.map { ["name":$0.name, "rating":$0.rating()] }
+                "users": self.usersSet.map { ["name": $0.name, "rating": $0.rating()] },
+                "trips": driversTripsArray + allTripsArray
             ]
+
+            print(context);
 
             try response.render("index.stencil", context: context).end()
         }
