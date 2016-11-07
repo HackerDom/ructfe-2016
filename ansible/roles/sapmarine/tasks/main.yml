@@ -23,4 +23,4 @@
   service: name=sapmarine enabled=yes
 
 - name: Start service
-  service: name=sapmarine state=started
+  service: name=sapmarine state=restarted

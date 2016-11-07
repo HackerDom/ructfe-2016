@@ -50,4 +50,4 @@
   service: name=cross-social-science enabled=yes
 
 - name: Start service
-  service: name=cross-social-science state=started
+  service: name=cross-social-science state=restarted

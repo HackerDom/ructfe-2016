@@ -19,4 +19,4 @@
   service: name=weather enabled=yes
 
 - name: Start service
-  service: name=weather state=started
+  service: name=weather state=restarted
