@@ -69,3 +69,5 @@
       shell: rm -f /etc/network/interfaces.d/eth0.cfg && poweroff
       when: "release is defined"
       ignore_errors: yes
+      tags:
+        - skip_ansible_lint
