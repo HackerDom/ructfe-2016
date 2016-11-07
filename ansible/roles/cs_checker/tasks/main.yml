@@ -9,9 +9,6 @@
 - name: catalog for checkers
   file: path={{cs_dir}}/app/checkers state=directory
 
-- name: bay checker
-  template: src=bay.py dest={{cs_dir}}/app/checkers/bay.py mode=a+x
-
 - name: selenium checker
   template: src=selenium_checker.py dest={{cs_dir}}/app/checkers/selenium_checker.py mode=a+x
 
@@ -31,14 +28,11 @@
 - name: selenium checker python deps
   pip: executable=pip3 name=selenium
 
-- name: crash checker
-  synchronize: src=../../../../checkers/crash/ dest={{cs_dir}}/app/checkers/crash
+- name: checkers
+  synchronize: src=../../../../checkers dest={{cs_dir}}/app
 
 - name: crash dumps
   file: path={{cs_dir}}/app/checkers/crash/dumps state=directory
-
-- name: pastebin checker
-  synchronize: src=../../../../checkers/pastebin/ dest={{cs_dir}}/app/checkers/pastebin
 
 - name: pastebin deps
   apt: name={{item}} state=latest update_cache=yes
