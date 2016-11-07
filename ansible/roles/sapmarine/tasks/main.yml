@@ -13,6 +13,8 @@
     chdir: /home/sapmarine/
   environment:
     PATH: "/opt/swift-3.0-RELEASE-ubuntu14.04/usr/bin:{{ ansible_env.PATH }}"
+  tags:
+    - skip_ansible_lint
 
 - name: Add systemd service
   template: src=service.j2 dest=/lib/systemd/system/sapmarine.service

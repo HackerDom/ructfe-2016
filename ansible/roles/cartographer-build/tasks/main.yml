@@ -11,6 +11,8 @@
   command: ./gradlew build
   args:
     chdir: /opt/cartographer/
+  tags:
+    - skip_ansible_lint
 
 - name: Fetch binary
   fetch: src=/opt/cartographer/build/libs/cartographer-1.0.0.jar dest=/tmp/cartographer.jar flat=yes
