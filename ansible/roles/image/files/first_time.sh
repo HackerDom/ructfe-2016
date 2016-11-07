@@ -26,6 +26,7 @@ echo "netmask 255.255.255.0" >>  /etc/network/interfaces.d/eth0.cfg
 echo "gateway 10.$((60 + TEAM / 256)).$((TEAM % 256)).1" >>  /etc/network/interfaces.d/eth0.cfg
 echo "dns-nameservers 192.168.254.254 8.8.8.8" >>  /etc/network/interfaces.d/eth0.cfg
 echo "dns-search lxc" >>  /etc/network/interfaces.d/eth0.cfg
+sed -i '1inameserver 192.168.254.254' /etc/resolv.conf
 
 echo "Here is your new /etc/network/interfaces.d/eth0.cfg:"
 cat /etc/network/interfaces.d/eth0.cfg

@@ -1,6 +1,6 @@
 ---
 - name: Install requirements
-  apt: name={{ item }} default_release=testing
+  apt: name={{ item }}
   with_items:
     - libssl-dev
     - make

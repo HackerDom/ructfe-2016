@@ -14,6 +14,7 @@ public class Sapmarine {
 
     var usersSet: SortedSet<User> = SortedSet<User>()
     var usersDict: Dictionary<String, User> = Dictionary<String, User>()
+    var profilesDict: Dictionary<String, Profile> = Dictionary<String, Profile>()
     let router: Router = Router()
 
     var newTrips: Dictionary<String, String> = Dictionary<String, String>()
@@ -34,21 +35,26 @@ public class Sapmarine {
                 next()
             }
 
+            let userNameOptional = try self.GetUserFromSessionOrCancelRequest(request, response)
+            if userNameOptional == nil {
+                response.statusCode = .badRequest
+                try response.end()
+                return
+            }
+
+            let allTripsArray = self.newTrips.map { (key, value) in ["passenger": key, "description": value] }
+            let driversTripsArray = self.processingTrips
+                .filter { (key, value) in value.driver == userNameOptional!}
+                .map { (key, value) in ["passenger": value.passenger, "driver": value.driver, "id": value.id] }
+
             let context: [String: Any] = [
-                "users": self.usersSet.map { ["name":$0.name, "rating":$0.rating()] }
+                "users": self.usersSet.map { ["name": $0.name, "rating": $0.rating()] },
+                "trips": driversTripsArray + allTripsArray
             ]
 
+            print(context);
+
             try response.render("index.stencil", context: context).end()
-        }
-
-        router.get("/") { request, response, next in
-            let sess = request.session
-
-            if let sess = sess, let user = sess["user"].string {
-                try response.send("User '\(user)'").end()
-            } else {
-               try response.send("No user logged in").end()
-            }
         }
 
         router.get("/login") { request, response, next in
@@ -56,7 +62,7 @@ public class Sapmarine {
             let pass = self.FindParam(request, "pass")
 
             if user == "" || pass == "" {
-                response.statusCode = .forbidden
+                response.statusCode = .badRequest
                 try response.send("Params 'user' and 'pass' can't be empty").end()
                 return;
             }
@@ -73,6 +79,35 @@ public class Sapmarine {
 
             try response.redirect("/").end()
             // try response.send("Sucessfully registered new user '\(user)'").end();
+        }
+
+        router.get("/setProfile") { request, response, next in
+            let userNameOptional = try self.GetUserFromSessionOrCancelRequest(request, response)
+            if userNameOptional == nil {
+                response.statusCode = .badRequest
+                try response.end()
+                return
+            }
+
+            let fullName = self.FindParam(request, "fullName")
+            let job = self.FindParam(request, "job")
+            let notes = self.FindParam(request, "notes")
+
+            if fullName == "" || job == "" || notes == ""{
+                response.statusCode = .badRequest
+                try response.send("Params 'fullName', 'job', 'notes' can't be empty").end()
+                return;
+            }
+
+            if self.profilesDict[userNameOptional!] != nil{
+                response.statusCode = .forbidden
+                try response.send("Profile is already set and can't be changed").end()
+                return
+            }
+
+            self.profilesDict[userNameOptional!] = Profile(fullName, job, notes)
+
+            try response.end()
         }
 
         router.get("/addTrip") { request, response, next in

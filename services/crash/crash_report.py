@@ -113,8 +113,8 @@ def SubmitHandler():
 			return json.dumps( { 'status' : 'fail' } )
 		zipFileData = dump_zip_file.file.read()
 
-		service_name = request.headers.get( 'service_name' )
-		guid = request.headers.get( 'guid' )
+		service_name = request.headers.get( 'Service-Name' )
+		guid = request.headers.get( 'GUID' )
 		if not guid or not service_name:
 			print "There is no service name or guid in headers"
 			return json.dumps( { 'status' : 'fail' } )
