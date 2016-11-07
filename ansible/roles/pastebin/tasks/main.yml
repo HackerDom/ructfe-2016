@@ -3,16 +3,17 @@
   apt: name={{ item }} default_release=testing
   with_items:
     - libssl-dev
-    - make
     - luarocks
-    - g++
     - git
 
 - name: Copy service
-  copy:
+  synchronize:
     src: "{{ playbook_dir }}/../services/pastebin/"
     dest: "/etc/nginx/"
-    owner: www-data
+    recursive: yes
+    use_ssh_args: yes
+    rsync_opts:
+      - "--exclude=rand.c"
   notify: restart nginx
 
 - name: Install lua requirements
@@ -21,6 +22,8 @@
     - { name: md5, creates: md5.lua }
     - { name: lapis, creates: lapis }
 
-- name: Make rand
-  make: chdir=/etc/nginx/ target=rand.so
-  notify: restart nginx
+- name: Fix permissions
+  file: name="/etc/nginx/" state=directory owner=www-data recurse=yes
+
+- name: Add startup for config.lua
+  lineinfile: dest=/etc/rc.local insertbefore="exit 0"  line="/etc/nginx/startup.sh"

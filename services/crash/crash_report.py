@@ -149,7 +149,7 @@ def SubmitHandler():
 
 		try:
 			# google-breakpad/src/processor/minidump_stackwalk minidump.dmp ./symbols
-			TOOL_NAME = "./minidump_stackwalk"
+			TOOL_NAME = "minidump_stackwalk"
 			STACKWALK_FILENAME = os.path.join( report_dir, "stackwalk.txt" )
 			STACKWALK_ERRORS_FILENAME = os.path.join( report_dir, "stackwalk_errors.txt" )
 			result = os.system('%s -m %s %s >%s 2>%s' % (TOOL_NAME, dmp_path, SYMBOLS_DIR, STACKWALK_FILENAME, STACKWALK_ERRORS_FILENAME))

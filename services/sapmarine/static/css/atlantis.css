@@ -1,0 +1,127 @@
+html {
+	height:100%!important
+}
+
+body, .body{
+	height:100%
+}
+
+body {
+	background-color:#363940;
+	color: white;
+	position:relative;
+	font-size:14px;
+}
+
+.service-page .navbar-brand {
+	background: none !important;
+	width: auto !important;
+	text-indent: 0 !important;
+	letter-spacing: 2px !important;
+	margin-left:0px !important;
+}
+
+.service-page .navbar-default .navbar-brand {
+	background-image: none !important;
+}
+
+.navbar .container {
+	padding: 0px;
+}
+
+/* Main block */
+.main-block {
+	position: relative;
+	height: 100%;
+}
+
+.home-page .main-block {
+	background-position:0 0;
+	background-attachment:fixed;
+	-webkit-background-size:cover;
+	background-size:cover;
+	background-image: url(/static/img/bg.jpg);
+}
+
+/* Container */
+.container {
+	height: 100%;
+}
+
+.container .caption {
+	margin-top: 100px;
+	padding-bottom: 50px;
+}
+
+.home-page .container .caption {
+	position: relative;
+	top: 50%;
+	margin-top: -70px;
+}
+
+/* Content block */
+.content-block {
+	padding-left: 70px;
+}
+
+.center-block img.logo {
+	display: block;
+	margin: auto;
+}
+
+.btn-default.disabled,
+.btn-default.disabled.active,
+.btn-default.disabled.focus,
+.btn-default.disabled:active,
+.btn-default.disabled:focus,
+.btn-default.disabled:hover,
+.btn-default[disabled],
+.btn-default.active[disabled],
+.btn-default.focus[disabled],
+.btn-default[disabled]:active,
+.btn-default[disabled]:focus,
+.btn-default[disabled]:hover,
+fieldset[disabled] .btn-default,
+fieldset[disabled] .btn-default.active,
+fieldset[disabled] .btn-default.focus,
+fieldset[disabled] .btn-default:active,
+fieldset[disabled] .btn-default:focus,
+fieldset[disabled] .btn-default:hover {
+	background-color: #363940; /* Fix #fff background-color */
+}
+
+/* Links */
+a {
+	text-decoration: underline;
+}
+
+#header a,
+.navbar a,
+a.btn {
+	text-decoration: none;
+}
+
+a:hover,
+a:focus,
+a:active {
+	color: #336;
+	text-decoration: none;
+}
+
+.btn-blank {
+	text-decoration: none;
+}
+
+.main-page-link {
+	margin-right: 20px;
+	position: relative;
+	top: -2px;
+}
+
+.well {
+	background: transparent none repeat scroll 0% 0%;
+	border: 1px solid #ddc !important;
+	box-shadow: none;
+	border-radius: 5px !important;
+	border-left: 6px solid #595 !important;
+}
