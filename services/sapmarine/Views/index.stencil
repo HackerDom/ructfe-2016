@@ -60,7 +60,26 @@
 									</tr>										
 									{% endfor %}
 								</table>
+								
 								<div class="extra-space-l"></div>
+								
+								<table class="table">
+									<thead><tr>
+										<th>passenger</th>
+										<th>description</th>
+										<th>driver</th>
+										<th>id</th>
+									</tr></thead>
+									
+									{% for trip in trips %}
+									<tr>
+									  <td>{{ trip.passenger }}</td>
+									  <td>{{ trip.description }}</td>
+									  <td>{{ trip.driver }}</td>
+									  <td>{{ trip.id }}</td>
+									</tr>										
+									{% endfor %}
+								</table>
 								<!--<a class="btn btn-default btn-lg" href="/login" role="button">Login</a>-->
 							</div>
 						</div>
