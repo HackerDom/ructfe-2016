@@ -1,0 +1,22 @@
+---
+- name: Install requirements
+  apt: name=libc6-dev-i386
+
+- name: Create user
+  user: createhome=yes name=weather
+
+- name: Copy service
+  copy:
+    src: "/tmp/weather"
+    dest: "/home/weather/weather"
+    owner: weather
+    mode: 0755
+
+- name: Add systemd service
+  template: src=service.j2 dest=/lib/systemd/system/weather.service
+
+- name: Enable service
+  service: name=weather enabled=yes
+
+- name: Start service
+  service: name=weather state=started

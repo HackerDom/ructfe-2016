@@ -1,0 +1,13 @@
+[Unit]
+Description=weather
+After=network.target
+
+[Service]
+ExecStart=/home/weather/weather
+User=weather
+Restart=always
+RestartSec=5
+WorkingDirectory=/home/weather/
+
+[Install]
+WantedBy=multi-user.target
