@@ -21,9 +21,11 @@
   with_items:
     - { name: md5, creates: md5.lua }
     - { name: lapis, creates: lapis }
+  notify: restart nginx
 
 - name: Fix permissions
   file: name="/etc/nginx/" state=directory owner=www-data recurse=yes
+  notify: restart nginx
 
 - name: Add startup for config.lua
   lineinfile: dest=/etc/rc.local insertbefore="exit 0"  line="/etc/nginx/startup.sh"
