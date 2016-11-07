@@ -12,9 +12,12 @@
     flag_life_time => 15,
     flags => {port => 31337, timeout => 5 * 60},
     admin => {auth => 'root:Da0eeWooLoovajuMaic2'},
-    checkers       => {}
+    checkers       => {
+      hostname => sub { my ($team, $service) = @_; "$service->{name}.$team->{host}.ructfe.org" }
+    }
   },
   teams => [
+    {name => 'team706', network => '10.62.194.0/24',host => '10.62.194.2'},
     {name => 'team_1',	network => '10.60.1.0/24',	host => '10.60.1.2'},
     {name => 'team_2',	network => '10.60.2.0/24',	host => '10.60.2.2'},
     {name => 'team_3',	network => '10.60.3.0/24',	host => '10.60.3.2'},
@@ -367,7 +370,7 @@
     {name => 'team_350',	network => '10.61.94.0/24',	host => '10.61.94.2'},
   ],
   services => [
-    {name => 'selenium', path => 'checkers/selenium_checker.py', timeout => 30},
-    {name => 'crash',    path => 'checkers/crash/checker.py',    timeout => 30},
+    {name => 'crash',    path => 'checkers/crash/checker.py',    timeout => 20},
+    {name => 'pastebin', path => 'checkers/pastebin/checker.py', timeout => 20},
   ],
 }
