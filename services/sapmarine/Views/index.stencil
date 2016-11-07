@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="utf-8">
 		<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
-		<title>Sapmarine � Atlantis � RuCTFE 2016</title>
+		<title>Sapmarine • Atlantis • RuCTFE 2016</title>
 		<meta name="description" content="Sapmarine. Chat while enjoying free submarine transportation">
 		<meta name="keywords" content="Atlantis, RuCTFE, Sapmarine">
 		<meta name="author" content="Hackerdom, hackerdom.ru, Kost">
@@ -20,7 +20,8 @@
 					<div class="container">
 						<div class="navbar-header">
 							<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-navbar-collapse"></button>
-							<a class="navbar-brand" href="/home">Sapmarine</a>
+							<a class="navbar-brand" href="/home">Atlantis</a>
+							<a class="navbar-brand navbar-brand-service" href="/">Sapmarine</a>
 						</div>
 						<div class="collapse navbar-collapse" id="bs-navbar-collapse">
 							<ul class="nav navbar-nav navbar-right">
@@ -46,11 +47,11 @@
 									Chat while enjoying free submarine transportation
 								</div>
 
-								<table>
-									<tr>
+								<table class="table">
+									<thead><tr>
 										<th>name</th>
 										<th>rating</th>
-									</tr>
+									</tr></thead>
 									
 									{% for user in users %}
 									<tr>
