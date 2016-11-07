@@ -10,10 +10,10 @@
     ctf            => {name => 'RuCTFE 2016 test mode'},
     round_length   => 60,
     flag_life_time => 15,
-    flags => {port => 31337, timeout => 5 * 60},
+    flags => {port => 31337, timeout => 5 * 60, secret => 'SeWoh2zevieb'},
     admin => {auth => 'root:Da0eeWooLoovajuMaic2'},
     checkers       => {
-      hostname => sub { my ($team, $service) = @_; "$service->{name}.$team->{host}.ructfe.org" }
+      hostname => sub { my ($team, $service) = @_; "$service->{name}.$team->{name}.ructfe.org" }
     }
   },
   teams => [
@@ -370,7 +370,7 @@
     {name => 'team_350',	network => '10.61.94.0/24',	host => '10.61.94.2'},
   ],
   services => [
-    {name => 'crash',    path => 'checkers/crash/checker.py',    timeout => 20},
-    {name => 'pastebin', path => 'checkers/pastebin/checker.py', timeout => 20},
+    {name => 'crash',    path => 'checkers/crash/checker.py',             timeout => 20},
+    {name => 'pastebin', path => 'checkers/pastebin/pastebin.checker.py', timeout => 20},
   ],
 }
