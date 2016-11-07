@@ -14,13 +14,12 @@ server {
         proxy_set_header            Connection $connection_upgrade;
         client_max_body_size        50m;
         proxy_pass                  http://{{ item.name }}.lxc:{{ item.port }};
+        proxy_intercept_errors      on;
+        error_page                  404 =200 /common$uri;
     }
 
-    location /static/ {
-        try_files $uri @static;
-    }
-
-    location @static {
+    location /common/static/ {
+        internal;
         root /var/www/;
     }
 

@@ -77,8 +77,6 @@
       - "lxc.cgroup.memory.limit_in_bytes = {{ item.mem | default(512000000) }}"
       - "lxc.cgroup.memory.memsw.limit_in_bytes = {{ item.mem | default(512000000) }}"
     container_command: |
-      DEBIAN_FRONTEND=noninteractive apt-get update
-      DEBIAN_FRONTEND=noninteractive apt-get install -y python
       sed -i 's/PermitRootLogin\s*without-password/PermitRootLogin yes/g' /etc/ssh/sshd_config
       mkdir -p /root/.ssh/
       echo "{{ SSH_PUBLIC_KEY }}" > /root/.ssh/authorized_keys
