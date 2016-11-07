@@ -24,6 +24,8 @@ echo "iface eth0 inet static" >> /etc/network/interfaces.d/eth0.cfg
 echo "address 10.$((60 + TEAM / 256)).$((TEAM % 256)).2" >>  /etc/network/interfaces.d/eth0.cfg
 echo "netmask 255.255.255.0" >>  /etc/network/interfaces.d/eth0.cfg
 echo "gateway 10.$((60 + TEAM / 256)).$((TEAM % 256)).1" >>  /etc/network/interfaces.d/eth0.cfg
+echo "dns-nameservers 192.168.254.254 8.8.8.8" >>  /etc/network/interfaces.d/eth0.cfg
+echo "dns-search lxc" >>  /etc/network/interfaces.d/eth0.cfg
 
 echo "Here is your new /etc/network/interfaces.d/eth0.cfg:"
 cat /etc/network/interfaces.d/eth0.cfg
@@ -35,3 +37,8 @@ echo
 echo "Network configuration is over"
 
 sed -i '/ONETIME/d' /root/.bashrc
+
+echo
+echo "Restart nginx with new dns"
+
+systemctl restart nginx

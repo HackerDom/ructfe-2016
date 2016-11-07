@@ -16,7 +16,7 @@
 
 - name: generate eth0
   copy:
-    content: "allow-hotplug eth0\niface eth0 inet dhcp"
+    content: "allow-hotplug eth0\niface eth0 inet dhcp\ndns-search lxc\ndns-nameservers 192.168.254.254 8.8.8.8"
     dest: /etc/network/interfaces.d/eth0.cfg
     force: yes
 

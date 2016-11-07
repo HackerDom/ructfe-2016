@@ -32,7 +32,7 @@ function OnLogin() {
 function OnLogout() {
 	$.ajax('/logout', 
 	{
-		type: 'GET'
+		type: 'POST'
 	})
 	.always(function(data) {
 		console.log(data);
@@ -82,7 +82,7 @@ function OnLoadMy() {
 		.done(function(data) {
 			table.empty();
 			data.forEach(function(item) {AppendPostInfo(table, item)});
-		})
+		});
 	},
 	60000);
 }

@@ -11,6 +11,7 @@ static bool dumpCallback( const google_breakpad::MinidumpDescriptor& descriptor,
 
 
 //
+void _EQUAL();
 void _0();
 void _1();
 void _2();
@@ -47,7 +48,32 @@ void _W();
 void _X();
 void _Y();
 void _Z();
-void _EQ();
+void _a();
+void _b();
+void _c();
+void _d();
+void _e();
+void _f();
+void _g();
+void _h();
+void _i();
+void _j();
+void _k();
+void _l();
+void _m();
+void _n();
+void _o();
+void _p();
+void _q();
+void _r();
+void _s();
+void _t();
+void _u();
+void _v();
+void _w();
+void _x();
+void _y();
+void _z();
 
 
 //
@@ -56,7 +82,10 @@ VoidFunc g_funcPtrs[] =
     { &_0, &_1, &_2, &_3, &_4, &_5, &_6, &_7, &_8, &_9, 
       &_A, &_B, &_C, &_D, &_E, &_F, &_G, &_H, &_I, &_J, 
       &_K, &_L, &_M, &_N, &_O, &_P, &_Q, &_R, &_S, &_T, 
-      &_U, &_V, &_W, &_X, &_Y, &_Z, &_EQ };
+      &_U, &_V, &_W, &_X, &_Y, &_Z, 
+  	  &_a, &_b, &_c, &_d, &_e, &_f, &_g, &_h, &_i, &_j, 
+      &_k, &_l, &_m, &_n, &_o, &_p, &_q, &_r, &_s, &_t, 
+      &_u, &_v, &_w, &_x, &_y, &_z, &_EQUAL };
 
 
 //
@@ -81,7 +110,10 @@ char* g_flagPtr = nullptr;
 	if( isdigit( symbol ) )\
 		funcIdx = symbol - 0x30;\
 	if( isalpha( symbol ) )\
-		funcIdx = symbol - 0x41 + 10;\
+		if( symbol < 0x5B )\
+			funcIdx = symbol - 0x41 + 10;\
+		else\
+			funcIdx = symbol - 0x61 + 36;\
 	if( symbol == '=' ) \
 		funcIdx = sizeof( g_funcPtrs ) / sizeof( VoidFunc ) - 1;\
 	\
@@ -90,6 +122,7 @@ char* g_flagPtr = nullptr;
 
 
 //
+void _EQUAL(){ PROCESS_SYMBOL() }
 void _0(){ PROCESS_SYMBOL() }
 void _1(){ PROCESS_SYMBOL() }
 void _2(){ PROCESS_SYMBOL() }
@@ -126,7 +159,46 @@ void _W(){ PROCESS_SYMBOL() }
 void _X(){ PROCESS_SYMBOL() }
 void _Y(){ PROCESS_SYMBOL() }
 void _Z(){ PROCESS_SYMBOL() }
-void _EQ(){ PROCESS_SYMBOL() }
+void _a(){ PROCESS_SYMBOL() }
+void _b(){ PROCESS_SYMBOL() }
+void _c(){ PROCESS_SYMBOL() }
+void _d(){ PROCESS_SYMBOL() }
+void _e(){ PROCESS_SYMBOL() }
+void _f(){ PROCESS_SYMBOL() }
+void _g(){ PROCESS_SYMBOL() }
+void _h(){ PROCESS_SYMBOL() }
+void _i(){ PROCESS_SYMBOL() }
+void _j(){ PROCESS_SYMBOL() }
+void _k(){ PROCESS_SYMBOL() }
+void _l(){ PROCESS_SYMBOL() }
+void _m(){ PROCESS_SYMBOL() }
+void _n(){ PROCESS_SYMBOL() }
+void _o(){ PROCESS_SYMBOL() }
+void _p(){ PROCESS_SYMBOL() }
+void _q(){ PROCESS_SYMBOL() }
+void _r(){ PROCESS_SYMBOL() }
+void _s(){ PROCESS_SYMBOL() }
+void _t(){ PROCESS_SYMBOL() }
+void _u(){ PROCESS_SYMBOL() }
+void _v(){ PROCESS_SYMBOL() }
+void _w(){ PROCESS_SYMBOL() }
+void _x(){ PROCESS_SYMBOL() }
+void _y(){ PROCESS_SYMBOL() }
+void _z(){ PROCESS_SYMBOL() }
+
+
+//
+void StartFlagProcessing()
+{
+	PROCESS_SYMBOL()
+}
+
+
+//
+void Execute() // dummy fucntion
+{
+
+}
 
 
 //
@@ -136,7 +208,7 @@ int main( int argc, char* argv[] ) {
 
   g_flagSymbolIdx = 0;
   g_flagPtr = argv[ 1 ];
-  PROCESS_SYMBOL()
+  StartFlagProcessing();
 
   return 0;
 }

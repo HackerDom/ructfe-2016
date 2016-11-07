@@ -1,3 +1,5 @@
+import Foundation
+
 public class User : Comparable {
     var name: String
     var passHash: String
@@ -23,7 +25,7 @@ public class User : Comparable {
         let lhsRating = lhs.rating()
         let rhsRating = rhs.rating()
         if lhsRating != rhsRating {
-            return lhsRating < rhsRating
+            return lhsRating > rhsRating
         } else {
             return lhs.name < rhs.name
         }
