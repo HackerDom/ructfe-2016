@@ -42,5 +42,10 @@
 - name: pastebin checker python deps
   pip: executable=pip3 name=aiohttp
 
+- name: weather deps
+  apt: name={{item}} state=latest update_cache=yes
+  with_items:
+    - libc6-i386
+
 - name: checkers owner
   file: path={{cs_dir}}/app/checkers/ owner={{cs_user}} group={{cs_user}} recurse=yes
