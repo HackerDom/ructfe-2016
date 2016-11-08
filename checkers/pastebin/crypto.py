@@ -19,7 +19,7 @@ class Signer:
 		request = {'title': data['title'], 'body': data['body'], 'hostname': hostname, 'username': username}
 		message = dumps(request, sort_keys=True)
 		h = SHA256.new()
-		h.update(message)
+		h.update(message.encode('utf-8'))
 		return h
 	def sign(self, hostname, username, data):
 		h = self.getHash(hostname, username, data)
