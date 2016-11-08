@@ -113,6 +113,8 @@ class State:
 				status, text = await self.post('register', {'user': username, 'password': password}, need_check_status = False)
 			return username, password
 		checker.mumble(error='error while register: status {}, response {}'.format(status, text))
+	async def update_skill(self, skills):
+		await self.post('set-skills', {'skills': skills})
 	async def get_private(self, url):
 		return await self.get(url)
 	def get_listener(self):
@@ -124,7 +126,7 @@ class State:
 		helper = WSHelper(connection)
 		helper.start()
 		return helper
-	async def put_post(self, title=None, body=None, public=None, signed=False, username=None):
+	async def put_post(self, title=None, body=None, public=None, signed=False, username=None, need_skill=False):
 		if title is None:
 			title = checker.get_rand_string(16)
 		if body is None:
@@ -136,6 +138,8 @@ class State:
 			request['is_public'] = 'on'
 		if signed:
 			request['sign'] = self.signer.sign(self.hostname, username, request)
+		if need_skill:
+			request['requirement'] = checker.get_rand_string(10)
 		response = await self.post('publish', request)
 		url = checker.parse_json(response)[0]
 		return url, public, title, body
