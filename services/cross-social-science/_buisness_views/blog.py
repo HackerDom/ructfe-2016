@@ -1,11 +1,13 @@
+import os
 from time import time
 
 from sanic import Blueprint
 from sanic.response import html
-from wtforms import Form, StringField, validators, TextAreaField
+from wtforms import Form, StringField, validators, TextAreaField, HiddenField
 
+import settings
 from _buisness_views import USER_DB_NAME, BLOG_ENTRY_DB_NAME, \
-    COMMENT_ENTRY_DB_NAME
+    COMMENT_ENTRY_DB_NAME, MEDIA_URL
 from entries import get_entry_service
 from users import get_user_service
 from users.decorators import login_required
@@ -36,6 +38,7 @@ class BlogEntryForm(Form):
         validators.Length(min=6, message='Little short for an blog entry?'),
         validators.Length(max=65000, message='Longer then usual blog entry!'),
     ])
+    attachments = HiddenField()
 
 
 class BlogCommentForm(Form):
@@ -43,6 +46,25 @@ class BlogCommentForm(Form):
         validators.Length(min=6, message='Little short for an blog entry?'),
         validators.Length(max=65000, message='Longer then usual blog entry!'),
     ])
+
+
+def _clean_attachments(data):
+    if not data:
+        return []
+    links = []
+    for x in data.split(';'):
+        x = x.strip()
+        if not x:
+            continue
+        if '..' in x:
+            continue
+        if not x.startswith(MEDIA_URL + '/'):
+            continue
+        x = x[len(MEDIA_URL + '/'):]
+        if not os.path.exists(os.path.join(settings.DATA_DIR, x)):
+            continue
+        links.append(x)
+    return links
 
 
 @bp.route('/')
@@ -53,12 +75,14 @@ async def blog(request):
     blog = get_entry_service(BLOG_ENTRY_DB_NAME)
     if request.method == 'POST' and form.validate():
         user = get_user_service(USER_DB_NAME)
-
         text = form.text.data
         title = form.title.data
+        attachments = _clean_attachments(form.attachments.data)
+        print(attachments)
         try:
             await blog.create_entry(title, content=text, meta={
-                'user': (await user.get_request_user(request)).username
+                'user': (await user.get_request_user(request)).username,
+                'attachments': attachments,
             })
             return redirect(request, '/')
         except Exception as e:

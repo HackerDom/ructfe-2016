@@ -2,5 +2,8 @@ USER_DB_NAME = None
 REDIRECT_AFTER_LOGIN = '/'
 REDIRECT_AFTER_LOGOUT = '/login'
 
+MEDIA_URL = '/media'
+
 BLOG_ENTRY_DB_NAME = 'blog'
 COMMENT_ENTRY_DB_NAME = 'comments'
+FILES_ENTRY_DB_NAME = 'files'
