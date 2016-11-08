@@ -94,7 +94,7 @@ class State:
 		except Exception as ex:
 			checker.down(error='{}\n{}'.format(url, data), exception=ex)
 	async def login(self, username, password):
-		await self.post('login', {'user': username, 'password': password})
+		await self.register(username, password)
 	async def logout(self):
 		await self.post('logout')
 	async def register(self, username=None, password=None):

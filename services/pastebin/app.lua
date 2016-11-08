@@ -20,26 +20,6 @@ app:before_filter(function(self)
 	self.options.layout = false
 end)
 
-app:post('/register', function(self)
-	local client = redis:client()
-	local user, password = get_user_and_password(self)
-
-	if not user then
-		return {status = 400, json = {'user and password must be present'}}
-	end
-
-	if client:user_exists(user) then
-		return {status = 400, json = {'username already exists'}}
-	end
-
-	client:create_user(user, password)
-	if not client:user_exists(user, password) then
-		return {status = 400, json = {'username already exists'}}
-	end
-
-	self.session.user = user
-end)
-
 app:post('/login', function(self)
 	local client = redis:client()
 	local user, password = get_user_and_password(self)
@@ -124,6 +104,10 @@ app:post('/all', function(self)
 		end	
 	end
 	return {json = posts}
+end)
+
+app:post('/reply', function(self)
+	local client = redis:client()
 end)
 
 return app

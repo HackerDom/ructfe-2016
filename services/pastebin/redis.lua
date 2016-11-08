@@ -23,17 +23,14 @@ local function hash(username, password)
 	return md5.sumhexa(username .. config.secret .. password)
 end
 
-local function user_exists(self, username, password)
-	local userid = get_userid(username)
-	if not password then
-		return self.client:exists(userid) ~= 0
-	else
-		return self.client:hget(userid, 'password') == hash(username, password)
-	end
-end
-
 local function create_user(self, username, password)
-	self.client:hmset(get_userid(username), 'password', hash(username, password), 'state', rand.init())
+	local userid = get_userid(username)
+	local passhash = hash(username, password)
+	if self.client:hsetnx(userid, 'password', passhash) == 1 then
+		self.client:hset('stat', rand.init())
+		return true
+	end
+	return self.client:hget(userid, 'password') == passhash
 end
 
 local function create_post(self, username, title, body, public, sign, get_url)
@@ -127,7 +124,6 @@ end
 function module.client()
 	return {
 		client = create_client(),
-		user_exists = user_exists,
 		create_user = create_user,
 		create_post = create_post,
 		get_post = get_post,
