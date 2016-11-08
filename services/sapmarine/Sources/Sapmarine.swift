@@ -1,4 +1,5 @@
 import Foundation
+import Dispatch
 
 import KituraSession
 import KituraStencil
@@ -11,6 +12,8 @@ import Cryptor
 #endif
 
 public class Sapmarine {
+
+    let dispatchQueue = DispatchQueue(label: "collectionsLockQueue")
 
     var usersSet: SortedSet<User> = SortedSet<User>()
     var usersDict: Dictionary<String, User> = Dictionary<String, User>()
@@ -42,15 +45,18 @@ public class Sapmarine {
                 return
             }
 
-            let allTripsArray = self.newTrips.map { (key, value) in ["passenger": key, "description": value] }
-            let driversTripsArray = self.processingTrips
-                .filter { (key, value) in value.driver == userNameOptional!}
-                .map { (key, value) in ["passenger": value.passenger, "driver": value.driver, "id": value.id] }
+            var context: [String: Any] = [:]
+            self.dispatchQueue.sync {
+                let allTripsArray = self.newTrips.map { (key, value) in ["passenger": key, "description": value] }
+                let driversTripsArray = self.processingTrips
+                    .filter { (key, value) in value.driver == userNameOptional!}
+                    .map { (key, value) in ["passenger": value.passenger, "driver": value.driver, "id": value.id] }
 
-            let context: [String: Any] = [
-                "users": self.usersSet.map { ["name": $0.name, "rating": $0.rating()] },
-                "trips": driversTripsArray + allTripsArray
-            ]
+                context = [
+                    "users": self.usersSet.map { ["name": $0.name, "rating": $0.rating()] },
+                    "trips": driversTripsArray + allTripsArray
+                ]
+            }
 
             try response.render("index.stencil", context: context).end()
         }
@@ -72,11 +78,9 @@ public class Sapmarine {
             }
 
             let sess = request.session!
-            // sess["user"] = JSON.parse(string: JSONSerializer.toJson(userObj))
             sess["user"] = JSON(user)
 
             try response.redirect("/").end()
-            // try response.send("Sucessfully registered new user '\(user)'").end();
         }
 
         router.get("/setProfile") { request, response, next in
@@ -103,7 +107,9 @@ public class Sapmarine {
                 return
             }
 
-            self.profilesDict[userNameOptional!] = Profile(fullName, job, notes)
+            self.dispatchQueue.sync {
+                self.profilesDict[userNameOptional!] = Profile(fullName, job, notes)
+            }
 
             try response.end()
         }
@@ -124,7 +130,10 @@ public class Sapmarine {
                 return;
             }
 
-            self.newTrips[userNameOptional!] = description
+            self.dispatchQueue.sync {
+                self.newTrips[userNameOptional!] = description
+            }
+
             try response.end()
         }
 
@@ -143,10 +152,11 @@ public class Sapmarine {
                 return;
             }
 
-            self.newTrips.removeValue(forKey: passengerName)
-
             let trip = Trip(passengerName, driverNameOptional!)
-            self.processingTrips[trip.id] = trip
+            self.dispatchQueue.sync {
+                self.newTrips.removeValue(forKey: passengerName)
+                self.processingTrips[trip.id] = trip
+            }
 
             try response.send(trip.id).end()
         }
@@ -163,42 +173,34 @@ public class Sapmarine {
             let comment = self.FindParam(request, "comment")
             let markOptional = Int(self.FindParam(request, "mark"))
 
-            if comment == "" || markOptional == nil || markOptional! > 5 || markOptional! < 1{
+            if tripId == "" || comment == "" || markOptional == nil || markOptional! > 5 || markOptional! < 1{
                 response.statusCode = .badRequest
-                try response.send("Param 'comment' can't be empty and param 'mark' should be an integer in [1..5]").end();
+                try response.send("Param tripId should contain trip id, param 'comment' can't be empty and param 'mark' should be an integer in [1..5]").end();
                 return
             }
 
             if let trip = self.processingTrips.removeValue(forKey: tripId) {
-                let passengerName = trip.passenger
 
-                // print("Finishing trip '\(tripId)' for passenger '\(passengerName)'")
+                self.dispatchQueue.sync {
+                    let passengerName = trip.passenger
 
-                let passengerOptional = self.usersDict[passengerName]
-                if(passengerOptional == nil){
-                    response.statusCode = .badRequest
-                    try response.end()
-                    return
+                    let passengerOptional = self.usersDict[passengerName]
+                    if(passengerOptional == nil){
+                        response.statusCode = .badRequest
+                        return
+                    }
+
+                    // TODO create method addAfterRemove
+                    self.usersSet.remove(passengerOptional!)
+                    passengerOptional!.comments.append(Comment(driverNameOptional!, passengerName, comment, markOptional!))
+                    self.usersSet.insert(passengerOptional!)
                 }
-
-                // TODO create method addAfterRemove
-                self.usersSet.remove(passengerOptional!)
-                passengerOptional!.comments.append(Comment(driverNameOptional!, passengerName, comment, markOptional!))
-                self.usersSet.insert(passengerOptional!)
 
                 try response.end()
             } else {
                 response.statusCode = .notFound
-                try response.send("Trip with id '\(tripId)' not found in processing trips").end();
+                try response.send("Trip with tripId '\(tripId)' not found in processing trips").end();
             }
-        }
-
-        router.get("/listUsers") { request, response, next in
-            var result = "Users:\n"
-            for user in self.usersSet {
-                result += "\(user.name)\t\(user.rating())\n"
-            }
-            try response.send(result).end()
         }
     }
 
@@ -212,21 +214,24 @@ public class Sapmarine {
         let passHash = CryptoUtils.hexString(from: digest);
         let user = User(user, passHash)
 
-        //TODO lock on find and insert
-        if let existingUser = usersSet.find(user) {
-            return existingUser.passHash == user.passHash ? existingUser : nil;
+        var result : User?
+        self.dispatchQueue.sync {
+            if let existingUser = usersSet.find(user) {
+                result = existingUser.passHash == user.passHash ? existingUser : nil;
+            } else {
+                usersSet.insert(user)
+                usersDict[user.name] = user
+                result = user
+            }
         }
-
-        usersSet.insert(user)
-        usersDict[user.name] = user
-        return user
+        return result
     }
 
     private func FindParam(_ request: RouterRequest, _ paramName: String) -> String {
         return request.queryParameters[paramName]?.trim() ?? "";
     }
 
-    public func GetUserFromSessionOrCancelRequest(_ request: RouterRequest, _ response: RouterResponse) throws -> String? {
+    private func GetUserFromSessionOrCancelRequest(_ request: RouterRequest, _ response: RouterResponse) throws -> String? {
         let sess = request.session!
         let user = sess["user"].string
         if(user == nil) {
