@@ -8,6 +8,8 @@
 - name: Update grub
   command: update-grub
   when: grub.changed
+  tags:
+    - skip_ansible_lint
 
 - name: Restart image
   shell: sleep 2 && shutdown -r now "Ansible updates triggered"
@@ -15,11 +17,15 @@
   poll: 0
   ignore_errors: true
   when: grub.changed
+  tags:
+    - skip_ansible_lint
 
 - name: waiting for image to come back
   local_action: wait_for host={{ inventory_hostname }} state=started delay=15 timeout=60
   become: false
   when: grub.changed
+  tags:
+    - skip_ansible_lint
 
 - name: Add backports repo
   apt_repository: repo="deb http://mirror.yandex.ru/debian jessie-backports main" state=present update_cache=yes
@@ -54,25 +60,33 @@
 - name: Restart lxc-net
   service: name=lxc-net state=restarted
   when: "lxc_net.changed or lxc_conf.changed"
+  tags:
+    - skip_ansible_lint
 
 - name: Enable forwarding
   sysctl: name="net.ipv4.ip_forward" value=1 sysctl_set=yes state=present reload=yes
 
 - name: Create lxc container
   lxc_container:
-    name: "{{ item }}"
+    name: "{{ item.name }}"
     template: debian
     state: started
     backing_store: loop
     fs_size: "4G"
     container_config:
-      - "lxc.cgroup.memory.limit_in_bytes = 512000000"
-      - "lxc.cgroup.memory.memsw.limit_in_bytes = 512000000"
+      - "lxc.cgroup.memory.limit_in_bytes = {{ item.mem | default(512000000) }}"
+      - "lxc.cgroup.memory.memsw.limit_in_bytes = {{ item.mem | default(512000000) }}"
     container_command: |
-      DEBIAN_FRONTEND=noninteractive apt-get install -y python
       sed -i 's/PermitRootLogin\s*without-password/PermitRootLogin yes/g' /etc/ssh/sshd_config
       mkdir -p /root/.ssh/
       echo "{{ SSH_PUBLIC_KEY }}" > /root/.ssh/authorized_keys
       systemctl restart ssh
       bash
-  with_items: "{{ groups.services }}"
+  with_items:
+    - { name: build, mem: "1000000000" }
+    - { name: cartographer }
+    - { name: crash }
+    - { name: cross-social-science }
+    - { name: pastebin }
+    - { name: sapmarine }
+    - { name: weather }

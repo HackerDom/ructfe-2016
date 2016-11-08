@@ -39,4 +39,4 @@
   service: name=crash enabled=yes
 
 - name: Start service
-  service: name=crash state=started
+  service: name=crash state=restarted

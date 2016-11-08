@@ -24,12 +24,15 @@
   template: src=web.service.conf.j2 dest=/etc/nginx/web/{{ item.name }}.conf owner=www-data group=www-data
   notify: reload nginx
   with_items:
-    - { name: pastebin, port: 80 }
+    - { name: cartographer, port: 8080 }
     - { name: crash, port: 1080 }
+    - { name: cross-social-science, port: 8000 }
+    - { name: pastebin, port: 80 }
     - { name: sapmarine, port: 31337 }
+    - { name: weather, port: 16780 }
 
-# - name: Install service conf
-#   template: src=service.conf.j2 dest=/etc/nginx/stream/{{ item.name }}.conf owner=www-data group=www-data
-#   notify: reload nginx
-#   with_items:
-#     - { name: pastebin, port: 8080, remote_port: 80 }
+- name: Install service conf
+  template: src=service.conf.j2 dest=/etc/nginx/stream/{{ item.name }}.conf owner=www-data group=www-data
+  notify: reload nginx
+  with_items:
+    - { name: weather, port: 16761 }

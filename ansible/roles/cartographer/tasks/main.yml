@@ -4,8 +4,8 @@
 
 - name: Copy service
   copy:
-    src: "/tmp/cartographer/"
-    dest: "/home/cartographer/"
+    src: "/tmp/cartographer.jar"
+    dest: "/home/cartographer/cartographer.jar"
     owner: cartographer
 
 - name: Fix permissions
@@ -18,4 +18,4 @@
   service: name=cartographer enabled=yes
 
 - name: Start service
-  service: name=cartographer state=started
+  service: name=cartographer state=restarted
