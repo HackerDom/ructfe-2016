@@ -105,7 +105,7 @@ void wt_forecast_type(const char *rawSamples, const int32 *tempSamples, int32 fo
 		{
 			if (tempSamples[i] < 0)
 				type = WT_SNOW;
-			else if (tempSamples[i] < 15)
+			else if (tempSamples[i] < 15 || type == WT_SNOW)
 				type = WT_RAIN;
 		}
 

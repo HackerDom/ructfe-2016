@@ -12,11 +12,12 @@
 #include <netinet/in.h>
 #include <string.h>
 
-#define BUFSIZE 10240
+#define TPSIZE 4096
 
-char inputBuffer[BUFSIZE];
+char data[1024 + 4096];
 
-char template[] = RESPONSE BODY;
+char *inputBuffer = data;
+char *template = data + 1024;
 
 char *weatherTypes[] = {
 	"clear",
@@ -26,6 +27,14 @@ char *weatherTypes[] = {
 	"thunderstorm",
 	"snow"
 };
+
+void init_template()
+{
+	memset(template, 0, TPSIZE);
+
+	strcat(template, RESPONSE);
+	strcat(template, BODY);
+}
 
 void get_forecast(const char *request, char *buffer)
 {
@@ -63,12 +72,17 @@ void get_forecast(const char *request, char *buffer)
 	{
 		requestString++;
 		while (!isspace(requestString[requestLength]))
-			requestLength++; //TODO develop a vuln here
+			requestLength++;
 	}
 	else
 		requestString = "";
 
 	uint64 signature = wt_sign(requestString, requestLength);
+
+	if (!template[0])
+		init_template();
+
+	wt_log_info("last flags: %p", lastValues);
 
 	sprintf(buffer, template,
 		forecast[0], weatherTypes[typeForecast[0]],
@@ -99,9 +113,12 @@ void wt_http_process_client(int32 serverSocket)
 
 	setsockopt(clientSocket, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof(tv));
 
-	read(clientSocket, inputBuffer, BUFSIZE);
+	read(clientSocket, inputBuffer, sizeof(data));
 
-	char response[BUFSIZE];
+	wt_log_info("Len of input: %d", strlen(inputBuffer));
+	wt_log_info("Len of template: %d", strlen(template));
+
+	char response[TPSIZE];
 	get_forecast(inputBuffer, response);
 
 	write(clientSocket, response, strlen(response));
