@@ -30,13 +30,13 @@ class ImagesController(val chunkStorage: ChunkStorage,
                        val chunkReplicator: ChunkReplicator,
                        val keyDeserialized: KeyDeserializer) {
     @RequestMapping("/images/encrypt", method = arrayOf(RequestMethod.POST))
-    fun EncryptImage(@RequestBody image: ByteArray): ResponseEntity<EncryptImageResponse> {
+    fun EncryptImage(@RequestBody(required = false) image: ByteArray?): ResponseEntity<EncryptImageResponse> {
         return throttle(throttler) {
             val id = UUID.randomUUID()
             val sessionKey = keyGenerator.generate()
             val masterKey = masterKeyStorage.get()
 
-            val chunk = chunkCryptography.encrypt(sessionKey, masterKey, image)
+            val chunk = chunkCryptography.encrypt(sessionKey, masterKey, image ?: ByteArray(0))
             chunkStorage.putChunk(id, chunk)
 
             val replicas = replicasProvider.GetReplicas()

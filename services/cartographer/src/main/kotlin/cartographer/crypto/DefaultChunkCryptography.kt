@@ -12,6 +12,7 @@ import java.security.Key
 class DefaultChunkCryptography(val cryptography: Cryptography,
                                val keyDeserializer: KeyDeserializer,
                                val objectMapper: ObjectMapper) : ChunkCryptography {
+
     override fun encrypt(sessionKey: Key, masterKey: Key, plaintext: ByteArray): ByteArray {
         val metadata = ChunkMetadata(sessionKey.encoded)
         val metadataSerialized = objectMapper.writeValueAsBytes(metadata)
@@ -24,9 +25,9 @@ class DefaultChunkCryptography(val cryptography: Cryptography,
     }
 
     override fun decrypt(sessionKey: Key, masterKey: Key, ciphertext: ByteArray): ByteArray {
-        val metadataEncryptedLength = bytesToInt(ciphertext.slice(0..3).toByteArray())
-        val metadataEncrypted = ciphertext.slice(4..(4 + metadataEncryptedLength - 1)).toByteArray()
-        val imageEncrypted = ciphertext.slice((4 + metadataEncryptedLength)..(ciphertext.size - 1)).toByteArray()
+        val metadataEncryptedLength = bytesToInt(ciphertext)
+        val metadataEncrypted = ciphertext.sliceArray(4 until 4 + metadataEncryptedLength)
+        val imageEncrypted = ciphertext.sliceArray(4 + metadataEncryptedLength until ciphertext.size)
 
         val metadataSerialized = cryptography.decrypt(masterKey, metadataEncrypted)
         val metadata = objectMapper.readValue(metadataSerialized, ChunkMetadata::class.java)
