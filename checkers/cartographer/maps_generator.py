@@ -1,5 +1,6 @@
 from PIL import Image, PngImagePlugin
 import random
+import io
 
 class Point:
     def __init__(self, x, y):
@@ -105,10 +106,16 @@ class SeafloorMap:
         meta.add_text("additionalInfo", flag)
         self.flag = meta
 
+    def getFlag(self):
+        return self.image.info["additionalInfo"]
+
     def toBytes(self):
         imageByteArr = io.BytesIO()
         self.image.save(imageByteArr, format='PNG', pnginfo=self.flag)
         return imageByteArr.getvalue()
+
+    def fromBytes(self, byteArr):
+        return SeafloorMap(Image.open(io.BytesIO(byteArr)))
 
     def save(self, filename):
         self.image.save(filename, format='PNG', pnginfo=self.flag)
@@ -118,8 +125,9 @@ def main():
     generator = SeafloorMapsGenerator()
     seafloorMap = generator.generate()
     seafloorMap.addFlag("Hello!")
-    seafloorMap.save("image.png")
-
+    byteArr = seafloorMap.toBytes()
+    seafloorMap = seafloorMap.fromBytes(byteArr)
+    print(seafloorMap.getFlag())
     
 if __name__ == '__main__':
     main()
