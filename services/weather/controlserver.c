@@ -39,31 +39,16 @@ void wt_update_forecast_data()
 	wt_forecast_temp_update(samples);
 }
 
-void wt_control_process_client(int32 serverSocket)
+void wt_control_process_client(const struct client *client)
 {
-	struct sockaddr_in clientAddress;
-	int32 clientLength = sizeof(clientAddress);
-
-	int32 clientSocket = accept(serverSocket, (struct sockaddr *)&clientAddress, &clientLength);
-	if (clientSocket < 0) 
-	{
-		wt_log_error("Failed to accept control client");
+	if (read(client->socket, &request, sizeof(request)) == 0)
 		return;
-	}
-
-	struct timeval tv;
-
-	tv.tv_sec = 1;
-	tv.tv_usec = 0;
-
-	setsockopt(clientSocket, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof(tv));
-
-	read(clientSocket, &request, sizeof(request));
 
 	if (request.operation == 0)
 	{
+		wt_log_info("handling get");
 		wt_storage_get(request.flagId, request.flag);
-		write(clientSocket, request.flag, sizeof(request.flag));
+		write(client->socket, request.flag, sizeof(request.flag));
 	}
 	else if (request.operation == 1)
 	{
@@ -71,5 +56,5 @@ void wt_control_process_client(int32 serverSocket)
 		wt_update_forecast_data();
 	}
 
-	close(clientSocket);
+	wt_close_client(client);
 }
