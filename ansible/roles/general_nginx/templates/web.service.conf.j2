@@ -2,25 +2,28 @@ server {
     listen  80;
     server_name ~^{{ item.name }}\.(?P<main_host>.+)$;
     location / {
-        proxy_send_timeout          5;
-        proxy_read_timeout          5;
-        proxy_connect_timeout       200ms;
-        proxy_redirect              off;
         proxy_set_header            X-Forwarded-Proto $scheme;
         proxy_set_header            Host              {{ item.name }}.$main_host;
         proxy_set_header            X-Real-IP         $remote_addr;
         proxy_http_version          1.1;
         proxy_set_header            Upgrade $http_upgrade;
         proxy_set_header            Connection $connection_upgrade;
-        client_max_body_size        50m;
         proxy_pass                  http://{{ item.name }}.lxc:{{ item.port }};
-        proxy_intercept_errors      on;
-        error_page                  404 =200 /common$uri;
     }
 
-    location /common/static/ {
-        internal;
-        alias /var/www/static/;
+    location /static/ {
+        root /var/www/;
+        try_files $uri @service;
+    }
+
+    location @service {
+        proxy_set_header            X-Forwarded-Proto $scheme;
+        proxy_set_header            Host              {{ item.name }}.$main_host;
+        proxy_set_header            X-Real-IP         $remote_addr;
+        proxy_http_version          1.1;
+        proxy_set_header            Upgrade $http_upgrade;
+        proxy_set_header            Connection $connection_upgrade;
+        proxy_pass                  http://{{ item.name }}.lxc:{{ item.port }};
     }
 
     location /home {
