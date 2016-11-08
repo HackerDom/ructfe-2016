@@ -5,6 +5,7 @@ import cartographer.helpers.PeriodicalAction
 import cartographer.settings.DurationSetting
 import cartographer.settings.IntSetting
 import cartographer.settings.SettingsContainer
+import org.apache.logging.log4j.LogManager
 import org.springframework.stereotype.Component
 import java.net.InetAddress
 import java.time.Duration
@@ -14,24 +15,37 @@ import java.util.concurrent.Executors
 @Component
 class ClosestReplicasProvider : ReplicasProvider {
     companion object {
-        val maxAllowedLatencySetting = DurationSetting("replicas_provider.max_latency", Duration.ofSeconds(1))
-        val replicasUpdatePeriodSetting = DurationSetting("replicas_provider.update_period", Duration.ofMinutes(1))
-        val threadPoolSize = IntSetting("replicas_provider.thread_pool_size", 30)
+        private val maxAllowedLatencySetting = DurationSetting("replicas_provider.max_latency", Duration.ofSeconds(1))
+        private val replicasUpdatePeriodSetting = DurationSetting("replicas_provider.update_period", Duration.ofMinutes(1))
+        private val threadPoolSize = IntSetting("replicas_provider.thread_pool_size", 30)
 
-        fun updateReplicas(latencyCalculator: LatencyCalculator,
+        private val logger = LogManager.getFormatterLogger()
+
+        private fun updateReplicas(latencyCalculator: LatencyCalculator,
                            executorService: ExecutorService,
                            addressedProvider: AddressedProvider,
                            maxAllowedLatency: Duration): List<Replica> {
 
-            val closestReplicas = addressedProvider.getAddresses()
+            logger.debug("Updating replicas list")
+
+            val futures = addressedProvider.getAddresses()
                     .map {
-                        addr -> executorService.submit({
-                            Pair(addr, latencyCalculator.CalcLatency(addr))
-                        })
+                        addr ->
+                        Pair(addr, executorService.submit<Long?>({
+                            latencyCalculator.CalcLatency(addr)
+                        }))
                     }
-                    .filter { future -> maxAllowedLatency > (future.get() as Pair<*, *>).second as Duration }
-                    .map { future -> (future.get() as Pair<*, *>).first as InetAddress }
-                    .map(::Replica)
+                    .toList();
+            val closestReplicas = futures
+                    .filter {
+                        pair ->
+                            val latencyMillis = pair.second.get()
+                            latencyMillis != null && maxAllowedLatency > Duration.ofMillis(latencyMillis)
+                    }
+                    .map { pair -> Replica(pair.first) }
+
+            logger.debug("New closest replicas list: " +
+                    closestReplicas.joinToString { replica -> replica.address.toString() })
 
             return closestReplicas
         }
