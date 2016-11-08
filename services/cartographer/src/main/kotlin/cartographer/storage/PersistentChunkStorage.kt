@@ -12,9 +12,8 @@ import org.springframework.stereotype.Component
 import java.io.*
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.Semaphore
-import kotlin.concurrent.thread
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 @Component
 @Primary
@@ -26,12 +25,8 @@ class PersistentChunkStorage : ChunkStorage, Closeable {
     }
 
     private val storageFileStream: OutputStream
-
-    private val queue = ConcurrentLinkedQueue<UUID>()
     private val cache = ConcurrentHashMap<UUID, ByteArray>()
-
-    private val requestsSemaphore = Semaphore(0)
-    private val synchronizeThread: Thread
+    private val taskExecutor: ExecutorService
 
     constructor(settingsContainer: SettingsContainer) {
         val storageFileName = storageFileNameSetting.getValue(settingsContainer)
@@ -39,7 +34,7 @@ class PersistentChunkStorage : ChunkStorage, Closeable {
         populateCacheFromFile(storageFile)
         storageFileStream = FileOutputStream(storageFile)
 
-        synchronizeThread = thread { synchronizeQueue() }
+        taskExecutor = Executors.newSingleThreadExecutor()
     }
 
     override fun getChunk(id: UUID): ByteArray? {
@@ -48,30 +43,17 @@ class PersistentChunkStorage : ChunkStorage, Closeable {
 
     override fun putChunk(id: UUID, chunk: ByteArray): Boolean {
         if (cache.getOrPut(id, { chunk }) == chunk) {
-            queue.add(id)
-            requestsSemaphore.release()
+            logger.debug("Received new chunk with id $id")
+            taskExecutor.submit { saveToFile(id, chunk) }
             return true
         }
 
+        logger.debug("Chunk with id $id already exists")
         return false
     }
 
     override fun close() {
-        synchronizeThread.interrupt()
-    }
-
-    private fun synchronizeQueue() {
-        while (true) {
-            requestsSemaphore.acquire()
-
-            while (queue.size > 0) {
-                val id = queue.poll()
-                val bytes = cache[id]
-                if (bytes != null) {
-                    saveToFile(id, bytes)
-                }
-            }
-        }
+        taskExecutor.shutdownNow()
     }
 
     private fun getStorageFile(storageFileName: String): File {
