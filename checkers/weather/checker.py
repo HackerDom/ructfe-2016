@@ -10,7 +10,7 @@ OK, CORRUPT, MUMBLE, DOWN, CHECKER_ERROR = 101, 102, 103, 104, 110
 
 
 def check(*args):
-	addr, *use_internal_port = args\
+	addr, vuln, *use_internal_port = args
 
 	data = str(random.random())[2:]
 	signature = subprocess.check_output('./signtool ' + data, shell=True).strip().decode('ascii')
@@ -32,7 +32,7 @@ def check(*args):
 	exit(OK)
 
 def put(*args):
-	addr, flag_id, flag = args
+	addr, flag_id, flag, vuln = args
 
 	request = b'\x01\x00\x00\x00' + flag_id.replace('-', '').encode('ascii') + flag.encode('ascii')
 
@@ -55,7 +55,7 @@ def put(*args):
 	exit(OK)
 
 def get(*args):
-	addr, flag_id, flag = args
+	addr, flag_id, flag, vuln = args
 
 	request = b'\x00\x00\x00\x00' + flag_id.replace('-', '').encode('ascii')
 
