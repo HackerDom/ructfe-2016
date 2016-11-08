@@ -47,5 +47,11 @@
   with_items:
     - libc6-i386
 
+- name: cartographer deps
+  pip: executable=pip3 name={{item}}
+  with_items:
+    - Pillow
+    - requests
+
 - name: checkers owner
   file: path={{cs_dir}}/app/checkers/ owner={{cs_user}} group={{cs_user}} recurse=yes

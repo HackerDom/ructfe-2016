@@ -10,7 +10,6 @@ from stack_walk_parser import StackWalkParser
 import re
 
 SERVICE_NAME = "submarine_internal"
-PORT = 1080
 OK, CORRUPT, MUMBLE, DOWN, CHECKER_ERROR = 101, 102, 103, 104, 110
 
 
@@ -31,15 +30,10 @@ def put(*args):
 	addr = args[0]
 	flag_id = args[1]
 	flag = args[2]
+	minidumpFilePath = "/tmp/" + flag_id + ".dmp"
 
 	# crash the binary and generate minidump
-	cmdLine = './%s %s' % ( SERVICE_NAME, flag )
-	try:
-		minidumpFilePath = subprocess.check_output( cmdLine, shell=True)
-	except subprocess.CalledProcessError as e:
-		minidumpFilePath = e.output
-	minidumpFileName = minidumpFilePath[6:] # skip dumps/
-	guid = os.path.splitext(minidumpFileName)[0]
+	os.system( './%s %s %s' % ( SERVICE_NAME, flag, minidumpFilePath ) )
 
 	# zip minidump file
 	inMemoryZip = BytesIO()
@@ -52,9 +46,9 @@ def put(*args):
 	inMemoryZip.seek(0)
 
 	# submit report
-	url = 'http://%s:%s/submit' % ( addr, PORT )
+	url = 'http://%s/submit' % addr
 	files = { 'dump_zip_file': inMemoryZip.read() }
-	headers = { 'service_name' : SERVICE_NAME, 'guid' : flag_id }
+	headers = { 'Service-Name' : SERVICE_NAME, 'GUID' : flag_id }
 	try:
 		r = requests.post(url, files=files, headers=headers )
 		if r.status_code != 200:
@@ -71,7 +65,7 @@ def get(*args):
 	addr = args[0]
 	flag_id = args[1]
 	flag = args[2]
-	url = 'http://%s:%s/%s/get' % ( addr, PORT, flag_id )
+	url = 'http://%s/%s/get' % ( addr, flag_id )
 	try:
 		r = requests.get( url )
 		if r.status_code != 200:

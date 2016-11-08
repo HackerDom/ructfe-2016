@@ -2,7 +2,6 @@ package cartographer.helpers
 
 import java.util.*
 
-
 fun parseUuidSafe(idString: String?): UUID? {
     try {
         if (idString == null) {

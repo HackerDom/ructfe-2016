@@ -3,10 +3,10 @@
 	<head>
 		<meta charset="utf-8">
 		<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
-		<title>{{title or 'TODO Service name • Atlantis • RuCTFE 2016'}}</title>
+		<title>Crash • Atlantis • RuCTFE 2016</title>
 		<meta name="description" content="TODO Service description">
 		<meta name="keywords" content="Atlantis, RuCTFE, TODO Service keywords">
-		<meta name="author" content="Hackerdom, hackerdom.ru, TODO author">
+		<meta name="author" content="Hackerdom, hackerdom.ru, Ruslan Kutdusov, vorkulsky">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link rel="stylesheet" href="/static/lib/bootstrap/css/bootstrap.min.css">
 		<link rel="stylesheet" href="/static/css/atlantis.css">
@@ -24,12 +24,11 @@
 					<div class="container">
 						<div class="navbar-header">
 							<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-navbar-collapse"></button>
-							<a class="navbar-brand" href="/home">TODO Service name</a>
+							<a class="navbar-brand" href="/">Crash</a>
 						</div>
 						<div class="collapse navbar-collapse" id="bs-navbar-collapse">
 							<ul class="nav navbar-nav navbar-right">
 								<li><a href="/">Home</a></li>
-								<li><a href="/TODO Link">TODO Link name</a></li>
 							</ul>
 						</div>
 					</div>
@@ -45,9 +44,9 @@
 								</a>
 							</div>
 							<div class="col-sm-8 content-block">
-								<h1>TODO Service name</h1>
+								<h1>Crash</h1>
 								<div class="well">
-									TODO Description
+									Crash reports from submarine's internal services
 								</div>
 								<div class="extra-space-l"></div>
 								<div id="sevice-content-wrapper">

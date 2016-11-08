@@ -21,5 +21,5 @@ inMemoryZip.seek(0)
 url = 'http://%s:%s/submit' % ( addr, PORT )
 print url
 files = { 'dump_zip_file': inMemoryZip.read() }
-headers = { 'service_name' : "just_crash", 'guid' : guid }
+headers = { 'Service-Name' : "just_crash", 'GUID' : guid }
 requests.post(url, files=files, headers=headers )

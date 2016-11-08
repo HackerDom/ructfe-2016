@@ -24,6 +24,7 @@
   roles:
     - pastebin-build
     - cartographer-build
+    - weather-build
 
 - hosts: pastebin
   gather_facts: True
@@ -49,6 +50,11 @@
   gather_facts: True
   roles:
     - cartographer
+
+- hosts: weather
+  gather_facts: True
+  roles:
+    - weather
 
 - hosts: image
   gather_facts: True

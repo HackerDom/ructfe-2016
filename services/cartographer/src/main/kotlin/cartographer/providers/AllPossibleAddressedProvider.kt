@@ -4,27 +4,30 @@ import cartographer.settings.IntSetting
 import cartographer.settings.SettingsContainer
 import org.springframework.stereotype.Component
 import java.net.InetAddress
+import java.net.InetSocketAddress
 
 @Component
 class AllPossibleAddressedProvider : AddressedProvider {
     companion object {
-        val maxTeamNumberSetting = IntSetting("addresses_provider.max_team_number", 500)
+        private val maxTeamNumberSetting = IntSetting("addresses_provider.max_team_number", 500)
+        private val targetPortSetting = IntSetting("addresses_provider.target_port", 80)
     }
 
-    val maxTeamNumber: Int
+    private val maxTeamNumber: Int
+    private val targetPort: Int
 
     constructor(settingsContainer: SettingsContainer) {
         maxTeamNumber = maxTeamNumberSetting.getValue(settingsContainer)
+        targetPort = targetPortSetting.getValue(settingsContainer)
     }
 
-    override fun getAddresses(): List<InetAddress> {
+    override fun getAddresses(): List<InetSocketAddress> {
         return (0..maxTeamNumber).map {
-            no -> makeInetAddress(no)
+            no -> InetSocketAddress(makeInetAddress(no), targetPort)
         }
     }
 
     private fun makeInetAddress(no: Int): InetAddress {
-        // TODO: Implement
-        return InetAddress.getLocalHost()
+        return InetAddress.getByName("cartographer.team$no.ructfe.org")
     }
 }

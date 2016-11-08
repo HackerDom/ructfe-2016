@@ -1,0 +1,49 @@
+.wt-icon-large {
+	width: 200px;
+}
+
+.wt-temp-large {
+	font-size: 36px;
+	font-weight: 500;
+	margin: 40px 0 -60px 150px;
+}
+
+.wt-block-large {
+	margin: -30px;
+}
+
+.wt-icon-small {
+	width: 140px;
+}
+
+.wt-temp-small {
+	font-size: 20px;
+	font-weight: 500;
+	margin: 0 0 -50px 110px;
+}
+
+.wt-block-small {
+	margin: 30px 0 0 -15px;
+	display: inline-block;
+}
+
+.wt-signature {
+	margin-top: 60px;
+	font-size: 8px;
+	color: #eee;
+	font-family: monospace;
+}
+
+.wt-well {
+	border: none;
+}
+
+.wt-body {
+	background: #f4f8ff;
+}
+
+.wt-header {
+	margin-top: -40px;
+	margin-bottom: 0;
+	border-bottom: 1px solid #595d8c;
+}

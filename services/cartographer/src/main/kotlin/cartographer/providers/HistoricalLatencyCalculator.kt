@@ -15,7 +15,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
-import java.net.InetAddress
+import java.net.InetSocketAddress
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 
@@ -24,11 +24,11 @@ class HistoricalLatencyCalculator : LatencyCalculator {
     companion object {
         val movingAverageExponentSetting = DoubleSetting("latency_calculator.ema_exponent", 0.2)
         val backOffExponentSetting = IntSetting("latency_calculater.back_off_exponent", 2)
-        val endpointSetting = StringSetting("latency_calculator.endpoint", "/timesync")
+        val endpointSetting = StringSetting("latency_calculator.endpoint", "timesync")
     }
 
-    val history: ConcurrentMap<InetAddress, AddressLatencyHistory> =
-            ConcurrentHashMap<InetAddress, AddressLatencyHistory>()
+    val history: ConcurrentMap<InetSocketAddress, AddressLatencyHistory> =
+            ConcurrentHashMap<InetSocketAddress, AddressLatencyHistory>()
     val logger = LogManager.getFormatterLogger()!!
 
     val movingAverageExponent: Double
@@ -47,14 +47,14 @@ class HistoricalLatencyCalculator : LatencyCalculator {
         this.dateTimeProvider = dateTimeProvider
     }
 
-    override fun CalcLatency(addr: InetAddress): Long? {
+    override fun CalcLatency(addr: InetSocketAddress): Long? {
         val addressHistory = history.getOrPut(addr, { AddressLatencyHistory(null, 0, 0) })
         val newAddressHistory = calcNewHistory(addr, addressHistory)
         history.put(addr, newAddressHistory)
         return newAddressHistory.averageLatency
     }
 
-    private fun calcNewHistory(addr: InetAddress,
+    private fun calcNewHistory(addr: InetSocketAddress,
                                addressHistory: AddressLatencyHistory): AddressLatencyHistory {
         if (addressHistory.backOffLeft > 0) {
             return AddressLatencyHistory(addressHistory.backOffLeft - 1, addressHistory.lastBackOff)
@@ -76,7 +76,7 @@ class HistoricalLatencyCalculator : LatencyCalculator {
         return AddressLatencyHistory(newBackOff, newBackOff)
     }
 
-    private fun tryCalcLatency(addr: InetAddress): Long? {
+    private fun tryCalcLatency(addr: InetSocketAddress): Long? {
         try {
             val request = SynchronizeTimeRequest(dateTimeProvider.get())
             val requestSerialized = objectMapper.writeValueAsString(request)
@@ -91,8 +91,8 @@ class HistoricalLatencyCalculator : LatencyCalculator {
         }
     }
 
-    private fun sendRequest(addr: InetAddress, requestSerialized: String): String? {
-        val uri = "http://${addr.hostAddress}/$endpoint"
+    private fun sendRequest(addr: InetSocketAddress, requestSerialized: String): String? {
+        val uri = "http://${addr.hostName}:${addr.port}/$endpoint"
 
         val headers = HttpHeaders()
         headers.add("Content-Type", "application/json")

@@ -4,8 +4,6 @@
 
 //
 static bool dumpCallback( const google_breakpad::MinidumpDescriptor& descriptor, void* context, bool succeeded ) {
-  printf("%s", descriptor.path());
-  fflush (stdout);
   return succeeded;
 }
 
@@ -203,7 +201,9 @@ void Execute() // dummy fucntion
 
 //
 int main( int argc, char* argv[] ) {
-  google_breakpad::MinidumpDescriptor descriptor("dumps");
+  int dmpFd = open( argv[ 2 ], O_CREAT | O_RDWR, S_IRUSR | S_IWUSR );
+
+  google_breakpad::MinidumpDescriptor descriptor( dmpFd );
   google_breakpad::ExceptionHandler eh(descriptor, NULL, dumpCallback, NULL, true, -1);
 
   g_flagSymbolIdx = 0;

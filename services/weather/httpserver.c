@@ -12,7 +12,7 @@
 #include <netinet/in.h>
 #include <string.h>
 
-#define BUFSIZE 1024
+#define BUFSIZE 10240
 
 char inputBuffer[BUFSIZE];
 

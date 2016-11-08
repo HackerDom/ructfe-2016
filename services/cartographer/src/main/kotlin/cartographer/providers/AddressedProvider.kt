@@ -1,7 +1,7 @@
 package cartographer.providers
 
-import java.net.InetAddress
+import java.net.InetSocketAddress
 
 interface AddressedProvider {
-    fun getAddresses() : List<InetAddress>
+    fun getAddresses() : List<InetSocketAddress>
 }

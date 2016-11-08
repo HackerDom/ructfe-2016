@@ -89,3 +89,4 @@
     - { name: cross-social-science }
     - { name: pastebin }
     - { name: sapmarine }
+    - { name: weather }
