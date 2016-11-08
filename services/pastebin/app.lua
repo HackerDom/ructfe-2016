@@ -1,5 +1,6 @@
 local app = require('lapis').Application()
 local redis = require 'redis'
+local json = require 'json'
 
 require 'utils'
 
@@ -35,6 +36,33 @@ app:post('/login', function(self)
 	end
 end)
 
+app:post('/set-skills', function(self)
+	local client = redis:client()
+	local user = self.session.user
+	local skills = self.req.params_post.skills
+
+	if not user then
+		return {status = 401, json = {'need to login'}}
+	end
+
+	if not skills then
+		return {status = 200}
+	end
+
+	local skills_list = json:decode(skills)
+	if type(skills_list) ~= 'table' then
+		skills = skills:lower()
+		skills_list = {}
+		for word in skills:gmatch("%a+") do
+			table.insert(word)
+		end
+	end
+
+	table.insert('')
+	client:update_skills(user, skills_list)
+	return {status = 200}
+end)
+
 app:post('/logout', function(self)
 	self.session.user = nil
 end)
@@ -45,6 +73,7 @@ app:post('/publish', function(self)
 	local body = self.req.params_post.body
 	local is_public = self.req.params_post.is_public
 	local sign = self.req.params_post.sign
+	local requirement = self.req.params_post.requirement
 	local user = self.session.user
 
 	if not user then
@@ -54,15 +83,15 @@ app:post('/publish', function(self)
 		return {status = 400, json = {'title required'}}
 	end
 
-	if string.len(title) > 1024 then
+	if title:len > 1024 then
 		return {status = 400, json = {'title too large'}}
 	end
 
-	if string.len(body) > 65536 then
+	if body:len() > 65536 then
 		return {status = 400, json = {'body too large'}}
 	end
 
-	if sign and string.len(sign) > 65536 then
+	if sign and sign:len() > 65536 then
 		return {status = 400, json = {'sign too large'}}
 	end
 
@@ -70,8 +99,16 @@ app:post('/publish', function(self)
 		sign = ''
 	end
 
+	if requirement and requirement:len() > 65536 then
+		return {status == 400, json = {'too many requirements'}}
+	end
+
+	if not requirement then
+		requirement = ''
+	end
+
 	is_public = is_public == 'on' and true or false
-	local url = client:create_post(user, title, body, is_public, sign, function(id) return self:url_for('view', {id = id}) end)
+	local url = client:create_post(user, title, body, is_public, requirement, sign, function(id) return self:url_for('view', {id = id}) end)
 
 	if url then
 		return {json = {url}}
@@ -82,7 +119,8 @@ end)
 
 app:get('view', '/post/:id', function(self)
 	local client = redis:client()
-	local data = client:get_post(self.params.id)
+	local user = self.session.user
+	local data = client:get_post(self.params.id, user)
 	if not data then
 		return {status = 404}
 	else

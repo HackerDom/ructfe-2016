@@ -1,6 +1,6 @@
 local server = require 'resty.websocket.server'
 local redis = require 'redis'
-local json = require 'cjson'
+local json = require 'json'
 
 local module = {}
 
@@ -9,7 +9,7 @@ local function send_post(client, socket, post)
 	if not data then
 		return true
 	end
-	local bytes, err = socket:send_text(json.encode(data))
+	local bytes, err = socket:send_text(json:encode(data))
 	return bytes and true or false 
 end
 

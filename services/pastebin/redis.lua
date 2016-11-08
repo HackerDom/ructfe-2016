@@ -33,7 +33,14 @@ local function create_user(self, username, password)
 	return self.client:hget(userid, 'password') == passhash
 end
 
-local function create_post(self, username, title, body, public, sign, get_url)
+local function update_skills(self, user, skills_list)
+	local userid = get_userid(user)
+	local skills = json:encode(skills_list)
+
+	self.client:hset(userid, 'skills', skills)
+end
+
+local function create_post(self, username, title, body, public, requirement, sign, get_url)
 	local userid = get_userid(username)
 
 	local state, value = self.client:hget(userid, 'state')
@@ -49,7 +56,7 @@ local function create_post(self, username, title, body, public, sign, get_url)
 	local listid = get_listid(username)
 
 	self.client:multi()
-	self.client:hmset(postid, 'owner', username, 'public', public, 'url', url, 'title', title, 'body', body, 'sign', sign)
+	self.client:hmset(postid, 'owner', username, 'public', public, 'url', url, 'title', title, 'body', body, 'requirement', requirement, 'sign', sign)
 	self.client:expire(postid, config.ttl)
 	self.client:zadd(listid, expired, postname)
 	if public then
@@ -65,11 +72,38 @@ local function create_post(self, username, title, body, public, sign, get_url)
 	return url
 end
 
-local function get_post(self, postname)
-	local title, body, owner, sign = unpack(self.client:hmget(get_postid(postname), 'title', 'body', 'owner', 'sign'))
-	if title ~= ngx.null and body ~= ngx.null then
-		return {title = title, body = body, owner = owner, sign = sign}
+local function get_post(self, postname, user)
+	local skills
+
+	local title, body, owner, requirement, sign = unpack(self.client:hmget(get_postid(postname), 'title', 'body', 'owner', 'requirement', 'sign'))
+	if title == ngx.null or body == ngx.null then
+		return nil
 	end
+
+	local post = {title = title, body = body, owner = owner, sign = sign}
+
+	if user == owner then
+		return post
+	end
+
+	if not user then
+		skills = {''}
+	else
+		local userid = get_userid(user)
+		skills = self.client:hget(userid, 'skills')
+		skills = json:decode(skills)
+	end
+
+	for k, skill in ipairs(skills) do
+		if skill == requirement then
+			return post
+		end
+		if skill == '' then
+			return nil
+		end	
+	end
+
+	return post
 end
 
 local function get_all(client, key)
@@ -125,6 +159,7 @@ function module.client()
 	return {
 		client = create_client(),
 		create_user = create_user,
+		update_skills = update_skills,
 		create_post = create_post,
 		get_post = get_post,
 		get_public_posts = get_public_posts,
