@@ -1,9 +1,10 @@
 package cartographer.crypto
 
 import cartographer.data.ChunkMetadata
+import cartographer.helpers.bytesToInt
+import cartographer.helpers.intToBytes
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.stereotype.Component
-import java.nio.ByteBuffer
 import java.security.InvalidKeyException
 import java.security.Key
 
@@ -36,13 +37,5 @@ class DefaultChunkCryptography(val cryptography: Cryptography,
         }
 
         return cryptography.decrypt(sessionKey, imageEncrypted)
-    }
-
-    private fun  bytesToInt(bytes: ByteArray): Int {
-        return ByteBuffer.wrap(bytes).int
-    }
-
-    private fun intToBytes(size: Int): ByteArray {
-        return ByteBuffer.allocate(4).putInt(size).array()
     }
 }
