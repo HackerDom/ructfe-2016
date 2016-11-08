@@ -40,7 +40,9 @@ def make_models(db, db_name, loop):
             video players or images.
             """
             try:
-                markdown_content = markdown(self.content, extensions=[])
+                markdown_content = markdown(
+                    self.content, extensions=[], safe_mode="escape",
+                    enable_attributes=False)
                 oembed_content = parse_html(
                     markdown_content,
                     oembed_providers,

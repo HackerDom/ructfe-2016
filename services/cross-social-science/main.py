@@ -2,7 +2,7 @@ import asyncio
 
 from peewee_async import PostgresqlDatabase
 from sanic import Sanic
-from sanic.response import json, text, html
+from sanic.response import json, text
 from sanic.exceptions import ServerError
 
 try:
@@ -10,9 +10,11 @@ try:
 except ImportError:
     async_loop = asyncio
 
+from _buisness_views import BLOG_ENTRY_DB_NAME, COMMENT_ENTRY_DB_NAME
 from _buisness_views.registration import bp as registration
 from _buisness_views.login import bp as login
 from _buisness_views.logout import bp as logout
+from _buisness_views.blog import bp as blog
 from sessions import session_blueprint as sessions, get_session_service
 from users import user_blueprint as users, get_user_service
 from entries import entry_blueprint as entries, get_entry_service
@@ -29,9 +31,9 @@ def make_app(view=None, database=None):
     app = Sanic(__name__)
     app.static('/static', settings.STATIC_DIR)
 
-    @app.route("/", methods=['GET'])
-    async def test_index(request):
-        return html(view.render('index', {'name': 'variables'}))
+    # @app.route("/", methods=['GET'])
+    # async def test_index(request):
+    #     return html(view.render('index', {'name': 'variables'}))
 
     @app.route("/dynamic/<name>/<id:int>")
     async def test_params(request, name, id:int):
@@ -101,19 +103,28 @@ def main(debug=False):
     app.blueprint(sessions, db=database, db_name='sessions', loop=loop)
     app.blueprint(users, db=database, db_name='users', loop=loop,
                   sessions_db_name='sessions')
-    app.blueprint(entries, db=database, db_name='blog', loop=loop)
+    app.blueprint(entries, db=database, db_name=BLOG_ENTRY_DB_NAME,
+                  loop=loop)
+    app.blueprint(entries, db=database, db_name=COMMENT_ENTRY_DB_NAME,
+                  loop=loop)
     app.blueprint(registration, view=view)
     app.blueprint(login, view=view)
     app.blueprint(logout, view=view)
+    app.blueprint(blog, view=view)
 
     # init db
     service = get_user_service()
     service.dropdb()
     service.initdb()
+    loop.run_until_complete(service.create_user('pahaz', 'qwerqwer'))
     service = get_session_service()
     service.dropdb()
     service.initdb()
-    service = get_entry_service()
+    service = get_entry_service(BLOG_ENTRY_DB_NAME)
+    service.dropdb()
+    service.initdb()
+    loop.run_until_complete(service.create_entry('pahaz', 'the best <script>alert(1)</script>most!'))
+    service = get_entry_service(COMMENT_ENTRY_DB_NAME)
     service.dropdb()
     service.initdb()
 
