@@ -22,15 +22,12 @@ class AllPossibleAddressedProvider : AddressedProvider {
     }
 
     override fun getAddresses(): List<InetSocketAddress> {
-        return listOf(InetSocketAddress(InetAddress.getLocalHost(), targetPort))
-
         return (0..maxTeamNumber).map {
             no -> InetSocketAddress(makeInetAddress(no), targetPort)
         }
     }
 
     private fun makeInetAddress(no: Int): InetAddress {
-        // TODO: Implement
-        throw NotImplementedError()
+        return InetAddress.getByName("cartographer.team$no.ructfe.org")
     }
 }

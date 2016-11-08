@@ -28,15 +28,20 @@ class ClosestReplicasProvider : ReplicasProvider {
 
             logger.debug("Updating replicas list")
 
-            val closestReplicas = addressedProvider.getAddresses()
+            val futures = addressedProvider.getAddresses()
                     .map {
                         addr ->
-                        Pair(addr, executorService.submit({
+                        Pair(addr, executorService.submit<Long?>({
                             latencyCalculator.CalcLatency(addr)
                         }))
                     }
-                    .filter { pair -> pair.second.get() != null }
-                    .filter { pair -> maxAllowedLatency > pair.second.get() as Duration }
+                    .toList();
+            val closestReplicas = futures
+                    .filter {
+                        pair ->
+                            val latencyMillis = pair.second.get()
+                            latencyMillis != null && maxAllowedLatency > Duration.ofMillis(latencyMillis)
+                    }
                     .map { pair -> Replica(pair.first) }
 
             logger.debug("New closest replicas list: " +

@@ -8,6 +8,7 @@ import org.apache.logging.log4j.LogManager
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod
 import org.springframework.stereotype.Component
+import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestTemplate
 import java.util.*
 import java.util.concurrent.ExecutorService
@@ -42,18 +43,23 @@ class AsynchronousChunkReplicator : ChunkReplicator {
 
     private fun replicateOne(id: UUID, chunk: ByteArray, replica: Replica) {
         for (attempt in 1..maxRetriesCount) {
-            val uri = "http://${replica.address.hostName}:${replica.address.port}/$chunksEndpoint/$id"
+            try {
+                val uri = "http://${replica.address.hostName}:${replica.address.port}/$chunksEndpoint/$id"
 
-            val rest = RestTemplate()
-            val responseEntity = rest.exchange(uri, HttpMethod.PUT, HttpEntity<ByteArray>(chunk), Unit::class.java)
+                val rest = RestTemplate()
+                val responseEntity = rest.exchange(uri, HttpMethod.PUT, HttpEntity<ByteArray>(chunk), Unit::class.java)
 
-            if (responseEntity.statusCode.is2xxSuccessful) {
-                logger.debug("Successfully put chunk $id to $replica")
-                return
+                if (responseEntity.statusCode.is2xxSuccessful) {
+                    logger.debug("Successfully put chunk $id to $replica")
+                    return
+                }
+            } catch (ex: HttpClientErrorException) {
+                logger.warn("Failed to put chunk $id to $replica after $attempt attempt(s). " +
+                        "Status code: ${ex.statusCode}")
+            } catch (t: Throwable) {
+                logger.warn("Failed to put chunk $id to $replica after $attempt attempt(s). " +
+                        "Unhandled exception: ${t}")
             }
-
-            logger.warn("Failed to put chunk $id to $replica after $attempt attempt(s). " +
-                    "Status code: ${responseEntity.statusCode}")
         }
     }
 }
