@@ -43,27 +43,29 @@ public class Sapmarine {
                 next()
             }
 
-            let userNameOptional = try self.GetUserFromSessionOrCancelRequest(request, response)
-            if userNameOptional == nil {
-                response.statusCode = .badRequest
-                try response.end()
-                return
-            }
+            let userNameOptional = try self.GetUserFromSession(request, response)
 
-            var context: [String: Any] = [:]
+            var stencilContext: [String: Any] = [:]
             self.dispatchQueue.sync {
                 let allTripsArray = self.newTrips.map { (key, value) in ["passenger": key, "description": value] }
                 let driversTripsArray = self.processingTrips
-                    .filter { (key, value) in value.driver == userNameOptional!}
-                    .map { (key, value) in ["passenger": value.passenger, "driver": value.driver, "id": value.id] }
+                    .filter { (key, value) in userNameOptional != nil && value.driver == userNameOptional!}
+                    .map { (key, value) in ["passenger": value.passenger, "driver": value.driver, "id": value.id, "isMine": "1"] }
 
-                context = [
+                stencilContext = [
+                    "isLoggedIn": userNameOptional != nil,
+                    "user": userNameOptional ?? "",
                     "users": self.usersSet.map { ["name": $0.name, "rating": $0.rating()] },
                     "trips": driversTripsArray + allTripsArray
                 ]
             }
 
-            try response.render("index.stencil", context: context).end()
+            try response.render("index.stencil", context: stencilContext).end()
+        }
+
+        router.get("/loginForm") { request, response, next in
+            let stencilContext: [String: Any] = [:]
+            try response.render("login.stencil", context: stencilContext).end()
         }
 
         router.get("/login") { request, response, next in
@@ -88,13 +90,15 @@ public class Sapmarine {
             try response.redirect("/").end()
         }
 
+        router.get("/logout") { request, response, next in
+            let sess = request.session!
+            sess.destroy() { (error: Error?) in }
+            try response.redirect("/").end()
+        }
+
         router.get("/setProfile") { request, response, next in
             let userNameOptional = try self.GetUserFromSessionOrCancelRequest(request, response)
-            if userNameOptional == nil {
-                response.statusCode = .badRequest
-                try response.end()
-                return
-            }
+            if userNameOptional == nil { return }
 
             let fullName = self.FindParam(request, "fullName")
             let job = self.FindParam(request, "job")
@@ -106,26 +110,44 @@ public class Sapmarine {
                 return;
             }
 
-            if self.profilesDict[userNameOptional!] != nil{
-                response.statusCode = .forbidden
-                try response.send("Profile is already set and can't be changed").end()
-                return
-            }
+// self.dispatchQueue.sync {
+                if self.profilesDict[userNameOptional!] != nil{
+                    response.statusCode = .forbidden
+                    try response.send("Profile is already set and can't be changed").end()
+                    return
+                }
 
-            self.dispatchQueue.sync {
                 self.profilesDict[userNameOptional!] = Profile(fullName, job, notes)
+// }
+
+            try response.redirect("/profileForm").end()
+        }
+
+        router.get("/profileForm") { request, response, next in
+            let userNameOptional = try self.GetUserFromSessionOrCancelRequest(request, response)
+            if userNameOptional == nil { return }
+
+            var stencilContext: [String: Any] = [:]
+            self.dispatchQueue.sync {
+
+                let profile = self.profilesDict[userNameOptional!]
+
+                stencilContext = [
+                    "isLoggedIn": userNameOptional != nil,
+                    "isProfileFilledIn": self.profilesDict[userNameOptional!] != nil,
+                    "user": userNameOptional!,
+                    "fullName": profile?.fullName,
+                    "job": profile?.job,
+                    "notes": profile?.notes,
+                ]
             }
 
-            try response.end()
+            try response.render("profile.stencil", context: stencilContext).end()
         }
 
         router.get("/addTrip") { request, response, next in
             let userNameOptional = try self.GetUserFromSessionOrCancelRequest(request, response)
-            if userNameOptional == nil {
-                response.statusCode = .badRequest
-                try response.end()
-                return
-            }
+            if userNameOptional == nil { return }
 
             let description = self.FindParam(request, "description");
 
@@ -144,11 +166,7 @@ public class Sapmarine {
 
         router.get("/takeTrip") { request, response, next in
             let driverNameOptional = try self.GetUserFromSessionOrCancelRequest(request, response)
-            if driverNameOptional == nil {
-                response.statusCode = .badRequest
-                try response.end()
-                return
-            }
+            if driverNameOptional == nil { return }
 
             let passengerName = self.FindParam(request, "passenger");
             if passengerName == "" {
@@ -166,13 +184,31 @@ public class Sapmarine {
             try response.send(trip.id).end()
         }
 
-        router.get("/finishTrip") { request, response, next in
-            let driverNameOptional = try self.GetUserFromSessionOrCancelRequest(request, response)
-            if driverNameOptional == nil {
+        router.get("/reviewForm") { request, response, next in
+            let userNameOptional = try self.GetUserFromSessionOrCancelRequest(request, response)
+            if userNameOptional == nil { return }
+
+            let tripId = self.FindParam(request, "tripId")
+            if tripId == "" {
                 response.statusCode = .badRequest
-                try response.end()
+                try response.send("Param tripId should contain trip id").end();
                 return
             }
+
+            var stencilContext: [String: Any] = [:]
+
+            stencilContext = [
+                "isLoggedIn": userNameOptional != nil,
+                "user": userNameOptional!,
+                "tripId": tripId
+            ]
+
+            try response.render("review.stencil", context: stencilContext).end()
+        }
+
+        router.get("/finishTrip") { request, response, next in
+            let driverNameOptional = try self.GetUserFromSessionOrCancelRequest(request, response)
+            if driverNameOptional == nil { return }
 
             let tripId = self.FindParam(request, "tripId")
             let comment = self.FindParam(request, "comment")
@@ -255,13 +291,17 @@ public class Sapmarine {
     }
 
     private func GetUserFromSessionOrCancelRequest(_ request: RouterRequest, _ response: RouterResponse) throws -> String? {
-        let sess = request.session!
-        let user = sess["user"].string
+        let user = try GetUserFromSession(request, response)
         if(user == nil) {
             response.statusCode = .forbidden
             try response.send("User not logged in").end()
         }
+        return user
+    }
 
+    private func GetUserFromSession(_ request: RouterRequest, _ response: RouterResponse) throws -> String? {
+        let sess = request.session!
+        let user = sess["user"].string
         return user
     }
 }
