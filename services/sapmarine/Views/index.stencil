@@ -25,8 +25,8 @@
 						</div>
 						<div class="collapse navbar-collapse" id="bs-navbar-collapse">
 							<ul class="nav navbar-nav navbar-right">
-								<li><a href="/">Home</a></li>
-								<li><a href="/TODO Link">TODO Link name</a></li>
+								{% if TODO LOGGED IN %}<li><a href="TODO profile.stencil">{{ TODO USER }}</a></li>{% endif %}
+								<li>{% if TODO LOGGED IN %}<a href="TODO login.stencil">Login</a>{% else %}<a href="TODO logout">Logout</a>{% endif %}</li>
 							</ul>
 						</div>
 					</div>
@@ -38,7 +38,7 @@
 						<div class="row">
 							<div class="col-sm-2 center-block">
 								<a href="/">
-									<img src="/static/logos/sapmarine.jpg" class="logo img-responsive">
+									<img src="/static/logos/sapmarine.svg" class="logo img-responsive">
 								</a>
 							</div>
 							<div class="col-sm-8 content-block">
@@ -47,22 +47,7 @@
 									Chat while enjoying free submarine transportation
 								</div>
 
-								<table class="table">
-									<thead><tr>
-										<th>name</th>
-										<th>rating</th>
-									</tr></thead>
-									
-									{% for user in users %}
-									<tr>
-									  <td>{{ user.name }}</td>
-									  <td>{{ user.rating }}</td>
-									</tr>										
-									{% endfor %}
-								</table>
-								
-								<div class="extra-space-l"></div>
-								
+								<br/><h3>Requests</h3>
 								<table class="table">
 									<thead><tr>
 										<th>passenger</th>
@@ -70,17 +55,31 @@
 										<th>driver</th>
 										<th>id</th>
 									</tr></thead>
-									
+
 									{% for trip in trips %}
-									<tr>
-									  <td>{{ trip.passenger }}</td>
-									  <td>{{ trip.description }}</td>
-									  <td>{{ trip.driver }}</td>
-									  <td>{{ trip.id }}</td>
-									</tr>										
+									<tr {% if TODO MY TRIP %} class="warning" {% else if TODO OTHER DRIVER TRIP %} class="info text-muted" {% endif %}>
+										<td>{{ trip.passenger }}</td>
+										<td>{{ trip.description }}</td>
+										<td>{{ trip.driver }}</td>
+										<td>{{ trip.id }}</td>
+									</tr>
 									{% endfor %}
 								</table>
-								<!--<a class="btn btn-default btn-lg" href="/login" role="button">Login</a>-->
+
+								<br/><h3>Users</h3>
+								<table class="table">
+									<thead><tr>
+										<th>name</th>
+										<th>rating</th>
+									</tr></thead>
+
+									{% for user in users %}
+									<tr>
+										<td>{{ user.name }}</td>
+										<td>{{ user.rating }}</td>
+									</tr>
+									{% endfor %}
+								</table>
 							</div>
 						</div>
 					</div>

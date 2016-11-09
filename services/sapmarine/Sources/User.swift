@@ -1,3 +1,4 @@
+import SwiftyJSON
 import Foundation
 
 public class User : Comparable {
@@ -8,6 +9,18 @@ public class User : Comparable {
     init(_ name: String, _ passHash: String) {
         self.name = name
         self.passHash = passHash
+    }
+
+    init(json: JSON) {
+        name = json["name"].stringValue
+        passHash = json["passHash"].stringValue
+        comments = json["comments"].arrayValue.map {
+            Comment(json: $0)
+        }
+    }
+
+    public func toJson() -> String {
+        return JSONSerializer.toJson(self)
     }
 
     public func rating() -> Int {

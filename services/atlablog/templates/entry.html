@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% import '_form_macro.html' as forms %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-xs-12">
+            <h2>{{ entry.title }}</h2>
+            <div class="text">
+                {{ entry.html_content | safe }}
+            </div>
+        </div>
+    </div>
+    <br>
+    <hr>
+    {% for entry in comments %}
+    <div class="row">
+        <div class="col-xs-push-2 col-xs-2">
+            {{ entry.meta.user }}
+        </div>
+        <div class="col-xs-push-2 col-xs-6">
+            <div class="text" id="comment-{{ entry.slug }}">
+                {{ entry.html_content | safe }}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    <hr>
+    <br>
+    <div class="row">
+        <div class="col-xs-push-2 col-xs-10">
+
+    <form action="" method="POST">
+        {{ forms.input_with_errors(form.text, style='font-weight: bold') }}
+        <button type="submit" class="btn btn-default">Submit</button>
+    </form>
+
+        </div>
+    </div>
+{% endblock %}

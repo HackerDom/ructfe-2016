@@ -21,10 +21,6 @@ def check_cookie(cookies):
 			return
 	checker.mumble(error="auth cookie not found. '{}'".format(get_cookie_string(cookies)))
 
-async def check_response(response):
-	await check_status(response)
-	check_cookie(response)
-
 def get_cookie_string(cookies):
 	return '; '.join([str(cookie.key) + '=' + str(cookie.value) for cookie in cookies])
 
@@ -47,7 +43,7 @@ class WSHelper:
 				elif msg.type == aiohttp.WSMsgType.CLOSED:
 					break
 				else:
-					checker.mumble(error='get message with unexpected type {}\nmessage: {}'.format(msg.type, msg.text))
+					checker.mumble(error='get message with unexpected type {}\nmessage: {}'.format(msg.type, msg.data))
 	def want(self, url, owner):
 		self.wanted.add((url, owner))
 	def want_many(self, wanted):
@@ -60,7 +56,7 @@ class WSHelper:
 		self.connection.close()
 
 class State:
-	def __init__(self, hostname, port=80):
+	def __init__(self, hostname, port=None):
 		self.hostname = hostname
 		self.port = '' if port is None else ':' + str(port)
 		self.session = aiohttp.ClientSession(headers={
@@ -86,33 +82,34 @@ class State:
 			async with self.session.post(url, data=data) as response:
 				if need_check_status:
 					await check_status(response)
-				check_cookie(self.session.cookie_jar)
-				if need_check_status:
 					return await response.text()
 				else:
 					return response.status, await response.text()
 		except Exception as ex:
 			checker.down(error='{}\n{}'.format(url, data), exception=ex)
-	async def login(self, username, password):
-		await self.post('login', {'user': username, 'password': password})
 	async def logout(self):
 		await self.post('logout')
-	async def register(self, username=None, password=None):
+	async def login(self, username=None, password=None, skills=None):
 		can_retry = username is None
 		if username is None:
 			username = checker.get_rand_string(8)
 		if password is None:
 			password = checker.get_rand_string(16)
-		status, text = await self.post('register', {'user': username, 'password': password}, need_check_status = False)
+		request = {'user': username, 'password': password}
+		if skills is not None:
+			request['skills'] = skills
+		status, text = await self.post('login', request, need_check_status = False)
 		if status == 200:
+			check_cookie(self.session.cookie_jar)
 			return username, password
 		if status == 400 and can_retry:
 			while status == 400:
-				username = checker.get_rand_string(16)
-				password = checker.get_rand_string(32)
-				status, text = await self.post('register', {'user': username, 'password': password}, need_check_status = False)
+				request['user'] = checker.get_rand_string(16)
+				request['password'] = checker.get_rand_string(32)
+				status, text = await self.post('login', request, need_check_status = False)
+			check_cookie(self.session.cookie_jar)
 			return username, password
-		checker.mumble(error='error while register: status {}, response {}'.format(status, text))
+		checker.mumble(error='error while login: status {}, response {}'.format(status, text))
 	async def get_private(self, url):
 		return await self.get(url)
 	def get_listener(self):
@@ -124,7 +121,7 @@ class State:
 		helper = WSHelper(connection)
 		helper.start()
 		return helper
-	async def put_post(self, title=None, body=None, public=None, signed=False, username=None):
+	async def put_post(self, title=None, body=None, public=None, signed=False, username=None, need_skill=False, skill=None):
 		if title is None:
 			title = checker.get_rand_string(16)
 		if body is None:
@@ -136,14 +133,20 @@ class State:
 			request['is_public'] = 'on'
 		if signed:
 			request['sign'] = self.signer.sign(self.hostname, username, request)
+		if need_skill:
+			if skill is None:
+				skill = checker.get_rand_string(10)
+			request['requirement'] = skill
+		else:
+			requirement = None
 		response = await self.post('publish', request)
 		url = checker.parse_json(response)[0]
-		return url, public, title, body
+		return url, public, title, body, skill
 	async def put_posts(self, username, count=1, signed=False):
 		wanted = set()	
 		content = set()
 		for i in range(count):
-			url, public, title, body = await self.put_post(username=username, signed=signed)
+			url, public, title, body, _ = await self.put_post(username=username, signed=signed)
 			if public:
 				wanted.add((url, username))
 			content.add((url, title, body))
@@ -154,10 +157,6 @@ class State:
 		if signed and not self.signer.check(self.hostname, username, data):
 			checker.mumble(error='fail check sign for url {}'.format(url))
 		return data
-	def check_public(self, username, url):
-		wanted = set()
-		wanted.add((url, username))
-		self.get_publics(wanted, set())
 	async def get_content(self, url, title, body):
 		response = await self.get_post(url)
 		if response['title'] != title:

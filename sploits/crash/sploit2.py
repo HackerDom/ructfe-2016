@@ -5,7 +5,6 @@ import zipfile
 import requests
 from io import BytesIO
 
-PORT = 1080
 addr = sys.argv[1]
 guid = sys.argv[2]
 
@@ -25,7 +24,7 @@ headers = { 'Service-Name' : "submarine_internal", 'GUID' : guid }
 requests.post(url, files=files, headers=headers )
 
 # download zip with reports.db
-url = 'http://%s:%s/%s/get' % ( addr, PORT, guid )
+url = 'http://%s/%s/get' % ( addr, guid )
 r = requests.get( url )
 zip = zipfile.ZipFile( BytesIO( r.content ) )
 database = zip.read( "../../reports.db" )

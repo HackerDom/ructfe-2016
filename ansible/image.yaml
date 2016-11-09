@@ -41,10 +41,10 @@
   roles:
     - sapmarine
 
-- hosts: cross-social-science
+- hosts: atlablog
   gather_facts: True
   roles:
-    - cross-social-science
+    - atlablog
 
 - hosts: cartographer
   gather_facts: True

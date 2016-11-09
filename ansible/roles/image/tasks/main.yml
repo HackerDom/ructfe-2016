@@ -18,7 +18,6 @@
   copy:
     content: "allow-hotplug eth0\niface eth0 inet dhcp\n"
     dest: /etc/network/interfaces.d/eth0.cfg
-    force: yes
 
 - name: generate resolv.conf
   copy: dest=/etc/resolv.conf content="nameserver 192.168.254.254\nnameserver 8.8.8.8\n" force=yes

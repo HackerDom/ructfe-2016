@@ -84,9 +84,9 @@
       bash
   with_items:
     - { name: build, mem: "1000000000" }
-    - { name: cartographer }
+    - { name: cartographer, mem: 512000000 }
     - { name: crash }
-    - { name: cross-social-science }
-    - { name: pastebin }
+    - { name: atlablog }
+    - { name: pastebin, mem: 256000000 }
     - { name: sapmarine }
-    - { name: weather }
+    - { name: weather, mem: 256000000 }

@@ -2,6 +2,7 @@ local redis = require 'resty.redis'
 local config = require('lapis.config').get()
 local rand = require 'rand'
 local md5 = require 'md5'
+local json = require 'json'
 
 require 'utils'
 
@@ -19,24 +20,24 @@ local function get_listid(username)
 	return 'posts:user:' .. username
 end
 
+module.get_listid = get_listid
+
 local function hash(username, password)
 	return md5.sumhexa(username .. config.secret .. password)
 end
 
-local function user_exists(self, username, password)
+local function create_user(self, username, password, skills_list)
 	local userid = get_userid(username)
-	if not password then
-		return self.client:exists(userid) ~= 0
-	else
-		return self.client:hget(userid, 'password') == hash(username, password)
+	local passhash = hash(username, password)
+	if self.client:hsetnx(userid, 'password', passhash) == 1 then
+		local skills = json:encode(skills_list)
+		self.client:hmset(userid, 'state', rand.init(), 'skills', skills)
+		return true
 	end
+	return self.client:hget(userid, 'password') == passhash
 end
 
-local function create_user(self, username, password)
-	self.client:hmset(get_userid(username), 'password', hash(username, password), 'state', rand.init())
-end
-
-local function create_post(self, username, title, body, public, sign, get_url)
+local function create_post(self, username, title, body, public, requirement, sign, get_url)
 	local userid = get_userid(username)
 
 	local state, value = self.client:hget(userid, 'state')
@@ -52,13 +53,14 @@ local function create_post(self, username, title, body, public, sign, get_url)
 	local listid = get_listid(username)
 
 	self.client:multi()
-	self.client:hmset(postid, 'owner', username, 'public', public, 'url', url, 'title', title, 'body', body, 'sign', sign)
+	self.client:hmset(postid, 'owner', username, 'public', public, 'url', url, 'title', title, 'body', body, 'requirement', requirement, 'sign', sign)
 	self.client:expire(postid, config.ttl)
 	self.client:zadd(listid, expired, postname)
 	if public then
 		self.client:zadd('publics', show_time, postname)
 		self.client:publish('publics', postname)
 	end
+	self.client:publish(listid, postname)
 
 	local ok, err = self.client:exec()
 	if not ok then
@@ -68,11 +70,43 @@ local function create_post(self, username, title, body, public, sign, get_url)
 	return url
 end
 
-local function get_post(self, postname)
-	local title, body, owner, sign = unpack(self.client:hmget(get_postid(postname), 'title', 'body', 'owner', 'sign'))
-	if title ~= ngx.null and body ~= ngx.null then
-		return {title = title, body = body, owner = owner, sign = sign}
+local function get_post(self, postname, user)
+	local skills
+
+	local title, body, owner, requirement, sign = unpack(self.client:hmget(get_postid(postname), 'title', 'body', 'owner', 'requirement', 'sign'))
+	if title == ngx.null or body == ngx.null then
+		return nil
 	end
+
+	local post = {title = title, body = body, owner = owner, sign = sign}
+
+	if user == owner then
+		return post
+	end
+
+	local skills_list
+	if not user then
+		skills_list = {''}
+	else
+		local userid = get_userid(user)
+		local skills = self.client:hget(userid, 'skills')
+		if skills == ngx.nul then
+			skills_list = {''}
+		else
+			skills_list = json:decode(skills)
+		end
+	end
+
+	for k, skill in ipairs(skills_list) do
+		if skill == requirement then
+			return post
+		end
+		if skill == '' then
+			return nil
+		end	
+	end
+
+	return post
 end
 
 local function get_all(client, key)
@@ -98,8 +132,8 @@ local function get_all(client, key)
 	end
 end
 
-local function get_public_posts(self)
-	return get_all(self.client, 'publics')
+local function get_list(self, list)
+	return get_all(self.client, list)
 end
 
 local function get_post_info(self, postname)
@@ -127,11 +161,11 @@ end
 function module.client()
 	return {
 		client = create_client(),
-		user_exists = user_exists,
 		create_user = create_user,
+		update_skills = update_skills,
 		create_post = create_post,
 		get_post = get_post,
-		get_public_posts = get_public_posts,
+		get_list = get_list,
 		get_post_info = get_post_info,
 		get_posts_for_user = get_posts_for_user
 	}
@@ -147,18 +181,19 @@ local function get_all_replaies(self)
 end
 
 local function unsubscribe(self)
-	self.client:unsubscribe('publics')
+	self.client:unsubscribe(self.list)
 end
 
-function module.listener()
+function module.listener(list)
 	local client = create_client()
-	local res, err = client:subscribe('publics')
+	local res, err = client:subscribe(list)
 
 	if not res then
 		error('failed for subscribe: ' .. err)
 	end
 	return {
 		client = client,
+		list = list,
 		get_news = get_all_replaies,
 		close = unsubscribe
 	}

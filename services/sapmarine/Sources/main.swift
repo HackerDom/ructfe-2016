@@ -1,3 +1,4 @@
+import Foundation
 import Kitura
 import SwiftyJSON
 
@@ -42,4 +43,6 @@ import SwiftyJSON
 // print(json["name"].string!)
 
 let sapmarine = Sapmarine()
-sapmarine.Run(port: 31337);
+sapmarine.Start(port: 31337);
+
+RunLoop.current.run()

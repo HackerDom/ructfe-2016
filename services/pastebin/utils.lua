@@ -1,4 +1,4 @@
-function print_r(t) 
+function tostring_r(t) 
 	local result = '\n'
 	local function print(s)
 		if s == nil then
@@ -38,7 +38,11 @@ function print_r(t)
 		sub_print_r(t, '  ')
 	end
 	print()
-	ngx.log(ngx.ERR, result)
+	return result
+end
+
+function print_r(t)
+	ngx.log(ngx.ERR, tostring_r(t))
 end
 
 function log(s)

@@ -13,13 +13,15 @@ SERVICE_NAME = "submarine_internal"
 OK, CORRUPT, MUMBLE, DOWN, CHECKER_ERROR = 101, 102, 103, 104, 110
 
 
-def close(code, public="", private=""):
-    if public:
-        print(public)
-    if private:
-        print(private, file=stderr)
-    print('Exit with code %d' % code, file=stderr)
-    exit(code)
+def close(code, public="", private="", minidumpFilePath=""):
+	if public:
+		print(public)
+	if private:
+		print(private, file=stderr)
+	print('Exit with code %d' % code, file=stderr)
+	if minidumpFilePath:
+		os.remove( minidumpFilePath )
+	exit(code)
 
 
 def check(*args):
@@ -41,7 +43,7 @@ def put(*args):
 	try:
 		zf.write( minidumpFilePath, arcname = '%s.dmp' % flag_id )
 	except Exception as e:
-		close(CHECKER_ERROR, "ZIP error", "Unknown error: %s" % e)
+		close(CHECKER_ERROR, "ZIP error", "Unknown error: %s" % e, minidumpFilePath)
 	zf.close()
 	inMemoryZip.seek(0)
 
@@ -52,13 +54,13 @@ def put(*args):
 	try:
 		r = requests.post(url, files=files, headers=headers )
 		if r.status_code != 200:
-			close( MUMBLE, "Submit error", "Invalid status code: %s %d" % ( url, r.status_code ) )	
+			close( MUMBLE, "Submit error", "Invalid status code: %s %d" % ( url, r.status_code ), minidumpFilePath )	
 		r_json = r.json()
 		if r_json[ 'status' ] != 'ok':
-			close( MUMBLE, "Submit error", "Can not put flag" )
+			close( MUMBLE, "Submit error", "Can not put flag", minidumpFilePath )
 	except Exception as e:
-		 close(DOWN, "HTTP Error", "HTTP error: %s" % e)
-	close(OK)
+		 close(DOWN, "HTTP Error", "HTTP error: %s" % e, minidumpFilePath)
+	close(OK, minidumpFilePath=minidumpFilePath)
 
 
 def get(*args):
@@ -96,46 +98,46 @@ def get(*args):
 		dmp = zf.read( dmp_name )
 		open( dmp_path, 'wb' ).write( dmp )
 	except Exception as e:
-		close(CHECKER_ERROR, "Evil checker", "INTERNAL ERROR: %s" % e)
+		close(CHECKER_ERROR, "Evil checker", "INTERNAL ERROR: %s" % e, dmp_path)
 
 	# tested
 	try:
 		stackwalk = subprocess.check_output( './minidump_stackwalk -m %s symbols/ 2>/dev/null' % dmp_path, shell=True)
 	except subprocess.CalledProcessError as e:
-		close( CORRUPT, "Service corrupted", "Invalid minidump file: %s" % e )
+		close( CORRUPT, "Service corrupted", "Invalid minidump file: %s" % e, dmp_path )
 
 	parser = StackWalkParser()
 	parser.parse( stackwalk.decode() )
 
 	if len( parser.crash_thread_stack) < 17: # not tested
-		close( CORRUPT, "Service corrupted", "Invalid minidump file, callstack is too short %s" % parser.crash_thread_stack )
+		close( CORRUPT, "Service corrupted", "Invalid minidump file, callstack is too short %s" % parser.crash_thread_stack, dmp_path )
 	if len( parser.crash_thread_stack) > 32: # not tested
-		close( CORRUPT, "Service corrupted", "Invalid minidump file, callstack is too long" )
+		close( CORRUPT, "Service corrupted", "Invalid minidump file, callstack is too long", dmp_path )
 	if parser.crash_thread_stack[ 16 ][ "signature" ] != 'StartFlagProcessing()': # tested
-		close( CORRUPT, "Service corrupted", "Invalid minidump file, invalid callstack %s" % parser.crash_thread_stack )
+		close( CORRUPT, "Service corrupted", "Invalid minidump file, invalid callstack %s" % parser.crash_thread_stack, dmp_path )
 
 	first_part_flag = ''
 	for i in reversed( range( 0, 16 ) ): 
 		signature = parser.crash_thread_stack[ i ][ "signature" ]
 		result = re.match( r"_(\w)\(\)", signature )
 		if not result: # tested
-			close( CORRUPT, "Service corrupted", "Invalid minidump file, invalid signature in callstack %s" % signature )
+			close( CORRUPT, "Service corrupted", "Invalid minidump file, invalid signature in callstack %s" % signature, dmp_path )
 		first_part_flag = first_part_flag + result.group(1)
 
 	prefix = b'HERE IS THE REST OF YOUR FLAG'
 	prefixPos = dmp.find( prefix )
 	if prefixPos == -1:
-		close( CORRUPT, "Service corrupted", "Invalid minidump file, cant find second part of the flag" )
+		close( CORRUPT, "Service corrupted", "Invalid minidump file, cant find second part of the flag", dmp_path )
 	flagPos = prefixPos + len( prefix ) + 1
 	try: # tested
 		second_part_flag = ( dmp[ flagPos : flagPos + 16 ] ).decode()
 	except Exception as e:
-		close( CORRUPT, "Service corrupted", "Can not get second part of the flag: %s" % e)
+		close( CORRUPT, "Service corrupted", "Can not get second part of the flag: %s" % e, dmp_path)
 
 	restored_flag = first_part_flag + second_part_flag
 	if flag != restored_flag: # tested
-		close( CORRUPT, "Service corrupted", "Flag does not match: %s" % restored_flag )
-	close( OK )
+		close( CORRUPT, "Service corrupted", "Flag does not match: %s" % restored_flag, dmp_path )
+	close( OK, minidumpFilePath=dmp_path )
 
 
 def info(*args):
