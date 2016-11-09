@@ -35,11 +35,11 @@ function getMap(key, id) {
             body: JSON.stringify(data)
         })
         .then(function(response) {
-            return response.json();
+            return response.text();
         })
         .then(function(map) {  
-            if (map) {
-                showMap(map.image)
+            if (map != "") {
+                showMap(map)
             }
         })
         .catch(function(err) {});
@@ -80,11 +80,10 @@ function uploadMap() {
 }
 
 function sendMap(map) {
-    var data = {image: map};
     fetch('/images/encrypt', 
         { 
             method: 'POST',
-            body: JSON.stringify(data)
+            body: map
         })
         .then(function(response) {
             return response.json();
