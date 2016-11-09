@@ -35,7 +35,7 @@ class AsynchronousChunkReplicator : ChunkReplicator {
         executor = Executors.newFixedThreadPool(threadCount)
     }
 
-    override fun replicate(id: UUID, chunk: ByteArray, replicas: List<Replica>) {
+    override fun replicate(id: UUID, chunk: ByteArray, replicas: Collection<Replica>) {
         for (replica in replicas) {
             executor.submit { replicateOne(id, chunk, replica) }
         }

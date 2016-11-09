@@ -9,7 +9,7 @@ import java.net.InetSocketAddress
 @Component
 class AllPossibleAddressedProvider : AddressedProvider {
     companion object {
-        private val maxTeamNumberSetting = IntSetting("addresses_provider.max_team_number", 500)
+        private val maxTeamNumberSetting = IntSetting("addresses_provider.max_team_number", 1023)
         private val targetPortSetting = IntSetting("addresses_provider.target_port", 80)
     }
 
@@ -22,9 +22,13 @@ class AllPossibleAddressedProvider : AddressedProvider {
     }
 
     override fun getAddresses(): List<InetSocketAddress> {
-        return (0..maxTeamNumber).map {
-            no -> InetSocketAddress(makeInetAddress(no), targetPort)
-        }
+        return (0..maxTeamNumber)
+            .map {
+                no -> InetSocketAddress(makeInetAddress(no), targetPort)
+            }
+            .filter {
+                replica -> !replica.address.isLoopbackAddress
+            }
     }
 
     private fun makeInetAddress(no: Int): InetAddress {
