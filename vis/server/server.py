@@ -12,10 +12,11 @@ from time import time
 ROUND_TIME = 10*1000
 
 
-def team_(x): return 'team_{}'.format(x)
-def service_(x): return 'service_{}'.format(x)
+def team_(x): return 't{}'.format(x)
+def service_(x): return 's{}'.format(x)
 
 def gtime(): return int(time()*1000)
+def cround(): return (gtime() - start)//ROUND_TIME + 1
 
 
 @route('/<filepath:path>')
@@ -49,7 +50,7 @@ def scores_page():
     return {
         'table': scores,
         'status': '1',
-        'round': (gtime() - start)//ROUND_TIME + 1
+        'round': cround()
     }
 
 
@@ -82,6 +83,29 @@ def events_page():
     return json.dumps(
         events[bisect.bisect_left(events, [rnd, 0, '', '', '']):]
     )
+
+
+@route('/scoreboard.json')
+@tojson
+def scoreboard_page():
+    return {
+        "round": cround(),
+        "scoreboard": [
+            {
+                "name": team_(t),
+                "score": scores[team_(t)],
+                "services": [
+                    {
+                        "flags": cround()*2 + 1,
+                        "status": random.choice((101, 102, 103, 104, 110)),
+                        "id": service_(s)
+                    }
+                    for s in range(args.services)
+                ]
+            }
+            for t in range(args.teams)
+        ]
+    }
 
 
 def parse_args():
