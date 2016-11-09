@@ -73,19 +73,15 @@ def test_get_entries_4th():
     assert fix_timestamp_data == {'entries': [
         {'created': 1478433519, 'raw_meta': '', 'meta': None,
          'slug': 'hello1', 'id': 1, 'is_published': False, 'title': 'hello1!',
-         'html_content': '<p><em>some</em> <em>content</em></p>',
          'content': '*some* _content_', 'dirty_fields': []},
         {'created': 1478433519, 'raw_meta': '', 'meta': None,
          'slug': 'hello2', 'id': 2, 'is_published': False, 'title': 'hello2!',
-         'html_content': '<p><em>some</em> <em>content</em></p>',
          'content': '*some* _content_', 'dirty_fields': []},
         {'created': 1478433519, 'raw_meta': '', 'meta': None,
          'slug': 'hello3', 'id': 3, 'is_published': False, 'title': 'hello3!',
-         'html_content': '<p><em>some</em> <em>content</em></p>',
          'content': '*some* _content_', 'dirty_fields': []},
         {'created': 1478433519, 'raw_meta': '', 'meta': None,
          'slug': 'hello4', 'id': 4, 'is_published': False, 'title': 'hello4!',
-         'html_content': '<p><em>some</em> <em>content</em></p>',
          'content': '*some* _content_', 'dirty_fields': []}
     ]}
 
@@ -116,10 +112,8 @@ def test_get_entries_with_only_2th_of_4th_published():
     assert fix_timestamp_data == {'entries': [
         {'created': 1478433519, 'raw_meta': '', 'meta': None,
          'slug': 'hello3', 'id': 3, 'is_published': True, 'title': 'hello3!',
-         'html_content': '<p><em>some</em></p>',
          'content': '*some*', 'dirty_fields': []},
         {'created': 1478433519, 'raw_meta': '', 'meta': None,
          'slug': 'hello4', 'id': 4, 'is_published': True, 'title': 'hello4!',
-         'html_content': '<p><em>some</em></p>',
          'content': '*some*', 'dirty_fields': []}
     ]}

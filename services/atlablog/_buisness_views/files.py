@@ -9,6 +9,7 @@ import settings
 from _buisness_views import USER_DB_NAME, FILES_ENTRY_DB_NAME, MEDIA_URL
 from entries import get_entry_service
 from users import get_user_service
+from users.decorators import login_required
 
 bp = Blueprint('files')
 
@@ -44,6 +45,7 @@ def _save_file_on_localhost_filesystem(name, data):
 
 
 @bp.route('/upload')
+@login_required(login_url='/login')
 async def upload(request):
     files = get_entry_service(FILES_ENTRY_DB_NAME)
     errors = []

@@ -22,14 +22,14 @@
 - hosts: build
   gather_facts: True
   roles:
-    - pastebin-build
+    - thebin-build
     - cartographer-build
     - weather-build
 
-- hosts: pastebin
+- hosts: thebin
   gather_facts: True
   roles:
-    - pastebin
+    - thebin
 
 - hosts: crash
   gather_facts: True

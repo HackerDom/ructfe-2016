@@ -7,22 +7,108 @@ body, .body{
 }
 
 body {
-	background-color:#363940;
-	color: white;
 	position:relative;
 	font-size:14px;
+}
+
+/* Home page */
+
+.home-page {
+	background-color:#202447;
+	color: #4E7B92;
+}
+
+.home-page .navbar {
+	min-height: 120px;
+}
+.home-page .navbar-header {
+	text-align: center;
+	width: 100%;
+}
+.home-page .navbar-brand {
+	float: none;
+	margin: 0 auto;
+	font-size: 48px;
+	line-height: 100px;
+}
+@media (max-width: 800px) {
+	.home-page .navbar-brand {display: none}
+}
+.home-page .navbar-default {
+	border-color: transparent;
+	background-color: transparent;
+	top: 50%;
+	margin-top: -50px;
+	pointer-events: none;
+}
+.home-page .navbar > .container .navbar-brand {
+	margin: 0;
+}
+
+.home-page .main-block .container {
+	width: 100%;
+	overflow: hidden;
+}
+.home-page .main-block .container svg {
+	width: 100%;
+	height: 100%;
+}
+
+.service-face {
+	text-align: center;
+	display: table-cell;
+	vertical-align: middle;
+	height: 10%;
+	font-size: 20px;
+	padding: 20px 5%;
+}
+
+/* Service page */
+
+.service-page .navbar-default .navbar-brand {
+	background-image: none !important;
 }
 
 .service-page .navbar-brand {
 	background: none !important;
 	width: auto !important;
 	text-indent: 0 !important;
-	letter-spacing: 2px !important;
-	margin-left:0px !important;
+	margin-left: 0px !important;
 }
 
-.service-page .navbar-default .navbar-brand {
-	background-image: none !important;
+/* Common */
+
+.navbar-brand {
+	font-family: "Segoe UI","Helvetica Neue",Arial,Tahoma,sans-serif;
+	font-weight: 200;
+	text-transform: uppercase;
+}
+
+.navbar-brand-service {
+	font-weight: bold;
+	text-transform: none;
+}
+
+.navbar-default {
+	background-color: #202447;
+	color: #4E7B92;
+}
+
+.navbar-default .navbar-brand,
+.navbar-default .navbar-nav>li>a,
+.navbar-default .navbar-brand:focus,
+.navbar-default .navbar-nav>li>a:focus,
+.navbar-default .navbar-brand:visited,
+.navbar-default .navbar-nav>li>a:visited {
+	color: #4E7B92;
+}
+.navbar-default .navbar-brand:hover,
+.navbar-default .navbar-nav>li>a:hover {
+	color: #588AA3;
+}
+.navbar-default .navbar-brand:active,
+.navbar-default .navbar-nav>li>a:active {
+	color: #42677A;
 }
 
 .navbar .container {
@@ -55,8 +141,6 @@ body {
 
 .home-page .container .caption {
 	position: relative;
-	top: 50%;
-	margin-top: -70px;
 }
 
 /* Content block */
@@ -87,7 +171,7 @@ fieldset[disabled] .btn-default.focus,
 fieldset[disabled] .btn-default:active,
 fieldset[disabled] .btn-default:focus,
 fieldset[disabled] .btn-default:hover {
-	background-color: #363940; /* Fix #fff background-color */
+	background-color: #EEE; /* Fix #fff background-color */
 }
 
 /* Links */
@@ -119,9 +203,16 @@ a:active {
 }
 
 .well {
-	background: transparent none repeat scroll 0% 0%;
-	border: 1px solid #ddc !important;
+	border: none;
 	box-shadow: none;
-	border-radius: 5px !important;
-	border-left: 6px solid #595 !important;
+	border-radius: 0;
+	background: none;
+	padding-left: 0;
+	padding-right: 0;
+	border-bottom: 1px solid #4E7B92;
+	font-size: 20px;
+}
+
+.just-hidden {
+	display: none;
 }

@@ -3,15 +3,14 @@
 	<head>
 		<meta charset="utf-8">
 		<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
-		<title>SOCIAL SCIENCE • Atlantis • RuCTFE 2016</title>
-		<meta name="description" content="Social science blog">
-		<meta name="keywords" content="Atlantis, RuCTFE, science">
+		<title>Atlablog • Atlantis • RuCTFE 2016</title>
+		<meta name="description" content="Your favorite atlantis blog platform">
+		<meta name="keywords" content="Atlantis, RuCTFE, blog, news, atlablog">
 		<meta name="author" content="Hackerdom, hackerdom.ru">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link rel="stylesheet" href="/static/lib/bootstrap/css/bootstrap.min.css">
 		<link rel="stylesheet" href="/static/css/atlantis.css">
-		<link rel="stylesheet" href="/static/social-science.css">
-		{% block extra_head %}{% endblock %}
+		<link rel="stylesheet" href="/static/css/atlablog.css">
 	</head>
 	<body class="service-page" data-spy="scroll" data-target="#main-navbar">
 		<div class="page-loader"></div>
@@ -21,12 +20,17 @@
 					<div class="container">
 						<div class="navbar-header">
 							<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-navbar-collapse"></button>
-							<a class="navbar-brand" href="/">home</a>
+							<a class="navbar-brand" href="/">AtlaBlog</a>
 						</div>
 						<div class="collapse navbar-collapse" id="bs-navbar-collapse">
 							<ul class="nav navbar-nav navbar-right">
-								<li><a href="/login">login</a></li>
-								<li><a href="/registration">registration</a></li>
+								{% if user %}
+									<li><a href="#">{{user.username}} {% if user.meta.email %}({{ user.meta.email }}){% endif %}</a></li>
+									<li><a href="/logout">logout</a></li>
+								{% else %}
+									<li><a href="/login">login</a></li>
+									<li><a href="/registration">registration</a></li>
+								{% endif %}
 							</ul>
 						</div>
 					</div>
@@ -38,14 +42,14 @@
 						<div class="row">
 							<div class="col-sm-2 center-block">
 								<a href="/">
-									<img src="/static/logos/atlablog.svg" class="logo img-responsive">
+									<img src="/static/logos/atlablog.svg" class="logo img-responsive" style="margin-bottom: 20px;">
 								</a>
 							</div>
 							<div class="col-sm-8 content-block">
                                 {% block content %}
-								<h1>TODO Service name</h1>
+								<h1>title</h1>
 								<div class="well">
-									TODO Description
+									Description
 								</div>
 								<div class="extra-space-l"></div>
 								<a class="btn btn-default btn-lg" href="/login" role="button">Login</a>
