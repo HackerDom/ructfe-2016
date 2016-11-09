@@ -15,6 +15,35 @@
 
 {% block content %}
 
+<script>
+    var ENTRIES_COUNT = {{entries_count}};
+    (function(){
+        function stateChange(event) {
+            if (event.target.readyState == 4) {
+                if (event.target.status == 200) {
+                    var data = JSON.parse(event.target.response)
+                    console.log(data)
+                    if (data.entries_count > ENTRIES_COUNT) {
+                        $('#newposturl').attr({
+                            'href': data.last
+                        })
+                        $('.bs-example-modal-sm').modal('show')
+                    }
+                } else {
+                    console.error('api error')
+                }
+            }
+        }
+
+        setInterval(function(){
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = stateChange;
+            xhr.open('GET', '/blog-count.json');
+            xhr.send();
+        }, 5000)
+    })()
+</script>
+
 {% for entry in entries %}
     <div class="row">
         <div class="col-xs-12">
@@ -103,5 +132,14 @@
     {% if next_page %}
     <a href="?page={{next_page}}">next</a>
     {% endif %}
+
+<!-- Small modal -->
+<div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+  <div class="modal-dialog modal-sm" role="document">
+    <div class="modal-content">
+      <h1 style="margin: 19px; text-align: center;">new post! <a id="newposturl" href="">here</a></h1>
+    </div>
+  </div>
+</div>
 
 {% endblock %}

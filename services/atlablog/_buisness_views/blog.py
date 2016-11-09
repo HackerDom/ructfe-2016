@@ -2,7 +2,7 @@ import os
 from time import time
 
 from sanic import Blueprint
-from sanic.response import html
+from sanic.response import html, json
 from wtforms import Form, StringField, validators, TextAreaField, HiddenField
 
 import settings
@@ -99,6 +99,19 @@ async def blog(request):
         'form': form, 'entries': entries, 'entries_count': entries_count,
         'user': user, 'next_page': next_page,
     }))
+
+
+@bp.route('/blog-count.json')
+async def blog_count(request):
+    blog = get_entry_service(BLOG_ENTRY_DB_NAME)
+    entries_count = await blog.get_entries_count()
+    pages = entries_count // 10
+    return json({
+        'first': '/?page=0', 'last': '/?page=' + str(pages),
+        'pages': pages + 1,
+        'entries_count': entries_count,
+        'per_page': 10,
+    })
 
 
 @bp.route('/<name>')
