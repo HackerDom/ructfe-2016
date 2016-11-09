@@ -7,6 +7,7 @@ from sanic.utils import sanic_endpoint_test
 
 from sessions import clear_session_services, get_session_service
 from sessions import session_blueprint
+from users.decorators import login_required
 from . import get_user_service, clear_user_services
 from . import user_blueprint as bp
 
@@ -92,12 +93,13 @@ def test_create_and_login_user():
     assert get_response_session_data(app, response) == {'_username': 'pahaz'}
 
 
+async def register(username, password='JAFNjabwfakjBAWFJfb', meta=None):
+    service = get_user_service()
+    return await service.create_user(username, password, meta=meta)
+
+
 def test_create_and_login_user_then_logout():
     app = make_test_app()
-
-    async def register(username, password='JAFNjabwfakjBAWFJfb', meta=None):
-        service = get_user_service()
-        return await service.create_user(username, password, meta=meta)
 
     @app.route('/')
     async def handler(request):
@@ -110,3 +112,43 @@ def test_create_and_login_user_then_logout():
 
     request, response = sanic_endpoint_test(app, uri='/')
     assert get_response_session_data(app, response) == {'_username': ''}
+
+
+def test_login_required_for_anonymous():
+    app = make_test_app()
+
+    @app.route('/')
+    @login_required(login_url='/mylogin')
+    async def handler(request):
+        service = get_user_service()
+        obj = await service.get_request_user(request)
+        return json({'user': obj})
+
+    request, response = sanic_endpoint_test(app, allow_redirects=False)
+    assert response.status == 302
+    assert response.headers['Location'] == '/mylogin'
+
+
+def test_login_required_for_authenticated():
+    app = make_test_app()
+
+    @app.route('/')
+    async def handler(request):
+        service = get_user_service()
+
+        @login_required(login_url='/mylogin')
+        async def handler2(request):
+            service = get_user_service()
+            obj = await service.get_request_user(request)
+            return json({'user': obj.username})
+
+        user = await register('pahaz')
+        response = json({})
+        await service.set_request_user(request, response, user)
+        session_cookie = [value for value in response.headers.items()][0][1]
+        request.cookies[session_cookie.key] = session_cookie.value
+        return await handler2(request)
+
+    request, response = sanic_endpoint_test(app, allow_redirects=False)
+    assert response.status == 200
+    assert response.text == '{"user":"pahaz"}'

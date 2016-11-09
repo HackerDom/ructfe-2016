@@ -40,15 +40,30 @@ def make_models(db, db_name, loop):
             video players or images.
             """
             try:
-                markdown_content = markdown(self.content, extensions=[])
-                oembed_content = parse_html(
-                    markdown_content,
-                    oembed_providers,
-                    urlize_all=True)
+                markdown_content = markdown(
+                    self.content, extensions=[], safe_mode="escape",
+                    enable_attributes=False)
+                # oembed_content = parse_html(
+                #     markdown_content,
+                #     oembed_providers,
+                #     urlize_all=True)
             except Exception as e:
                 print(e)
                 raise
-            return oembed_content
+
+            attachments = ''
+            if self.meta and isinstance(self.meta.get('attachments'), list):
+                attachments = self.meta['attachments']
+                urls = ['<div><a href="{0}">{0}</a></div>'.format(x)
+                        for x in attachments]
+                attachments = ''.join(urls)
+
+            content = (
+                "<div class=content-wrapper>"
+                "<div class=markdown-content>{}</div>"
+                "<div class=attachments>{}</div>"
+                "</div>")
+            return content.format(markdown_content, attachments)
 
         class Meta:
             database = db

@@ -59,7 +59,13 @@ class EntryService:
 
     async def get_entries(self, limit=100, **kwargs):
         query = self._model.select()
-        conditions = [getattr(self._model, k) == v for k, v in kwargs.items()]
+        conditions = []
+        for key, value in kwargs.items():
+            if key.endswith('__startswith'):
+                key = key[:-len('__startswith')]
+                conditions.append(getattr(self._model, key).startswith(value))
+            else:
+                conditions.append(getattr(self._model, key) == value)
         if conditions:
             query = query.where(*conditions)
         return await self.manager.execute(query.limit(limit))

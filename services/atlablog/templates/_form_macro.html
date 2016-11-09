@@ -1,4 +1,5 @@
 {% macro input_with_errors(field) %}
+    {% set help_text = '' + kwargs.pop('help_text', '') %}
     {% if field.widget.input_type == 'checkbox' %}
     {# field.widget.input_type == 'radio' #}
         {% if field.errors %}
@@ -16,6 +17,7 @@
 
             {% if field.errors %}
             <span class="help-block">
+                <span>{{ help_text }}</span>
                 <ul class="errors">{% for error in field.errors %}<li>{{ error|e }}</li>{% endfor %}</ul>
             </span>
             <span class="sr-only">(error)</span>
@@ -34,6 +36,7 @@
             {{ field(class=css_input_class, **kwargs) }}
             {% if field.errors %}
             <span class="help-block">
+                <span>{{ help_text }}</span>
                 <ul class="errors">{% for error in field.errors %}<li>{{ error|e }}</li>{% endfor %}</ul>
             </span>
             <span class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>

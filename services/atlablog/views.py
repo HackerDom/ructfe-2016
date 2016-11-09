@@ -20,7 +20,7 @@ class View:
         if not os.path.exists(templates_dir):
             raise ValueError("settings['HTML_TEMPLATES_DIR'] does not exists")
         loader = FileSystemLoader([templates_dir])
-        self.engine = Environment(loader=loader)
+        self.engine = Environment(loader=loader, autoescape=True)
 
     def render_as_html(self, template, context):
         t = self.engine.get_template(template + '.html')
