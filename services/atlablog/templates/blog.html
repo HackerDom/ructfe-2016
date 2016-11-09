@@ -28,7 +28,7 @@
 
     <form action="" method="POST">
         {{ forms.input_with_errors(form.title, style='font-weight: bold') }}
-        {{ forms.input_with_errors(form.text, style='font-weight: bold', id="js-file-upload-area", help_text="Drop the file here") }}
+        {{ forms.input_with_errors(form.text, style='font-weight: bold', id="js-file-upload-area") }}
         {{ form.attachments(id="js-file-uploaded-input") }}
         <div id="js-file-uploaded-list"></div>
         <button type="submit" class="btn btn-default">Submit </button> <span id="js-file-upload-status"></span>
