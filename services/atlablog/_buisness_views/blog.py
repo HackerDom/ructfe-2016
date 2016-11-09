@@ -34,7 +34,7 @@ class BlogEntryForm(Form):
         validators.Length(min=6, message='Little short for an title?'),
         validators.Length(max=1000, message='Longer then usual title!'),
     ])
-    text = TextAreaField('Text', [
+    text = TextAreaField('Text (drop the file here)', [
         validators.Length(min=6, message='Little short for an blog entry?'),
         validators.Length(max=65000, message='Longer then usual blog entry!'),
     ])
@@ -73,22 +73,26 @@ async def blog(request):
     form = BlogEntryForm(request.form) if request.method == 'POST' else \
         BlogEntryForm()
     blog = get_entry_service(BLOG_ENTRY_DB_NAME)
+    user_service = get_user_service(USER_DB_NAME)
+    user = await user_service.get_request_user(request)
     if request.method == 'POST' and form.validate():
-        user = get_user_service(USER_DB_NAME)
         text = form.text.data
         title = form.title.data
         attachments = _clean_attachments(form.attachments.data)
         print(attachments)
         try:
             await blog.create_entry(title, content=text, meta={
-                'user': (await user.get_request_user(request)).username,
+                'user': user.username,
                 'attachments': attachments,
             })
             return redirect(request, '/')
         except Exception as e:
             form.text.errors.append(str(e))
     entries = await blog.get_entries(limit=10)
-    return html(bp.view.render('blog', {'form': form, 'entries': entries}))
+    return html(bp.view.render('blog', {
+        'form': form, 'entries': entries,
+        'user': user
+    }))
 
 
 @bp.route('/<name>')
@@ -96,6 +100,8 @@ async def blog(request):
 async def comment(request, name):
     blog = get_entry_service(BLOG_ENTRY_DB_NAME)
     comments = get_entry_service(COMMENT_ENTRY_DB_NAME)
+    user_service = get_user_service(USER_DB_NAME)
+    user = await user_service.get_request_user(request)
     try:
         entry = await blog.get_entries(limit=1, slug=name)
         entry = entry[0]
@@ -106,16 +112,16 @@ async def comment(request, name):
     form = BlogCommentForm(request.form) if request.method == 'POST' else \
         BlogCommentForm()
     if request.method == 'POST' and form.validate():
-        user = get_user_service(USER_DB_NAME)
         text = form.text.data
         try:
             slug = name + str(time())
             await comments.create_entry("", content=text, slug=slug, meta={
-                'user': (await user.get_request_user(request)).username
+                'user': user.username
             })
             return redirect(request, '/' + name)
         except Exception as e:
             form.text.errors.append(str(e))
     return html(bp.view.render('entry', {
-        'form': form, 'entry': entry, 'comments': comment_entries
+        'form': form, 'entry': entry, 'comments': comment_entries,
+        'user': user,
     }))
