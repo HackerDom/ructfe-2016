@@ -42,44 +42,23 @@
 								</a>
 							</div>
 							<div class="col-sm-8 content-block">
-								<h1>Sapmarine</h1>
-								<div class="well">
-									Chat while enjoying free submarine transportation
-								</div>
+								<h1>Profile</h1>
+								<div class="well"></div>
 
-								<br/><h3>Requests</h3>
-								<table class="table">
-									<thead><tr>
-										<th>passenger</th>
-										<th>description</th>
-										<th>driver</th>
-										<th>id</th>
-									</tr></thead>
-
-									{% for trip in trips %}
-									<tr {% if TODO MY TRIP %} class="warning" {% else if TODO OTHER DRIVER TRIP %} class="info text-muted" {% endif %}>
-										<td>{{ trip.passenger }}</td>
-										<td>{{ trip.description }}</td>
-										<td>{{ trip.driver }}</td>
-										<td>{{ trip.id }}</td>
-									</tr>
-									{% endfor %}
-								</table>
-
-								<br/><h3>Users</h3>
-								<table class="table">
-									<thead><tr>
-										<th>name</th>
-										<th>rating</th>
-									</tr></thead>
-
-									{% for user in users %}
-									<tr>
-										<td>{{ user.name }}</td>
-										<td>{{ user.rating }}</td>
-									</tr>
-									{% endfor %}
-								</table>
+								<form action="/todo" method="POST">
+									<div class="form-group form-group-lg">
+										<input type="text" class="form-control" name="todo" {% if TODO FILLED %} readonly {% endif %} placeholder="Job" maxlength="256">
+									</div>
+									<div class="form-group form-group-lg">
+										<input type="text" class="form-control" name="todo" {% if TODO FILLED %} readonly {% endif %} placeholder="About" maxlength="256">
+									</div>
+									<div class="form-group form-group-lg">
+										<input type="text" class="form-control" name="todo" {% if TODO FILLED %} readonly {% endif %} placeholder="Private" maxlength="256">
+									</div>
+									<div class="form-group form-group-lg">
+										<button type="submit" class="btn btn-lg btn-primary" {% if TODO FILLED %} disabled {% endif %}>Submit</button>
+									</div>
+								</form>
 							</div>
 						</div>
 					</div>
