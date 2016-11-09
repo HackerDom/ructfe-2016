@@ -87,7 +87,7 @@ def events_page():
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-n', '--teams', type=int, help='teams count',
-                        default=900)
+                        default=350)
     parser.add_argument('-s', '--services', type=int, help='services count',
                         default=6)
     parser.add_argument('-q', '--frequency', type=int, help='attack frequency',
