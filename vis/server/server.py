@@ -33,7 +33,7 @@ def tojson(fn):
 
 
 
-@route('/info')
+@route('/api/info')
 @tojson
 def info_page():
     return {
@@ -43,7 +43,7 @@ def info_page():
     }
 
 
-@route('/scoreboard')
+@route('/api/scoreboard')
 @tojson
 def scores_page():
     return {
@@ -73,7 +73,7 @@ def update_events():
         scores[team_(attacker)] += 1
 
 
-@route('/events')
+@route('/api/events')
 @tojson
 def events_page():
     update_events()
