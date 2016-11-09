@@ -1,6 +1,6 @@
 CC = gcc
-CFLAGS = -std=c99 -m32 -O0 -fno-stack-protector 
-LDFLAGS = -m32 -shared-libgcc -s
+CFLAGS = -std=c99 -m32 -O0 -fno-stack-protector  -fpie
+LDFLAGS = -m32 -shared-libgcc -s -pie
 DEPS =
 
 %.o: %.c $(DEPS)

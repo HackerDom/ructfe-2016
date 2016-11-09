@@ -7,6 +7,16 @@
 #include <netinet/in.h>
 #include <fcntl.h>
 
+
+void wt_make_nonblocking(int32 socket)
+{
+	int32 flags;
+	if ((flags = fcntl(socket, F_GETFL, 0)) < 0)
+		wt_error("Failed to get socket flags");
+	if (fcntl(socket, F_SETFL, flags | O_NONBLOCK) < 0)
+		wt_error("Failed to set socket flags");
+}
+
 int32 wt_start_server(uint32 address, int32 port)
 {
 	int32 serverSocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -28,11 +38,7 @@ int32 wt_start_server(uint32 address, int32 port)
 	if (bind(serverSocket, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) < 0) 
 		wt_error("Failed to bind server socket");
 
-	int32 flags;
-	if ((flags = fcntl(serverSocket, F_GETFL, 0)) < 0)
-		wt_error("Failed to get socket flags");
-	if (fcntl(serverSocket, F_SETFL, flags | O_NONBLOCK) < 0)
-		wt_error("Failed to set socket flags");
+	wt_make_nonblocking(serverSocket);
 
 	if (listen(serverSocket, 100) < 0)
 		wt_error("Failed to listen on server socket");

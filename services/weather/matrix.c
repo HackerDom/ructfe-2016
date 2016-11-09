@@ -155,7 +155,8 @@ void m_invert(const struct matrix *src, struct matrix *dest, struct matrix *temp
 			if (col == temp->width - 1)
 				break;
 
-			wt_error("Failed to invert matrix: matrix is singular");
+			wt_log_error("Failed to invert matrix: matrix is singular");
+			return;
 		}
 
 		if (firstNonzero != row)

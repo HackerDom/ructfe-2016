@@ -13,8 +13,7 @@ FILE *storageFile;
 
 struct tree_node
 {
-	struct tree_node *next[26];
-	char *value;
+	void *next[26];
 } root;
 
 struct record
@@ -48,19 +47,27 @@ void update_last_saved(char *value)
 	lastValues[WT_LAST_SAVED - 1] = value;
 }
 
-void save_record(const char *key, const char *value)
+bool validate_node_key(int32 nodeKey, const char *key)
+{
+	if (nodeKey >= 26 || nodeKey < 0)
+	{
+		wt_log_warn("Received a key with invalid character: %.*s", KEYSIZE, key);
+		return false;
+	}
+
+	return true;
+}
+
+bool save_record(const char *key, const char *value)
 {
 	struct tree_node *node = &root;
 
-	for (int32 i = 0; i < KEYSIZE; i++)
+	for (int32 i = 0; i < KEYSIZE - 1; i++)
 	{
 		int32 nodeKey = key[i] - 'a';
 
-		if (nodeKey >= 26)
-		{
-			wt_log_warn("Received a key with invalid character '%c': %.*s", key[i], KEYSIZE, key);
-			return;
-		}
+		if (!validate_node_key(nodeKey, key))
+			return false;
 
 		if (!node->next[nodeKey])
 		{
@@ -72,17 +79,24 @@ void save_record(const char *key, const char *value)
 		node = node->next[nodeKey];
 	}
 
-	if (node->value)
+	int32 valueKey = key[KEYSIZE - 1] - 'a';
+
+	if (!validate_node_key(valueKey, key))
+		return false;
+
+	if (node->next[valueKey])
 	{
 		wt_log_warn("Conflict: tried to write by already existing key: %.*s", KEYSIZE, key);
-		return;
+		return false;
 	}
 
-	node->value = (char *)malloc(VALSIZE);
+	node->next[valueKey] = malloc(VALSIZE);
 
-	memcpy(node->value, value, VALSIZE);
+	memcpy(node->next[valueKey], value, VALSIZE);
 
-	update_last_saved(node->value);
+	update_last_saved((char *)node->next[valueKey]);
+
+	return true;
 }
 
 void wt_init_storage(const char *filename)
@@ -127,11 +141,8 @@ void wt_storage_get(const char *key, char *value)
 	{
 		int32 nodeKey = key[i] - 'a';
 
-		if (nodeKey >= 26 || nodeKey < 0)
-		{
-			wt_log_warn("Received a key with invalid character '%c': %.*s", key[i], KEYSIZE, key);
+		if (!validate_node_key(nodeKey, key))
 			return;
-		}
 
 		if (!node->next[nodeKey])
 			return;
@@ -139,17 +150,15 @@ void wt_storage_get(const char *key, char *value)
 		node = node->next[nodeKey];
 	}
 
-	if (!node->value)
-		return;
-
-	memcpy(value, node->value, VALSIZE);
+	memcpy(value, node, VALSIZE);
 }
 
 void wt_storage_put(const char *key, const char *value)
 {
-	fwrite(key, KEYSIZE, 1, storageFile);
-	fwrite(value, VALSIZE, 1, storageFile);
-	fflush(storageFile);
-
-	save_record(key, value);
+	if (save_record(key, value))
+	{
+		fwrite(key, KEYSIZE, 1, storageFile);
+		fwrite(value, VALSIZE, 1, storageFile);
+		fflush(storageFile);
+	}
 }
