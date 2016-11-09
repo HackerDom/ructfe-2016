@@ -11,7 +11,7 @@ async def handler_check(hostname):
 	unregistered = State(hostname)
 	listener = unregistered.get_listener()
 	state = State(hostname)
-	username, password = await state.register()
+	username, password = await state.login()
 	wanted, contents = await state.put_posts(username, 5)
 	await unregistered.get_contents(contents)
 	listener.want_many(wanted)
@@ -31,7 +31,7 @@ async def handler_get_1(hostname, id, flag):
 async def handler_put_1(hostname, id, flag):
 	state = State(hostname)
 	public_before = random.randrange(2) == 0
-	username, password = await state.register()
+	username, password = await state.login()
 	await state.put_posts(username, random.randrange(3), True)
 	if public_before:
 		public_id, _, _, _, _ = await state.put_post(public=True, signed=True, username=username)
@@ -48,10 +48,9 @@ async def handler_put_1(hostname, id, flag):
 async def handler_get_2(hostname, id, flag):
 	id = json.loads(id)
 	state = State(hostname)
-	user, _ = state.register()
 	skill = id["skill"]
+	user, _ = state.login(skills=skill)
 	url = id["url"]
-	await state.update_skill(skill)
 	file = await state.get_post(url, True, user)
 	if file['body'] != flag:
 		return checker.corrupt(message="Bad flag: expected {}, found {}".format(flag, file['body']))
@@ -59,7 +58,7 @@ async def handler_get_2(hostname, id, flag):
 
 async def handler_put_2(hostname, id, flag):
 	state = State(hostname)
-	username, _ = state.register()
+	username, _ = state.login()
 	url, _, _, _, skill = await state.put_post(body=flag, public=True, signed=True, usename=username, need_skill=True)
 	checker.ok(message=json.dump({'username': username, 'url': url, 'skill': skill}))
 

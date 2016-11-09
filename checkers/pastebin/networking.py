@@ -21,10 +21,6 @@ def check_cookie(cookies):
 			return
 	checker.mumble(error="auth cookie not found. '{}'".format(get_cookie_string(cookies)))
 
-async def check_response(response):
-	await check_status(response)
-	check_cookie(response)
-
 def get_cookie_string(cookies):
 	return '; '.join([str(cookie.key) + '=' + str(cookie.value) for cookie in cookies])
 
@@ -60,7 +56,7 @@ class WSHelper:
 		self.connection.close()
 
 class State:
-	def __init__(self, hostname, port=80):
+	def __init__(self, hostname, port=None):
 		self.hostname = hostname
 		self.port = '' if port is None else ':' + str(port)
 		self.session = aiohttp.ClientSession(headers={
@@ -86,35 +82,34 @@ class State:
 			async with self.session.post(url, data=data) as response:
 				if need_check_status:
 					await check_status(response)
-				check_cookie(self.session.cookie_jar)
-				if need_check_status:
 					return await response.text()
 				else:
 					return response.status, await response.text()
 		except Exception as ex:
 			checker.down(error='{}\n{}'.format(url, data), exception=ex)
-	async def login(self, username, password):
-		await self.register(username, password)
 	async def logout(self):
 		await self.post('logout')
-	async def register(self, username=None, password=None):
+	async def login(self, username=None, password=None, skills=None):
 		can_retry = username is None
 		if username is None:
 			username = checker.get_rand_string(8)
 		if password is None:
 			password = checker.get_rand_string(16)
-		status, text = await self.post('register', {'user': username, 'password': password}, need_check_status = False)
+		request = {'user': username, 'password': password}
+		if skills is not None:
+			requests['skills'] = skills
+		status, text = await self.post('login', request, need_check_status = False)
 		if status == 200:
+			check_cookie(self.session.cookie_jar)
 			return username, password
 		if status == 400 and can_retry:
 			while status == 400:
-				username = checker.get_rand_string(16)
-				password = checker.get_rand_string(32)
-				status, text = await self.post('register', {'user': username, 'password': password}, need_check_status = False)
+				request['user'] = checker.get_rand_string(16)
+				request['password'] = checker.get_rand_string(32)
+				status, text = await self.post('login', request, need_check_status = False)
+			check_cookie(self.session.cookie_jar)
 			return username, password
-		checker.mumble(error='error while register: status {}, response {}'.format(status, text))
-	async def update_skill(self, skills):
-		await self.post('set-skills', {'skills': skills})
+		checker.mumble(error='error while login: status {}, response {}'.format(status, text))
 	async def get_private(self, url):
 		return await self.get(url)
 	def get_listener(self):
@@ -139,15 +134,18 @@ class State:
 		if signed:
 			request['sign'] = self.signer.sign(self.hostname, username, request)
 		if need_skill:
-			request['requirement'] = checker.get_rand_string(10)
+			requirement = checker.get_rand_string(10)
+			request['requirement'] = requirement
+		else:
+			requirement = None
 		response = await self.post('publish', request)
 		url = checker.parse_json(response)[0]
-		return url, public, title, body
+		return url, public, title, body, requirement
 	async def put_posts(self, username, count=1, signed=False):
 		wanted = set()	
 		content = set()
 		for i in range(count):
-			url, public, title, body = await self.put_post(username=username, signed=signed)
+			url, public, title, body, _ = await self.put_post(username=username, signed=signed)
 			if public:
 				wanted.add((url, username))
 			content.add((url, title, body))
