@@ -5,7 +5,6 @@ import zipfile
 import requests
 from io import BytesIO
 
-PORT = 1080
 addr = sys.argv[1]
 guid = sys.argv[2]
 
@@ -18,7 +17,7 @@ zf.close()
 inMemoryZip.seek(0)
 
 # submit report
-url = 'http://%s:%s/submit' % ( addr, PORT )
+url = 'http://%s/submit' % ( addr )
 print url
 files = { 'dump_zip_file': inMemoryZip.read() }
 headers = { 'Service-Name' : "just_crash", 'GUID' : guid }
