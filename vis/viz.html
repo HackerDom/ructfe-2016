@@ -31,8 +31,8 @@
 	<script>
 		var viz;
 		$.when(
-			$.getJSON("./info"),
-			$.getJSON("./scoreboard")
+			$.getJSON("./api/info"),
+			$.getJSON("./api/scoreboard")
 		).done(function(infoResult, scoreboardResult) {
 			if (infoResult[1] === "success" && scoreboardResult[1] === "success")
 			{

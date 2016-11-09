@@ -83,7 +83,7 @@ var Viz = function(infoData, startScoreboard) {
 	}, 0);
 
 	function load_data() {
-		$.getJSON("./scoreboard").done(function (scoreboardData) {
+		$.getJSON("./api/scoreboard").done(function (scoreboardData) {
 			scoreboard = scoreboardData;
 			load_events();
 			load_services_statuses();
@@ -100,7 +100,7 @@ var Viz = function(infoData, startScoreboard) {
 		if (cur_round === scoreboard.round) { return; }
 		var next_round = scoreboard.round;
 
-		$.getJSON('./events?from=' + cur_round).done(function (eventsData) {
+		$.getJSON('./api/events?from=' + cur_round).done(function (eventsData) {
 			for (var i = 0; i < eventsData.length; ++i) {
 				if (cur_round <= eventsData[i][0] && eventsData[i][0] < next_round) {
 					pending_events.push(eventsData[i]);
