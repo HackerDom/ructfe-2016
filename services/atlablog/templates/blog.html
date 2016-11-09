@@ -20,13 +20,13 @@
         <div class="col-xs-12">
             <a href="/{{ entry.slug }}"><h2>{{ entry.title }}</h2></a>
             <div class="text">
-                {{ entry.html_content | safe }}
+                {{ entry.html_content(attachments=False) | safe }}
             </div>
         </div>
     </div>
 {% endfor %}
 
-    <form action="" method="POST">
+    <form action="" method="POST" style="margin-top: 30px; margin-bottom: 50px">
         {{ forms.input_with_errors(form.title, style='font-weight: bold') }}
         {{ forms.input_with_errors(form.text, style='font-weight: bold', id="js-file-upload-area") }}
         {{ form.attachments(id="js-file-uploaded-input") }}
@@ -67,7 +67,7 @@
                             elStatus.innerHTML = 'Uploaded!'
                             var data = JSON.parse(event.target.response)
                             input.value += data.url + ';'
-                            elList.innerHTML += "<div><a href='" + data.url + "'>" + data.url + "</a></div>"
+                            elList.innerHTML += "<div><a href='" + encodeURI(data.url) + "'>" + encodeURI(data.url) + "</a></div>"
                         } else {
                             elStatus.innerHTML = 'Upload error!'
                             el.classList.add('error')
@@ -99,4 +99,9 @@
             })()
         </script>
     </form>
+
+    {% if next_page %}
+    <a href="?page={{next_page}}">next</a>
+    {% endif %}
+
 {% endblock %}

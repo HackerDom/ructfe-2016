@@ -42,10 +42,11 @@ class BlogEntryForm(Form):
 
 
 class BlogCommentForm(Form):
-    text = TextAreaField('Text', [
+    text = TextAreaField('Text (drop the file here)', [
         validators.Length(min=6, message='Little short for an blog entry?'),
         validators.Length(max=65000, message='Longer then usual blog entry!'),
     ])
+    attachments = HiddenField()
 
 
 def _clean_attachments(data):
@@ -79,7 +80,6 @@ async def blog(request):
         text = form.text.data
         title = form.title.data
         attachments = _clean_attachments(form.attachments.data)
-        print(attachments)
         try:
             await blog.create_entry(title, content=text, meta={
                 'user': user.username,
@@ -88,10 +88,16 @@ async def blog(request):
             return redirect(request, '/')
         except Exception as e:
             form.text.errors.append(str(e))
-    entries = await blog.get_entries(limit=10)
+    entries_count = await blog.get_entries_count()
+    pages = entries_count // 10
+    page = request.args.get('page', "0")
+    page = int(page) if page.isdigit() else 0
+    offset = page * 10 if 0 < page <= pages else 0
+    next_page = page + 1 if page + 1 <= pages else None
+    entries = await blog.get_entries(limit=10, offset=offset)
     return html(bp.view.render('blog', {
-        'form': form, 'entries': entries,
-        'user': user
+        'form': form, 'entries': entries, 'entries_count': entries_count,
+        'user': user, 'next_page': next_page,
     }))
 
 
@@ -113,10 +119,12 @@ async def comment(request, name):
         BlogCommentForm()
     if request.method == 'POST' and form.validate():
         text = form.text.data
+        attachments = _clean_attachments(form.attachments.data)
         try:
             slug = name + str(time())
             await comments.create_entry("", content=text, slug=slug, meta={
-                'user': user.username
+                'user': user.username,
+                'attachments': attachments,
             })
             return redirect(request, '/' + name)
         except Exception as e:
