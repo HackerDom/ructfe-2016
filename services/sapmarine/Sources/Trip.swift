@@ -12,7 +12,13 @@ public class Trip {
         self.driver = driver
     }
 
-    init(json: JSON) {
+    convenience init(_ jsonString : String) {
+        let dataFromString = jsonString.data(using: .utf8, allowLossyConversion: false)!
+        let json = JSON(data: dataFromString)
+        self.init(json)
+    }
+
+    init(_ json: JSON) {
         id = json["id"].stringValue
         passenger = json["passenger"].stringValue
         driver = json["driver"].stringValue
