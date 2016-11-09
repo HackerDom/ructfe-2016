@@ -7,7 +7,11 @@ from networking import State
 import random
 import json
 
+def get_pair_of_strings():
+	return checker.get_rand_string(5) + ' ' + checker.get_rand_string(5)
+
 async def handler_check(hostname):
+
 	unregistered = State(hostname)
 	listener = unregistered.get_listener()
 	state = State(hostname)
@@ -15,6 +19,17 @@ async def handler_check(hostname):
 	wanted, contents = await state.put_posts(username, 5)
 	await unregistered.get_contents(contents)
 	listener.want_many(wanted)
+
+	skills = [get_pair_of_strings() for i in range(random.randint(3, 5))]
+	skill = random.choice(skills)
+	viewer = State(hostname)
+	user, _ = await viewer.login(skills=json.dumps(skills))
+	writer = State(hostname)
+	username, _ = await writer.login()
+	url, public, title, body, _ = await writer.put_post(public=True, need_skill=True, skill=skill)
+	listener.want(url, username)
+	await viewer.get_content(url, title, body)
+
 	await listener.finish()
 	checker.ok()
 

@@ -121,7 +121,7 @@ class State:
 		helper = WSHelper(connection)
 		helper.start()
 		return helper
-	async def put_post(self, title=None, body=None, public=None, signed=False, username=None, need_skill=False):
+	async def put_post(self, title=None, body=None, public=None, signed=False, username=None, need_skill=False, skill=None):
 		if title is None:
 			title = checker.get_rand_string(16)
 		if body is None:
@@ -134,13 +134,14 @@ class State:
 		if signed:
 			request['sign'] = self.signer.sign(self.hostname, username, request)
 		if need_skill:
-			requirement = checker.get_rand_string(10)
-			request['requirement'] = requirement
+			if skill is None:
+				skill = checker.get_rand_string(10)
+			request['requirement'] = skill
 		else:
 			requirement = None
 		response = await self.post('publish', request)
 		url = checker.parse_json(response)[0]
-		return url, public, title, body, requirement
+		return url, public, title, body, skill
 	async def put_posts(self, username, count=1, signed=False):
 		wanted = set()	
 		content = set()
@@ -156,10 +157,6 @@ class State:
 		if signed and not self.signer.check(self.hostname, username, data):
 			checker.mumble(error='fail check sign for url {}'.format(url))
 		return data
-	def check_public(self, username, url):
-		wanted = set()
-		wanted.add((url, username))
-		self.get_publics(wanted, set())
 	async def get_content(self, url, title, body):
 		response = await self.get_post(url)
 		if response['title'] != title:
