@@ -94,7 +94,8 @@ async def blog(request):
     page = int(page) if page.isdigit() else 0
     offset = page * 10 if 0 < page <= pages else 0
     next_page = page + 1 if page + 1 <= pages else None
-    entries = await blog.get_entries(limit=10, offset=offset)
+    entries = await blog.get_entries(
+        limit=10, offset=offset, order_by='-created')
     return html(bp.view.render('blog', {
         'form': form, 'entries': entries, 'entries_count': entries_count,
         'user': user, 'next_page': next_page,
