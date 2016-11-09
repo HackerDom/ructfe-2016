@@ -60,7 +60,7 @@ function OnPublish() {
 }
 
 function OnLoadPublics() {
-	var url = 'ws://' + window.location.hostname + ':' + window.location.port + '/publics';
+	var url = 'ws://' + window.location.hostname + '/publics';
 	var table = $('#publics');
 	var socket = new WebSocket(url);
 
@@ -73,18 +73,16 @@ function OnLoadPublics() {
 }
 
 function OnLoadMy() {
-	setInterval(function() {
-		var table = $('#my');
-		$.ajax('/all', 
-		{
-			type: 'GET'	
-		})
-		.done(function(data) {
-			table.empty();
-			data.forEach(function(item) {AppendPostInfo(table, item)});
-		});
-	},
-	60000);
+	var url = 'ws://' + window.location.hostname + '/my';
+	var table = $('#my');
+	var socket = new WebSocket(url);
+
+	socket.onmessage = function(event) {
+		console.log(event.data);
+		var data = JSON.parse(event.data);
+		AppendPostInfo(table, data)
+	}
+	socket.onclose = OnLoadMy;
 }
 
 function AppendPostInfo(table, data) {

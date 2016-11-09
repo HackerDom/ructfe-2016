@@ -17,50 +17,43 @@ local function get_user_and_password(context)
 	return user, password
 end
 
-app:before_filter(function(self)
-	self.options.layout = false
-end)
-
-app:post('/login', function(self)
-	local client = redis:client()
-	local user, password = get_user_and_password(self)
-
-	if not user then
-		return {status = 400, json = {'user and password must be present'}}
-	end
-
-	if client:user_exists(user, password) then
-		self.session.user = user
-	else
-		return {status = 400, json = {'wrong username or password'}}
-	end
-end)
-
-app:post('/set-skills', function(self)
-	local client = redis:client()
-	local user = self.session.user
-	local skills = self.req.params_post.skills
-
-	if not user then
-		return {status = 401, json = {'need to login'}}
-	end
-
+local function parse_skills(skills)
 	if not skills then
-		return {status = 200}
+		return {''}
 	end
-
 	local skills_list = json:decode(skills)
 	if type(skills_list) ~= 'table' then
 		skills = skills:lower()
 		skills_list = {}
 		for word in skills:gmatch("%a+") do
-			table.insert(word)
+			table.insert(skills_list, word)
 		end
 	end
 
-	table.insert('')
-	client:update_skills(user, skills_list)
-	return {status = 200}
+	table.insert(skills_list, '')
+
+	return 
+end
+
+app:before_filter(function(self)
+	self.options.layout = false
+end)
+
+app:post('/login', function(self)
+	local client = redis.client()
+	local user, password = get_user_and_password(self)
+	local skills = self.req.params_post.skills
+	local skills_list = parse_skills(skills)
+
+	if not user then
+		return {status = 400, json = {'user and password must be present'}}
+	end
+
+	if client:create_user(user, password, skills_list) then
+		self.session.user = user
+	else
+		return {status = 400, json = {'wrong username or password'}}
+	end
 end)
 
 app:post('/logout', function(self)
@@ -68,7 +61,7 @@ app:post('/logout', function(self)
 end)
 
 app:post('/publish', function(self)
-	local client = redis:client()
+	local client = redis.client()
 	local title = self.req.params_post.title
 	local body = self.req.params_post.body
 	local is_public = self.req.params_post.is_public
@@ -83,7 +76,7 @@ app:post('/publish', function(self)
 		return {status = 400, json = {'title required'}}
 	end
 
-	if title:len > 1024 then
+	if title:len() > 1024 then
 		return {status = 400, json = {'title too large'}}
 	end
 
@@ -118,7 +111,7 @@ app:post('/publish', function(self)
 end)
 
 app:get('view', '/post/:id', function(self)
-	local client = redis:client()
+	local client = redis.client()
 	local user = self.session.user
 	local data = client:get_post(self.params.id, user)
 	if not data then
@@ -129,7 +122,7 @@ app:get('view', '/post/:id', function(self)
 end)
 
 app:post('/all', function(self)
-	local client = redis:client()
+	local client = redis.client()
 	local posts = {}
 	local user = self.session.user
 	if not user then
@@ -145,7 +138,7 @@ app:post('/all', function(self)
 end)
 
 app:post('/reply', function(self)
-	local client = redis:client()
+	local client = redis.client()
 end)
 
 return app
