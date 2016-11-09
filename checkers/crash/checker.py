@@ -60,7 +60,7 @@ def put(*args):
 			close( MUMBLE, "Submit error", "Can not put flag", minidumpFilePath )
 	except Exception as e:
 		 close(DOWN, "HTTP Error", "HTTP error: %s" % e, minidumpFilePath)
-	close(OK, minidumpFilePath)
+	close(OK, minidumpFilePath=minidumpFilePath)
 
 
 def get(*args):
@@ -137,7 +137,7 @@ def get(*args):
 	restored_flag = first_part_flag + second_part_flag
 	if flag != restored_flag: # tested
 		close( CORRUPT, "Service corrupted", "Flag does not match: %s" % restored_flag, dmp_path )
-	close( OK, dmp_path )
+	close( OK, minidumpFilePath=dmp_path )
 
 
 def info(*args):
