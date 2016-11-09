@@ -54,6 +54,7 @@ html, body, #svg-wrapper, #svg-viz  {
 	-moz-user-select: none;
 	-ms-user-select: none;
 	user-select: none;
+	cursor: pointer;
 	.filter {
 		color: white;
 		cursor: pointer;
@@ -75,6 +76,11 @@ html, body, #svg-wrapper, #svg-viz  {
 	color: #4E7B92;
 	font-size: 65px;
 	text-align: center;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	cursor: default;
 }
 
 #alphabet {
@@ -87,6 +93,54 @@ html, body, #svg-wrapper, #svg-viz  {
 	color: #4E7B92;
 	font-size: 25px;
 	text-align: center;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	cursor: default;
+}
+
+.statistics {
+	position: absolute;
+	bottom: 0;
+	width: 250px;
+	left: 50%;
+	font-family: Arial, sans-serif;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	cursor: default;
+	.value {
+		font-family: 'Roboto', sans-serif;
+		font-weight: 100;
+		font-size: 60px;
+		display: inline-block;
+	}
+	.header {
+		font-size: 25px;
+		line-height: 68px;
+		vertical-align: top;
+	}
+}
+
+#attacks {
+	color: #EC2B34;
+	margin-left: -250px;
+	text-align: right;
+	border-right: solid #374B6C 1px;
+	padding-bottom: 22px;
+	.value {
+		margin: 0 15px 0 10px;
+	}
+}
+
+#alive {
+	color: #B7E99B;
+	padding-bottom: 22px;
+	.value {
+		margin: 0 10px 0 15px;
+	}
 }
 
 .node {

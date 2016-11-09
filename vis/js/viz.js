@@ -89,6 +89,7 @@ var Viz = function(infoData, startScoreboard) {
 			load_services_statuses();
 			updateScore();
 			draw_services_statuses();
+			updateStatistics();
 		});
 	}
 
@@ -154,6 +155,11 @@ var Viz = function(infoData, startScoreboard) {
 			setTimeout(showArrowFunc, event[1] - prev_interval);
 		}
 		prev_interval = prev_interval_end;
+	}
+
+	function updateStatistics() {
+		// TODO использовать реальную статистику.
+
 	}
 
 	function updateScore() {
