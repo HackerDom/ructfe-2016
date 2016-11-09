@@ -28,7 +28,7 @@
                 "services": [
                     {
                         "flags": "flags#",
-                        "status": 100|101|...,
+                        "status": 101|..., (101:OK, 102:CORRUPT, 103:MUMBLE, 104:DOWN, else:CHECKER_ERROR)
                         "id": "service_id"
                     },
                     ...
