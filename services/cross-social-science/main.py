@@ -96,8 +96,33 @@ def make_app(view=None, database=None):
 # Run Server
 # ----------------------------------------------- #
 
+def recreatedb(loop=None):
+    # loop
+    if not loop:
+        loop = async_loop.new_event_loop()
+        asyncio.set_event_loop(loop)
 
-def main(debug=False):
+    # init db
+    service = get_user_service()
+    service.dropdb()
+    service.initdb()
+    loop.run_until_complete(service.create_user('pahaz', 'qwerqwer'))
+    service = get_session_service()
+    service.dropdb()
+    service.initdb()
+    service = get_entry_service(BLOG_ENTRY_DB_NAME)
+    service.dropdb()
+    service.initdb()
+    loop.run_until_complete(service.create_entry('pahaz', 'the best <script>alert(1)</script>most!'))
+    service = get_entry_service(COMMENT_ENTRY_DB_NAME)
+    service.dropdb()
+    service.initdb()
+    service = get_entry_service(FILES_ENTRY_DB_NAME)
+    service.dropdb()
+    service.initdb()
+
+
+def main(debug=False, run=True):
     # loop
     loop = async_loop.new_event_loop()
     asyncio.set_event_loop(loop)
@@ -119,27 +144,15 @@ def main(debug=False):
     app.blueprint(files, view=view)
     app.blueprint(blog, view=view)
 
-    # init db
-    service = get_user_service()
-    service.dropdb()
-    service.initdb()
-    loop.run_until_complete(service.create_user('pahaz', 'qwerqwer'))
-    service = get_session_service()
-    service.dropdb()
-    service.initdb()
-    service = get_entry_service(BLOG_ENTRY_DB_NAME)
-    service.dropdb()
-    service.initdb()
-    loop.run_until_complete(service.create_entry('pahaz', 'the best <script>alert(1)</script>most!'))
-    service = get_entry_service(COMMENT_ENTRY_DB_NAME)
-    service.dropdb()
-    service.initdb()
-    service = get_entry_service(FILES_ENTRY_DB_NAME)
-    service.dropdb()
-    service.initdb()
-
-    app.run(host="0.0.0.0", port=8000, loop=loop, debug=debug)
+    if run:
+        app.run(host="0.0.0.0", port=8000, loop=loop, debug=debug)
+    return app, loop, view, database
 
 
 if __name__ == '__main__':
-    main(debug=True)
+    import sys
+    if len(sys.argv) >= 2 and sys.argv[1] == 'recreatedb':
+        app, loop, view, database = main(debug=True, run=False)
+        recreatedb(loop)
+    else:
+        main(debug=True)
