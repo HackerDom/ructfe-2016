@@ -212,3 +212,7 @@ a:active {
 	border-bottom: 1px solid #4E7B92;
 	font-size: 20px;
 }
+
+.just-hidden {
+	display: none;
+}

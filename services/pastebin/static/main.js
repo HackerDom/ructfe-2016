@@ -8,18 +8,24 @@ function GetCredentials($form) {
 	return {'user': user, 'password': password};
 }
 
-function OnPost(id) {
-	var $form = $('#' + id);
+function OnError($form, error) {
+	$form.find(".alert").text(error).stop().show(200).delay(1000).hide(200);
+}
+
+function OnPost(action) {
+	var $form = $('#' + action);
 	var credentials = GetCredentials($form);
 
-	$.ajax('/' + id,
-	{
+	$.ajax('/' + action, {
 		type: 'POST',
 		data: credentials
 	})
 	.always(function(data) {
 		console.log(data);
 	})
+	.fail(function(xhr) {
+		OnError($form, xhr.responseText || xhr.statusMessage || "Unknown error");
+	});
 
 	return false;
 }
@@ -33,8 +39,7 @@ function OnLogin() {
 }
 
 function OnLogout() {
-	$.ajax('/logout',
-	{
+	$.ajax('/logout', {
 		type: 'POST'
 	})
 	.always(function(data) {
@@ -50,13 +55,15 @@ function OnPublish() {
 	var body = $form.children('[name="body"]').val();
 	var is_public = $form.children('[name="is_public"]').prop('checked') ? 'on' : '';
 
-	$.ajax('/publish',
-	{
+	$.ajax('/publish', {
 		type: 'POST',
 		data: {'title': title, 'body': body, 'is_public': is_public},
 	})
 	.always(function(data) {
 		console.log(data);
+	})
+	.fail(function(xhr) {
+		OnError($form, xhr.responseText || xhr.statusMessage || "Unknown error");
 	});
 
 	return false;
@@ -93,8 +100,7 @@ function LoadPublics() {
 function LoadMy() {
 	setInterval(function() {
 		var $table = $('#my');
-		$.ajax('/all',
-		{
+		$.ajax('/all', {
 			type: 'GET'
 		})
 		.done(function(data) {
@@ -116,7 +122,7 @@ function AppendPostInfo(table, data) {
 
 $("#register").submit(OnRegister);
 $("#login").submit(OnLogin);
-$("#logout").submit(OnLogin);
+$("#logout").click(OnLogout);
 $("#publish").submit(OnPublish);
 
 LoadMy();
