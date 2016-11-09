@@ -23,8 +23,62 @@ public class Sapmarine {
     var newTrips: Dictionary<String, String> = Dictionary<String, String>()
     var processingTrips: Dictionary<String, Trip> = Dictionary<String, Trip>()
 
+    public func SaveState() {
+        self.dispatchQueue.sync {
+            SaveUsers()
+            SaveProfiles()
+            SaveTrips()
+        }
+        
+    }
+
+    public func SaveUsers() {
+        do {
+            // let fileDestinationUrl = docmentDirectoryURL.appendingPathComponent("users.state.new")
+
+            let fileDestinationUrl = URL(fileURLWithPath: "users.state.new")
+
+            let usersJsons = self.usersSet.map { $0.toJson() }
+            let state = usersJsons.joined(separator: "\n")
+
+            try state.write(to: fileDestinationUrl, atomically: false, encoding: .utf8)
+            // try FileManager.default.moveItem(at: URL(fileURLWithPath: "users.state.new"), to: URL(fileURLWithPath: "users.state"))
+        } catch let error as NSError {
+            print("Error saving users state")
+            print(error.localizedDescription)
+        }
+    }
+
+    public func SaveProfiles() {
+        do {
+            let fileDestinationUrl = URL(fileURLWithPath: "profiles.state.new")
+
+            let profilesJsons = self.profilesDict.map { (key, value) in value.toJson() }
+            let state = profilesJsons.joined(separator: "\n")
+
+            try state.write(to: fileDestinationUrl, atomically: false, encoding: .utf8)
+        } catch let error as NSError {
+            print("Error saving profiles state")
+            print(error.localizedDescription)
+        }
+    }
+
+    public func SaveTrips() {
+        do {
+            let fileDestinationUrl = URL(fileURLWithPath: "trips.state.new")
+
+            let tripsJsons = self.processingTrips.map { (key, value) in value.toJson() }
+            let state = tripsJsons.joined(separator: "\n")
+
+            try state.write(to: fileDestinationUrl, atomically: false, encoding: .utf8)
+        } catch let error as NSError {
+            print("Error saving trips state")
+            print(error.localizedDescription)
+        }
+    }
+
     init(){
-        let saveStateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { t in
+        let saveStateTimer = Timer.scheduledTimer(withTimeInterval: 60.0, repeats: true) { t in
             sapmarine.SaveState()
         }
         // RunLoop.current.add(saveStateTimer, RunLoop.currentMode)
@@ -117,7 +171,7 @@ public class Sapmarine {
                     return
                 }
 
-                self.profilesDict[userNameOptional!] = Profile(fullName, job, notes)
+                self.profilesDict[userNameOptional!] = Profile(userNameOptional!, fullName, job, notes)
 // }
 
             try response.redirect("/profileForm").end()
@@ -243,24 +297,6 @@ public class Sapmarine {
                 try response.send("Trip with tripId '\(tripId)' not found in processing trips").end();
             }
         }
-    }
-
-    public func SaveState() {
-        self.dispatchQueue.sync {
-            
-        }
-    }
-
-    public func SaveUsers() {
-
-    }
-
-    public func SaveProfiles() {
-
-    }
-
-    public func SaveTrips() {
-
     }
 
     public func Start(port: Int) {
