@@ -97,6 +97,10 @@ class SeafloorMapsGenerator:
 
 
 class SeafloorMap:
+    @classmethod
+    def fromBytes(cls, byteArr):
+        return SeafloorMap(Image.open(io.BytesIO(byteArr)))
+
     def __init__(self, image):
         self.image = image
         self.flag = ""
@@ -113,9 +117,6 @@ class SeafloorMap:
         imageByteArr = io.BytesIO()
         self.image.save(imageByteArr, format='PNG', pnginfo=self.flag)
         return imageByteArr.getvalue()
-
-    def fromBytes(self, byteArr):
-        return SeafloorMap(Image.open(io.BytesIO(byteArr)))
 
     def save(self, filename):
         self.image.save(filename, format='PNG', pnginfo=self.flag)
