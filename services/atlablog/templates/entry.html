@@ -8,7 +8,7 @@
         <div class="col-xs-12">
             <h2>{{ entry.title }}</h2>
             <div class="text">
-                {{ entry.html_content | safe }}
+                {{ entry.html_content() | safe }}
             </div>
         </div>
     </div>
@@ -21,7 +21,7 @@
         </div>
         <div class="col-xs-push-2 col-xs-6">
             <div class="text" id="comment-{{ entry.slug }}">
-                {{ entry.html_content | safe }}
+                {{ entry.html_content() | safe }}
             </div>
         </div>
     </div>
@@ -32,8 +32,76 @@
         <div class="col-xs-push-2 col-xs-10">
 
     <form action="" method="POST">
-        {{ forms.input_with_errors(form.text, style='font-weight: bold') }}
-        <button type="submit" class="btn btn-default">Submit</button>
+        {{ forms.input_with_errors(form.text, style='font-weight: bold', id="js-file-upload-area") }}
+        {{ form.attachments(id="js-file-uploaded-input") }}
+        <div id="js-file-uploaded-list"></div>
+        <button type="submit" class="btn btn-default">Submit </button> <span id="js-file-upload-status"></span>
+
+        <script>
+            (function() {
+                var el = document.querySelector('#js-file-upload-area')
+                var elStatus = document.querySelector('#js-file-upload-status')
+                var elList = document.querySelector('#js-file-uploaded-list')
+                var input = document.querySelector('#js-file-uploaded-input')
+                if (typeof(window.FileReader) == 'undefined') {
+                    elStatus.innerHTML = "your browser doesn't support attachments"
+                    el.classList.add('error')
+                }
+
+                el.ondragover = function() {
+                    el.classList.add('hover')
+                    el.classList.remove('error')
+                    return false
+                };
+
+                el.ondragleave = function() {
+                    el.classList.remove('hover')
+                    el.classList.remove('error')
+                    return false
+                };
+
+                function uploadProgress(event) {
+                    var percent = parseInt(event.loaded / event.total * 100)
+                    elStatus.innerHTML = 'Uploading: ' + percent + '%'
+                }
+
+                function stateChange(event) {
+                    if (event.target.readyState == 4) {
+                        if (event.target.status == 200) {
+                            elStatus.innerHTML = 'Uploaded!'
+                            var data = JSON.parse(event.target.response)
+                            input.value += data.url + ';'
+                            elList.innerHTML += "<div><a href='" + encodeURI(data.url) + "'>" + encodeURI(data.url) + "</a></div>"
+                        } else {
+                            elStatus.innerHTML = 'Upload error!'
+                            el.classList.add('error')
+                        }
+                    }
+                }
+
+                el.ondrop = function(event) {
+                    event.preventDefault()
+                    el.classList.remove('hover')
+                    el.classList.remove('error')
+                    el.classList.add('drop')
+
+                    var file = event.dataTransfer.files[0]
+
+                    if (file.size > 1000000) {
+                        elStatus.innerHTML = 'File too large!'
+                        el.classList.add('error')
+                        return false
+                    }
+
+                    var xhr = new XMLHttpRequest();
+                    xhr.upload.addEventListener('progress', uploadProgress, false);
+                    xhr.onreadystatechange = stateChange;
+                    xhr.open('POST', '/upload');
+                    xhr.setRequestHeader('X-File-Name', file.name);
+                    xhr.send(file);
+                };
+            })()
+        </script>
     </form>
 
         </div>
