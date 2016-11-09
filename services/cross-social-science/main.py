@@ -87,7 +87,8 @@ def make_app(view=None, database=None):
     @app.middleware('response')
     async def halt_response(request, response):
         print('I halted the response')
-
+        response.headers['Content-Security-Policy'] = \
+            "default-src 'self' 'unsafe-inline';"
     return app
 
 
