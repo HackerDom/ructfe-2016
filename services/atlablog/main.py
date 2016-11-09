@@ -37,56 +37,8 @@ def make_app(view=None, database=None):
     app.config.REQUEST_MAX_SIZE = 2000000  # 2 megababies
     app.static('/static', settings.STATIC_DIR)
 
-    # @app.route("/", methods=['GET'])
-    # async def test_index(request):
-    #     return html(view.render('index', {'name': 'variables'}))
-
-    @app.route("/dynamic/<name>/<id:int>")
-    async def test_params(request, name, id:int):
-        return text("yeehaww {} {}".format(name, id))
-
-    @app.route("/await")
-    async def test_await(request):
-        import asyncio
-        await asyncio.sleep(5)
-        return text("I'm feeling sleepy")
-
-    # ----------------------------------------------- #
-    # Read from request
-    # ----------------------------------------------- #
-
-    @app.route("/json")
-    async def post_json(request):
-        return json({"received": True, "message": request.json})
-
-    @app.route("/form")
-    async def post_json(request):
-        return json({"received": True, "form_data": request.form,
-                     "test": request.form.get('test')})
-
-    @app.route("/query")
-    async def query_string(request):
-        return json({"parsed": True, "args": request.args, "url": request.url,
-                     "query_string": request.query_string})
-
-    # ----------------------------------------------- #
-    # Exceptions
-    # ----------------------------------------------- #
-
-    @app.route("/exception")
-    async def exception(request):
-        raise ServerError("It's dead jim")
-
-    @app.exception(ServerError)
-    async def test(request, exception):
-        return json(
-            {"exception": "{}".format(exception),
-             "status": exception.status_code},
-            status=exception.status_code)
-
     @app.middleware('response')
     async def halt_response(request, response):
-        print('I halted the response')
         response.headers['Content-Security-Policy'] = \
             "default-src 'self' 'unsafe-inline';"
     return app
