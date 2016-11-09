@@ -5,6 +5,7 @@ import subprocess
 import requests
 import socket
 import random
+import string
 
 OK, CORRUPT, MUMBLE, DOWN, CHECKER_ERROR = 101, 102, 103, 104, 110
 
@@ -34,6 +35,8 @@ def check(*args):
 def put(*args):
 	addr, flag_id, flag, *vuln = args
 
+	flag_id = ''.join([random.choice(string.ascii_lowercase) for _ in range(12)])
+
 	request = b'\x01\x00\x00\x00' + flag_id.replace('-', '').encode('ascii') + flag.encode('ascii')
 
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -49,6 +52,8 @@ def put(*args):
 	except Exception as e:
 		print("Failed to communicate through control port: " + str(e), file=stderr)
 		exit(DOWN)
+
+	print(flag_id)
 
 	s.close()
 
