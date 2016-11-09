@@ -5,9 +5,11 @@ from urllib.error import URLError as http_error
 from socket import error as network_error
 import urllib
 import requests
+import grequests
 import json
 import string
 import random
+import time
 
 from maps_generator import SeafloorMap, SeafloorMapsGenerator
 
@@ -18,6 +20,8 @@ __author__ = 'm_messiah, tris, dodo_888'
 OK, CORRUPT, MUMBLE, DOWN, CHECKER_ERROR = 101, 102, 103, 104, 110
 
 FLAGS_ALPHABET = string.ascii_lowercase + string.ascii_uppercase + string.digits
+
+NECESSARY_TIME_DIFFERENCE = 5 * 60
 
 def close(code, public="", private=""):
     if public:
@@ -66,7 +70,8 @@ def try_put(client, flag):
     seafloorMap = generator.generate()
     seafloorMap.addFlag(flag)
     postResult = client.postImage(seafloorMap.toBytes())
-    return json.dumps(postResult)
+    postResult['time'] = time.time()
+    print(json.dumps(postResult))
 
 
 def put(*args):
@@ -95,10 +100,14 @@ def try_get(client, flag, metadata):
     # check replicas
     # close(CORRUPT, "Flag is missing from all replicas")
 
+def check_replicas(client, flag, me):
+
 
 def get(*args):
     addr = args[0]
     metadata = json.loads(args[1])
+    if (time.time() - metadata['time'] < NECESSARY_TIME_DIFFERENCE):
+        close(OK)
     flag = args[2]
     client = Client(addr)
     try:
