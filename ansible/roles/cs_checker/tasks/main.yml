@@ -34,12 +34,12 @@
 - name: crash dumps
   file: path={{cs_dir}}/app/checkers/crash/dumps state=directory
 
-- name: pastebin deps
+- name: thebin deps
   apt: name={{item}} state=latest update_cache=yes
   with_items:
     - python3-crypto
 
-- name: pastebin checker python deps
+- name: thebin checker python deps
   pip: executable=pip3 name=aiohttp
 
 - name: weather deps
