@@ -43,6 +43,13 @@
   become_user: postgres
   postgresql_user: db=test name=atlablog priv=ALL state=present
 
+- name: Recreate db
+  become: yes
+  become_user: atlablog
+  command: ./venv/bin/python main.py recreatedb
+  args:
+    chdir: /home/atlablog/
+
 - name: Add systemd service
   template: src=service.j2 dest=/lib/systemd/system/atlablog.service
 
