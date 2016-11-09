@@ -1,19 +1,39 @@
-/info =>
+/api/info =>
     {
         "teams": {"team_id": "team_name", ...}
         "services": {"service_id": "service_name", ...}
         "start": "time(millisec)"
     }
 
-/scoreboard =>
+/api/scoreboard =>
     {
         "table": {"team_id": "score", ...},
         "status": "0"|... (0 — NOT_STARTED, 1 — PLAYING, 2 — SUSPEND, 3 — FINISHED),
         "round": "current_round"
     }
 
-/events?from=<round> =>
+/api/events?from=<round> =>
     [
         ["round", "time(millisec)", "service_id", "attacker_id", "victim_id"]
         ...
     ]
+
+/scoreboard.json =>
+    {
+        "round": "round#"
+        "scoreboard": [
+            {
+                "name": "team_name",
+                "score": "score",
+                "services": [
+                    {
+                        "flags": "flags#",
+                        "status": 100|101|...,
+                        "id": "service_id"
+                    },
+                    ...
+                ]
+            },
+            ...
+        ]
+    }
