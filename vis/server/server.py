@@ -13,6 +13,7 @@ ROUND_TIME = 10*1000
 
 
 def team_(x): return 't{}'.format(x)
+def team_name(x): return 'TEAM{}'.format(x)
 def service_(x): return 's{}'.format(x)
 
 def gtime(): return int(time()*1000)
@@ -38,7 +39,7 @@ def tojson(fn):
 @tojson
 def info_page():
     return {
-        'teams': {team_(i): 'TEAM%d'%i for i in range(args.teams)},
+        'teams': {team_(i): team_name(i) for i in range(args.teams)},
         'services': {service_(i): 'SVC_%d'%i for i in range(args.services)},
         'start': 0
     }
@@ -92,7 +93,7 @@ def scoreboard_page():
         "round": cround(),
         "scoreboard": [
             {
-                "name": team_(t),
+                "name": team_name(t),
                 "score": scores[team_(t)],
                 "services": [
                     {

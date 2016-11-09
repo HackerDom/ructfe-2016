@@ -24,12 +24,15 @@ var Viz = function(infoData, startScoreboard) {
 	var scoreboard = startScoreboard;
 	var teams = [];
 	var teamIdToNum = {};
+    var teamNameToNum = {};
 	var services = [];
 	var serviceIdToNum = {};
 	var nodes;
 	var lastGradientId = 0;
 	var lastArrowId = 0;
 	var openedTooltipTeamId = undefined;
+
+    var prev_flags_count = 0;
 
     var cur_round = -1;
     var prev_interval = -1;
@@ -46,6 +49,7 @@ var Viz = function(infoData, startScoreboard) {
 				var id = teams.length;
 				teams.push({index: id, id: id, team_id: fieldName, name: info.teams[fieldName], score: 0, place: null, status: 0});
 				teamIdToNum[fieldName] = teams.length - 1;
+                teamNameToNum[info.teams[fieldName]] = teams.length - 1;
 			}
 		}
 	})();
@@ -86,10 +90,12 @@ var Viz = function(infoData, startScoreboard) {
 		$.getJSON("./api/scoreboard").done(function (scoreboardData) {
 			scoreboard = scoreboardData;
 			load_events();
-			load_services_statuses();
-			updateScore();
-			draw_services_statuses();
-			updateStatistics();
+            $.getJSON("./scoreboard.json").done(function (scores_json) {
+                load_services_statuses(scores_json);
+                updateScore();
+                draw_services_statuses();
+                updateStatistics(scores_json);
+            });
 		});
 	}
 
@@ -110,14 +116,17 @@ var Viz = function(infoData, startScoreboard) {
 		});
     }
 
-    function load_services_statuses() {
-		// TODO загруэить данные о состояниях сервисов.
-		for (var i=0; i<teams.length; i++) {
-			teams[i].servicesStatuses = [];
-			for (var j = 0; j < services.length; j++) {
-				teams[i].servicesStatuses.push(randomInteger(0, 1));
-			}
-		}
+    function load_services_statuses(scores_json) {
+        for (var i = 0; i < scores_json['scoreboard'].length; i++) {
+            var _team = scores_json['scoreboard'][i];
+            var k = teamNameToNum[_team['name']];
+            teams[k].servicesStatuses = new Array(SERVICES_COUNT);
+
+            for (var j = 0; j < _team['services'].length; j++) {
+                var _svc = _team['services'][j];
+                teams[k].servicesStatuses[serviceIdToNum[_svc['id']]] = (_svc['status'] == 101);
+            }
+        }
 	}
 
 	function draw_services_statuses() {
@@ -125,7 +134,7 @@ var Viz = function(infoData, startScoreboard) {
 			var n = d3.select(this);
 			var nData = n.data()[0];
 			for (var i=0; i<services.length; i++) {
-				var isUp = nData.servicesStatuses[i] === 1;
+				var isUp = nData.servicesStatuses[i];
 				n.select(".service_" + i).attr("fill", isUp ? services[i].color : DOWN_SERVICE_COLOR);
 			}
 		});
@@ -157,9 +166,29 @@ var Viz = function(infoData, startScoreboard) {
 		prev_interval = prev_interval_end;
 	}
 
-	function updateStatistics() {
-		// TODO использовать реальную статистику.
+	function updateStatistics(scores_json) {
+        var teams_with_alive = 0;
+        var flags_count = 0;
 
+        for (var i = 0; i < scores_json['scoreboard'].length; i++) {
+            var _team = scores_json['scoreboard'][i];
+
+            for (var j = 0; j < _team['services'].length; j++) {
+                var _svc = _team['services'][j];
+                if (_svc['status'] == 101) { ++teams_with_alive; break; }
+            }
+
+            for (var j = 0; j < _team['services'].length; j++) {
+                flags_count += parseInt(_team['services'][j]['flags']);
+            }
+        }
+
+        var round_flags_count = flags_count - prev_flags_count;
+        prev_flags_count = flags_count;
+
+        // TODO
+        // teams_with_alive :: количество команд с хотя бы 1 сервисом
+        // round_flags_count :: количество флагов за раунд
 	}
 
 	function updateScore() {
