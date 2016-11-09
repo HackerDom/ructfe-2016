@@ -49,21 +49,21 @@ async def handler_get_2(hostname, id, flag):
 	id = json.loads(id)
 	state = State(hostname)
 	skill = id["skill"]
-	user, _ = state.login(skills=skill)
+	await state.login(skills=skill)
 	url = id["url"]
-	file = await state.get_post(url, True, user)
+	file = await state.get_post(url, True, 	id['username'])
 	if file['body'] != flag:
 		return checker.corrupt(message="Bad flag: expected {}, found {}".format(flag, file['body']))
 	checker.ok()
 
 async def handler_put_2(hostname, id, flag):
 	state = State(hostname)
-	username, _ = state.login()
-	url, _, _, _, skill = await state.put_post(body=flag, public=True, signed=True, usename=username, need_skill=True)
-	checker.ok(message=json.dump({'username': username, 'url': url, 'skill': skill}))
+	username, _ = await state.login()
+	url, _, _, _, skill = await state.put_post(body=flag, public=True, signed=True, username=username, need_skill=True)
+	checker.ok(message=json.dumps({'username': username, 'url': url, 'skill': skill}))
 
 def main():
-	checker = Checker(handler_check, [(handler_put_1, handler_get_1)])
+	checker = Checker(handler_check, [(handler_put_1, handler_get_1), (handler_put_2, handler_get_2)])
 	checker.process(sys.argv)
 
 if __name__ == "__main__":

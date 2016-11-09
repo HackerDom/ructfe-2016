@@ -6,19 +6,11 @@ function module.encode(self, t)
 	return self.json.encode(t)
 end
 
-function module.decode(self, str)
-	local ok, err = pcall(self.json.decode(str))
-	if not ok then
-		return nil
-	end	
-	return fix(t)
-end
-
-local function fix(t)
+local function fix_nil(t)
 	if type(t) == 'table' then
 		local result = {}
 		for pos, val in pairs(t) do
-			result[pos] = fix(value)
+			result[pos] = fix_nil(val)
 		end
 		return result
 	elseif t == json.null then
@@ -26,6 +18,15 @@ local function fix(t)
 	else
 		return t	
 	end
+end
+
+function module.decode(self, str)
+	local t
+	local ok, err = pcall(function() t = self.json.decode(str) end)
+	if not ok then
+		return nil
+	end
+	return fix_nil(t)
 end
 
 return module

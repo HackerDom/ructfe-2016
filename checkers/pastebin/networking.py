@@ -97,7 +97,7 @@ class State:
 			password = checker.get_rand_string(16)
 		request = {'user': username, 'password': password}
 		if skills is not None:
-			requests['skills'] = skills
+			request['skills'] = skills
 		status, text = await self.post('login', request, need_check_status = False)
 		if status == 200:
 			check_cookie(self.session.cookie_jar)

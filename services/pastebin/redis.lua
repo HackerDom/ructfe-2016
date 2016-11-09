@@ -84,15 +84,20 @@ local function get_post(self, postname, user)
 		return post
 	end
 
+	local skills_list
 	if not user then
-		skills = {''}
+		skills_list = {''}
 	else
 		local userid = get_userid(user)
-		skills = self.client:hget(userid, 'skills')
-		skills = json:decode(skills)
+		local skills = self.client:hget(userid, 'skills')
+		if skills == ngx.nul then
+			skills_list = {''}
+		else
+			skills_list = json:decode(skills)
+		end
 	end
 
-	for k, skill in ipairs(skills) do
+	for k, skill in ipairs(skills_list) do
 		if skill == requirement then
 			return post
 		end

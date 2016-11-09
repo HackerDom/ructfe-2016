@@ -32,7 +32,7 @@ local function parse_skills(skills)
 
 	table.insert(skills_list, '')
 
-	return 
+	return skills_list
 end
 
 app:before_filter(function(self)
