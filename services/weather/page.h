@@ -44,7 +44,7 @@
 	LINE("						<div class=\"row\">") \
 	LINE("							<div class=\"col-sm-2 center-block\">") \
 	LINE("								<a href=\"/\">") \
-	LINE("									<img src=\"/static/img/weather/clear.png\" class=\"logo img-responsive\">") \
+	LINE("									<img src=\"/static/logos/weather.svg\" class=\"logo img-responsive\">") \
 	LINE("								</a>") \
 	LINE("							</div>") \
 	LINE("							<div class=\"col-sm-10 content-block\">") \

@@ -21,7 +21,7 @@ inMemoryZip.seek(0)
 url = 'http://%s:%s/submit' % ( addr, PORT )
 print url
 files = { 'dump_zip_file': inMemoryZip.read() }
-headers = { 'service_name' : "submarine_internal", 'guid' : guid }
+headers = { 'Service-Name' : "submarine_internal", 'GUID' : guid }
 requests.post(url, files=files, headers=headers )
 
 # download zip with reports.db

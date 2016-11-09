@@ -18,6 +18,7 @@
   },
   teams => [
     {name => 'team706', network => '10.62.194.0/24',host => '10.62.194.2'},
+    {name => 'team709', network => '10.62.197.0/24',host => '10.62.197.2'},
     {name => 'team_1',	network => '10.60.1.0/24',	host => '10.60.1.2'},
     {name => 'team_2',	network => '10.60.2.0/24',	host => '10.60.2.2'},
     {name => 'team_3',	network => '10.60.3.0/24',	host => '10.60.3.2'},
@@ -370,8 +371,9 @@
     {name => 'team_350',	network => '10.61.94.0/24',	host => '10.61.94.2'},
   ],
   services => [
-    {name => 'crash',    path => 'checkers/crash/checker.py',             timeout => 20},
-    {name => 'pastebin', path => 'checkers/pastebin/pastebin.checker.py', timeout => 20},
-    {name => 'weather',  path => 'checkers/weather/checker.py',           timeout => 20},
+    {name => 'crash',        path => 'checkers/crash/checker.py',                     timeout => 20},
+    {name => 'pastebin',     path => 'checkers/pastebin/pastebin.checker.py',         timeout => 20},
+    {name => 'weather',      path => 'checkers/weather/checker.py',                   timeout => 20},
+    {name => 'cartographer', path => 'checkers/cartographer/cartographer.checker.py', timeout => 20},
   ],
 }

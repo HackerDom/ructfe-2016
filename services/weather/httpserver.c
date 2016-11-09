@@ -12,11 +12,12 @@
 #include <netinet/in.h>
 #include <string.h>
 
-#define BUFSIZE 10240
+#define TPSIZE 4096
 
-char inputBuffer[BUFSIZE];
+char data[1024 + 4096];
 
-char template[] = RESPONSE BODY;
+char *inputBuffer = data;
+char *template = data + 1024;
 
 char *weatherTypes[] = {
 	"clear",
@@ -27,13 +28,19 @@ char *weatherTypes[] = {
 	"snow"
 };
 
+void init_template()
+{
+	memset(template, 0, TPSIZE);
+
+	strcat(template, RESPONSE);
+	strcat(template, BODY);
+}
+
 void get_forecast(const char *request, char *buffer)
 {
 	int32 forecast[WT_LAST_SAVED];
 
 	wt_forecast_temp(forecast, WT_LAST_SAVED);
-
-	wt_log_info("forecast ready");
 
 	char typeRawData[WT_LAST_SAVED];
 	char typeForecast[WT_LAST_SAVED];
@@ -46,15 +53,6 @@ void get_forecast(const char *request, char *buffer)
 	for (int32 i = 0; i < lastValuesAvailable; i++)
 		typeRawData[i] = (*lastValues)[i][30];
 
-	wt_log_info("typeRawData : %c", typeRawData[0]);
-	wt_log_info("typeRawData : %c", typeRawData[1]);
-	wt_log_info("typeRawData : %c", typeRawData[2]);
-	wt_log_info("typeRawData : %c", typeRawData[3]);
-	wt_log_info("typeRawData : %c", typeRawData[4]);
-	wt_log_info("typeRawData : %c", typeRawData[5]);
-
-	wt_log_info("lastValuesAvailable : %d", lastValuesAvailable);
-
 	wt_forecast_type(typeRawData, forecast, WT_LAST_SAVED, typeForecast);
 
 	char *requestString = strchr(request, '/');
@@ -63,12 +61,15 @@ void get_forecast(const char *request, char *buffer)
 	{
 		requestString++;
 		while (!isspace(requestString[requestLength]))
-			requestLength++; //TODO develop a vuln here
+			requestLength++;
 	}
 	else
 		requestString = "";
 
 	uint64 signature = wt_sign(requestString, requestLength);
+
+	if (!template[0])
+		init_template();
 
 	sprintf(buffer, template,
 		forecast[0], weatherTypes[typeForecast[0]],
@@ -80,31 +81,15 @@ void get_forecast(const char *request, char *buffer)
 		signature);
 }
 
-void wt_http_process_client(int32 serverSocket)
+void wt_http_process_client(const struct client *client)
 {
-	struct sockaddr_in clientAddress;
-	int32 clientLength = sizeof(clientAddress);
-
-	int32 clientSocket = accept(serverSocket, (struct sockaddr *)&clientAddress, &clientLength);
-	if (clientSocket < 0) 
-	{
-		wt_log_error("Failed to accept HTTP client");
+	if (read(client->socket, inputBuffer, sizeof(data)) == 0)
 		return;
-	}
 
-	struct timeval tv;
-
-	tv.tv_sec = 1;
-	tv.tv_usec = 0;
-
-	setsockopt(clientSocket, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof(tv));
-
-	read(clientSocket, inputBuffer, BUFSIZE);
-
-	char response[BUFSIZE];
+	char response[TPSIZE];
 	get_forecast(inputBuffer, response);
 
-	write(clientSocket, response, strlen(response));
+	write(client->socket, response, strlen(response));
 
-	close(clientSocket);
+	wt_close_client(client);
 }

@@ -69,10 +69,12 @@ def safe_extract_zip(zip_bytes, extract_dir):
 
 @get('/crashes')
 def Index():
+	ip = request.headers.get( 'X-Real-IP' )
+	ip = ip if ip else ""
 	cursor = sqliteConn.cursor()
 	reports = []
 	for row in cursor.execute( "SELECT * FROM reports ORDER BY ROWID DESC LIMIT 50" ):
-		guid = row[ 0 ] if re.match( r"^10\.6\d\.\d{1,3}\.\d{1,3}$", request.remote_addr ) else ""
+		guid = row[ 0 ] if re.match( r"^10\.6\d\.\d{1,3}\.\d{1,3}$", ip ) else ""
 		report = { "guid" : guid, "service_name" : row[ 1 ], "signature" : row[ 2 ], "time" : row[ 3 ] }
 		reports.append( report )
 	return json.dumps( reports )

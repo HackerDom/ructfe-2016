@@ -1,56 +1,159 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en-US">
 	<head>
-		<meta charset='utf-8'>
-		<script type='text/javascript' src='/static/jquery.js'> </script>
-		<script type='text/javascript' src='/static/main.js'> </script>
+		<meta charset="utf-8">
+		<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
+		<title>The Bin • Atlantis • RuCTFE 2016</title>
+		<meta name="description" content="TODO Description">
+		<meta name="keywords" content="Atlantis, RuCTFE, Bin">
+		<meta name="author" content="Hackerdom, hackerdom.ru, Tinkturianec">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="/static/lib/bootstrap/css/bootstrap.min.css">
+		<link rel="stylesheet" href="/static/css/atlantis.css">
+		<link rel="stylesheet" href="/static/css/bin.css">
 	</head>
-	<body>
-		<div>
-			<h1>Register</h1>
-			<form id='register' onsubmit='return OnRegister()'>
-				<input type='text' name='user' placeholder='user' required autocomplete='off'>
-				<input type='password' name='password' placeholder='password' required autocomplete='off'>
-				<input type='submit' value='Register'>
-			</form>
+	<body class="service-page" data-spy="scroll" data-target="#main-navbar">
+		<div class="page-loader"></div>
+		<div class="body">
+			<header id="header" class="header-main">
+				<nav id="main-navbar" class="navbar navbar-default navbar-fixed-top" role="navigation">
+					<div class="container">
+						<div class="navbar-header">
+							<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-navbar-collapse"></button>
+							<a class="navbar-brand" href="/home">Atlantis</a>
+							<a class="navbar-brand navbar-brand-service" href="/">The Bin</a>
+						</div>
+						<div class="collapse navbar-collapse" id="bs-navbar-collapse">
+							<ul class="nav navbar-nav navbar-right">
+								<li><a id="user"></a></li>
+								<li><a href="#" id='registerBtn' data-toggle="modal" data-target="#registerModal">Register</a></li>
+								<li><a href="#" id='loginBtn' data-toggle="modal" data-target="#loginModal">Login</a></li>
+								<li><a href="#" id='logoutBtn'>Logout</a></li>
+							</ul>
+						</div>
+					</div>
+				</nav>
+			</header>
+			<section class="main-block">
+				<div class="container">
+					<div class="caption">
+						<div class="row">
+							<div class="col-sm-2 center-block">
+								<a href="/">
+									<img src="/static/logos/thebin.svg" class="logo img-responsive">
+								</a>
+							</div>
+							<div class="col-sm-8 content-block">
+								<h1>The Bin</h1>
+								<div class="well">
+									TODO Description
+									<div class="extra-space-l"></div>
+									<br/><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#uploadModal">Publish message</button>
+								</div>
+
+								<div class="modal fade" id="registerModal" tabindex="-1" role="dialog">
+									<div class="modal-dialog modal-sm" role="document">
+										<form id='register'>
+											<div class="modal-content">
+												<div class="modal-header">
+													<button type="button" class="close" data-dismiss="modal"></button>
+													<h4 class="modal-title">Registration</h4>
+												</div>
+												<div class="modal-body">
+													<div class='form-group'>
+														<input type='text' class='form-control' name='user' placeholder='user' required autocomplete='off'>
+													</div>
+													<div class='form-group'>
+														<input type='password' class='form-control' name='password' placeholder='password' required autocomplete='off'>
+													</div>
+													<div class='form-group'>
+														<input type='text' class='form-control' name='skills' placeholder='skills' autocomplete='off'>
+													</div>
+													<div class="alert alert-danger alert-dismissible just-hidden" role="alert"></div>
+												</div>
+												<div class="modal-footer">
+													<button type="button" class="btn btn-link" data-dismiss="modal">Close</button>
+													<button type="submit" class="btn btn-primary">Register</button>
+												</div>
+											</div>
+										</form>
+									</div>
+								</div>
+
+								<div class="modal fade" id="loginModal" tabindex="-1" role="dialog">
+									<div class="modal-dialog modal-sm" role="document">
+										<form id='login'>
+											<div class="modal-content">
+												<div class="modal-header">
+													<button type="button" class="close" data-dismiss="modal"></button>
+													<h4 class="modal-title">Login</h4>
+												</div>
+												<div class="modal-body">
+													<div class='form-group'>
+														<input type='text' class='form-control' name='user' placeholder='user' required autocomplete='off'>
+													</div>
+													<div class='form-group'>
+														<input type='password' class='form-control' name='password' placeholder='password' required autocomplete='off'>
+													</div>
+													<div class="alert alert-danger alert-dismissible just-hidden" role="alert"></div>
+												</div>
+												<div class="modal-footer">
+													<button type="button" class="btn btn-link" data-dismiss="modal">Close</button>
+													<button type="submit" class="btn btn-primary">Login</button>
+												</div>
+											</div>
+										</form>
+									</div>
+								</div>
+
+								<div class="modal fade" id="uploadModal" tabindex="-1" role="dialog">
+									<div class="modal-dialog" role="document">
+										<form id='publish'>
+											<div class="modal-content">
+												<div class="modal-header">
+													<button type="button" class="close" data-dismiss="modal"></button>
+													<h4 class="modal-title">Upload</h4>
+												</div>
+												<div class="modal-body">
+													<div class='form-group'>
+														<input type='text' class='form-control' name='title' placeholder="title" required autocomplete='off'>
+													</div>
+													<div class='form-group'>
+														<textarea class='form-control' name='body' placeholder="message" required autocomplete='off'></textarea>
+													</div>
+													<div class='form-group'>
+														<input type='text' class='form-control' name='requirements' placeholder="requirements" autocomplete='off'>
+													</div>
+													<div class="checkbox">
+														<label for='is_public'>
+															<input type='checkbox' name='is_public' id='is_public'> Public
+														</label>
+													</div>
+													<div class="alert alert-danger alert-dismissible just-hidden" role="alert"></div>
+												</div>
+												<div class="modal-footer">
+													<button type="button" class="btn btn-link" data-dismiss="modal">Close</button>
+													<button type="submit" class="btn btn-primary">Publish</button>
+												</div>
+											</div>
+										</form>
+									</div>
+								</div>
+
+								<br/><h3>My</h3>
+								<table id='my' class="table"></table>
+
+								<br/><h3>Publics</h3>
+								<table id='publics' class="table"></table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
 		</div>
 
-		<div>
-			<h1>Login</h1>
-			<form id='login' onsubmit='return OnLogin()'>
-				<input type='text' name='user' placeholder='user' required autocomplete='off'>
-				<input type='password' name='password' placeholder='password' required autocomplete='off'>
-				<input type='submit' value='Login'>
-			</form>
-		</div>
-
-		<div>
-			<h1>Logout</h1>
-			<form id='logout' onsubmit='return OnLogout()'>
-				<input type='submit' value='Logout'>
-			</form>
-		</div>
-
-		<div>
-			<h1>Upload</h1>
-			<form id='publish' onsubmit='return OnPublish()'>
-				<input type='text' name='title' required autocomplete='off'><br>
-				<textarea name='body' required autocomplete='off'></textarea><br>
-				<input type='checkbox' name='is_public' id='is_public' autocomplete='off'> <label for='is_public'>Public</label><br>
-				<input type='submit' value='publish'>
-			</form>
-		</div>
-
-		<div>
-			<h1>My</h1>
-			<table id='my'></table>
-			<script type='text/javascript'>OnLoadMy();</script>
-		<div>
-
-		<div>
-			<h1>Publics</h1>
-			<table id='publics'></table>
-			<script type='text/javascript'>OnLoadPublics();</script>
-		</div>
+		<script src="/static/lib/jquery/jquery-3.1.1.min.js"></script>
+		<script src="/static/lib/bootstrap/js/bootstrap.min.js"></script>
+		<script src='/static/main.js'></script>
 	</body>
 </html>

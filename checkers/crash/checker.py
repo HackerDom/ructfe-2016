@@ -30,15 +30,10 @@ def put(*args):
 	addr = args[0]
 	flag_id = args[1]
 	flag = args[2]
+	minidumpFilePath = "/tmp/" + flag_id + ".dmp"
 
 	# crash the binary and generate minidump
-	cmdLine = './%s %s' % ( SERVICE_NAME, flag )
-	try:
-		minidumpFilePath = subprocess.check_output( cmdLine, shell=True)
-	except subprocess.CalledProcessError as e:
-		minidumpFilePath = e.output
-	minidumpFileName = minidumpFilePath[6:] # skip dumps/
-	guid = os.path.splitext(minidumpFileName)[0]
+	os.system( './%s %s %s' % ( SERVICE_NAME, flag, minidumpFilePath ) )
 
 	# zip minidump file
 	inMemoryZip = BytesIO()
