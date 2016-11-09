@@ -24,6 +24,11 @@ public class Sapmarine {
     var processingTrips: Dictionary<String, Trip> = Dictionary<String, Trip>()
 
     init(){
+        let saveStateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { t in
+            sapmarine.SaveState()
+        }
+        // RunLoop.current.add(saveStateTimer, RunLoop.currentMode)
+
         let session = Session(secret: UUID().uuidString)
         router.all(middleware: session)
 
@@ -204,12 +209,30 @@ public class Sapmarine {
         }
     }
 
-    public func Run(port: Int){
-        Kitura.addHTTPServer(onPort: port, with: router)
-        Kitura.run()
+    public func SaveState() {
+        self.dispatchQueue.sync {
+            
+        }
     }
 
-    private func FindExistingUserOrRegister(_ user: String, _ pass: String) -> User?{
+    public func SaveUsers() {
+
+    }
+
+    public func SaveProfiles() {
+
+    }
+
+    public func SaveTrips() {
+
+    }
+
+    public func Start(port: Int) {
+        Kitura.addHTTPServer(onPort: port, with: router)
+        Kitura.start()
+    }
+
+    private func FindExistingUserOrRegister(_ user: String, _ pass: String) -> User? {
         let digest = Digest(using: .sha1).update(string: pass)!.final();
         let passHash = CryptoUtils.hexString(from: digest);
         let user = User(user, passHash)

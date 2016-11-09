@@ -1,3 +1,4 @@
+import SwiftyJSON
 import Foundation
 
 public class Profile {
@@ -9,5 +10,15 @@ public class Profile {
         self.fullName = fullName
         self.job = job
         self.notes = notes
+    }
+
+    init(json: JSON) {
+        fullName = json["fullName"].stringValue
+        job = json["job"].stringValue
+        notes = json["notes"].stringValue
+    }
+
+    public func toJson() -> String {
+        return JSONSerializer.toJson(self)
     }
 }
