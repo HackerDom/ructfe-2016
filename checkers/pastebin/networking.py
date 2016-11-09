@@ -43,7 +43,7 @@ class WSHelper:
 				elif msg.type == aiohttp.WSMsgType.CLOSED:
 					break
 				else:
-					checker.mumble(error='get message with unexpected type {}\nmessage: {}'.format(msg.type, msg.text))
+					checker.mumble(error='get message with unexpected type {}\nmessage: {}'.format(msg.type, msg.data))
 	def want(self, url, owner):
 		self.wanted.add((url, owner))
 	def want_many(self, wanted):
