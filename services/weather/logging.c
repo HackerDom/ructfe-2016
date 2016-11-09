@@ -5,7 +5,7 @@
 #include <stdarg.h>
 #include <time.h>
 
-#define LOG_BUFFER_SIZE 128
+#define LOG_BUFFER_SIZE 256
 
 int32 echoToConsole = 1;
 

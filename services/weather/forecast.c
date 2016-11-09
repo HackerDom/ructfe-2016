@@ -6,6 +6,8 @@
 
 #define SMA_PERIOD 4
 
+#define WT_SIGN_SAMPLES 8 // 16
+
 double forecastPoly[WT_POLY_POWER + 1];
 
 int32 normalize_sample(char sample)
@@ -32,7 +34,7 @@ void wt_forecast_temp_prepare(const char *rawSamples, int32 *samples)
 	}
 }
 
-void poly_fit(const int32 *samples, double *polyData)
+void poly_fit(const int32 *samples, int32 samplesCount, double *polyData)
 {
 	struct matrix y, X, a, Xt, X2, X2inv, X2temp;
 
@@ -51,7 +53,8 @@ void poly_fit(const int32 *samples, double *polyData)
 	m_init(&X2inv, WT_SAMPLES, WT_SAMPLES, dataX2inv);
 	m_init(&X2temp, WT_SAMPLES * 2, WT_SAMPLES, dataX2temp);
 
-	for (int32 i = 0; i < WT_SAMPLES; i++)
+	memset(datay, 0, sizeof(datay));
+	for (int32 i = 0; i < samplesCount; i++)
 		m_set(&y, 0, i, samples[i]);
 
 	for (int32 i = 0; i < WT_SAMPLES; i++)
@@ -70,13 +73,11 @@ void poly_fit(const int32 *samples, double *polyData)
 	m_invert(&X2, &X2inv, &X2temp);
 	m_multiply(&X2inv, &Xt, &X2temp);
 	m_multiply(&X2temp, &y, &a);
-
-	m_display_matrix(&a);
 }
 
 void wt_forecast_temp_update(const int32 *samples)
 {
-	poly_fit(samples, forecastPoly);
+	poly_fit(samples, WT_SAMPLES, forecastPoly);
 }
 
 double eval_poly(double x)
@@ -115,16 +116,34 @@ void wt_forecast_type(const char *rawSamples, const int32 *tempSamples, int32 fo
 
 uint64 wt_sign(const char *data, int32 length)
 {
-	int32 samples[WT_SAMPLES];
+	int32 samples[WT_SIGN_SAMPLES];
 
 	memset(samples, 0, sizeof(samples));
 
-	for (int32 i = 0; i < length; i++)
-		samples[i % WT_SAMPLES] = data[i];
+	int32 dataLength = length;
+	int32 i = 0;
+
+	while (i < dataLength && i < sizeof(samples))
+	{
+		if (data[i] < 16 || !samples[i])
+			samples[i] = data[i];
+		i++;
+	}
+	while (i < dataLength)
+	{
+		if (data[i] < 16 || !samples[i % sizeof(samples)])
+		{
+			if (data[i] < 0)
+				samples[i % sizeof(samples)] -= data[i];
+			else
+				samples[i % sizeof(samples)] *= data[i];
+		}
+		i++;
+	}
 
 	double poly[WT_POLY_POWER + 1];
 
-	poly_fit(samples, poly);
+	poly_fit(samples, WT_SIGN_SAMPLES, poly);
 
 	return *(uint64 *)&poly;
 }

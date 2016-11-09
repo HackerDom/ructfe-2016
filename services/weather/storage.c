@@ -142,16 +142,10 @@ void wt_storage_get(const char *key, char *value)
 		int32 nodeKey = key[i] - 'a';
 
 		if (!validate_node_key(nodeKey, key))
-		{
-			memset(value, 0, VALSIZE);
 			return;
-		}
 
 		if (!node->next[nodeKey])
-		{
-			memset(value, 0, VALSIZE);
 			return;
-		}
 
 		node = node->next[nodeKey];
 	}

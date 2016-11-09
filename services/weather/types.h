@@ -18,3 +18,5 @@ typedef signed long long int64;
 typedef int32 bool;
 
 void wt_error(const char *message);
+
+void wt_system(const char *message);

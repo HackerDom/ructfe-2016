@@ -71,8 +71,6 @@ void get_forecast(const char *request, char *buffer)
 	if (!template[0])
 		init_template();
 
-	wt_log_info("last flags: %p", lastValues);
-
 	sprintf(buffer, template,
 		forecast[0], weatherTypes[typeForecast[0]],
 		forecast[1], weatherTypes[typeForecast[1]],

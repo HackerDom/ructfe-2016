@@ -3,7 +3,6 @@
 #include "logging.h"
 #include "storage.h"
 
-#include <stdio.h> //TODO remove
 #include <string.h>
 #include <unistd.h>
 #include <sys/socket.h>
@@ -41,12 +40,13 @@ void wt_update_forecast_data()
 
 void wt_control_process_client(const struct client *client)
 {
+	memset(&request, 0, sizeof(request));
+	
 	if (read(client->socket, &request, sizeof(request)) == 0)
 		return;
 
 	if (request.operation == 0)
 	{
-		wt_log_info("handling get");
 		wt_storage_get(request.flagId, request.flag);
 		write(client->socket, request.flag, sizeof(request.flag));
 	}
