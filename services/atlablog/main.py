@@ -37,56 +37,8 @@ def make_app(view=None, database=None):
     app.config.REQUEST_MAX_SIZE = 2000000  # 2 megababies
     app.static('/static', settings.STATIC_DIR)
 
-    # @app.route("/", methods=['GET'])
-    # async def test_index(request):
-    #     return html(view.render('index', {'name': 'variables'}))
-
-    @app.route("/dynamic/<name>/<id:int>")
-    async def test_params(request, name, id:int):
-        return text("yeehaww {} {}".format(name, id))
-
-    @app.route("/await")
-    async def test_await(request):
-        import asyncio
-        await asyncio.sleep(5)
-        return text("I'm feeling sleepy")
-
-    # ----------------------------------------------- #
-    # Read from request
-    # ----------------------------------------------- #
-
-    @app.route("/json")
-    async def post_json(request):
-        return json({"received": True, "message": request.json})
-
-    @app.route("/form")
-    async def post_json(request):
-        return json({"received": True, "form_data": request.form,
-                     "test": request.form.get('test')})
-
-    @app.route("/query")
-    async def query_string(request):
-        return json({"parsed": True, "args": request.args, "url": request.url,
-                     "query_string": request.query_string})
-
-    # ----------------------------------------------- #
-    # Exceptions
-    # ----------------------------------------------- #
-
-    @app.route("/exception")
-    async def exception(request):
-        raise ServerError("It's dead jim")
-
-    @app.exception(ServerError)
-    async def test(request, exception):
-        return json(
-            {"exception": "{}".format(exception),
-             "status": exception.status_code},
-            status=exception.status_code)
-
     @app.middleware('response')
     async def halt_response(request, response):
-        print('I halted the response')
         response.headers['Content-Security-Policy'] = \
             "default-src 'self' 'unsafe-inline';"
     return app
@@ -106,14 +58,12 @@ def recreatedb(loop=None):
     service = get_user_service()
     service.dropdb()
     service.initdb()
-    loop.run_until_complete(service.create_user('pahaz', 'qwerqwer'))
     service = get_session_service()
     service.dropdb()
     service.initdb()
     service = get_entry_service(BLOG_ENTRY_DB_NAME)
     service.dropdb()
     service.initdb()
-    loop.run_until_complete(service.create_entry('pahaz', 'the best <script>alert(1)</script>most!'))
     service = get_entry_service(COMMENT_ENTRY_DB_NAME)
     service.dropdb()
     service.initdb()
