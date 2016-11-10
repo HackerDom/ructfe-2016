@@ -1,6 +1,6 @@
 ---
 - name: Add nodoc in dpkg
-  copy: src=01_nodoc dest=/etc/dpkg/dpkg.conf.d/01_nodoc
+  copy: src=01_nodoc dest=/etc/dpkg/dpkg.cfg.d/01_nodoc
 
 - name: Remove packages
   apt: name={{ item }} state=absent
