@@ -27,7 +27,7 @@ public class Sapmarine {
         LoadState()
 
         let saveStateTimer = Timer.scheduledTimer(withTimeInterval: 60.0, repeats: true) { t in
-            sapmarine.SaveState()
+            self.SaveState()
         }
         // RunLoop.current.add(saveStateTimer, RunLoop.currentMode)
 
@@ -223,10 +223,8 @@ public class Sapmarine {
             }
 
             if let trip = self.processingTrips.removeValue(forKey: tripId) {
-
                 self.dispatchQueue.sync {
                     let passengerName = trip.passenger
-
                     let passengerOptional = self.usersDict[passengerName]
                     if(passengerOptional == nil){
                         response.statusCode = .badRequest
@@ -362,8 +360,10 @@ public class Sapmarine {
 
             for line in lines {
                 // do {
+                    if line == "" { continue }
                     let user = User(line)
                     usersSet.insert(user)
+                    usersDict[user.name] = user
                 // } catch let error as NSError { }
             }
         } catch let error as NSError {
@@ -384,6 +384,7 @@ public class Sapmarine {
 
             for line in lines {
                 // do {
+                    if line == "" { continue }
                     let profile = Profile(line)
                     self.profilesDict[profile.name] = profile
                 // } catch let error as NSError { }
@@ -406,6 +407,7 @@ public class Sapmarine {
 
             for line in lines {
                 // do {
+                    if line == "" { continue }
                     let trip = Trip(line)
                     self.processingTrips[trip.id] = trip
                 // } catch let error as NSError { }
