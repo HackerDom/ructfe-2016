@@ -247,7 +247,7 @@ class Checker(HttpCheckerBase):
 	def put(self, addr, flag_id, flag, vuln):
 		s = self.session(addr)
 
-		login = self.randlogin()
+		login = self.randlogin() + uuid.uuid4().hex[:4]
 		fullName = login.capitalize() + "_" + self.randlogin().capitalize()
 		job = self.randengword()
 		password = flag_id
