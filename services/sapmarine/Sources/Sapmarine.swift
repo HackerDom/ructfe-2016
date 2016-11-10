@@ -27,7 +27,7 @@ public class Sapmarine {
         LoadState()
 
         let saveStateTimer = Timer.scheduledTimer(withTimeInterval: 60.0, repeats: true) { t in
-            sapmarine.SaveState()
+            self.SaveState()
         }
         // RunLoop.current.add(saveStateTimer, RunLoop.currentMode)
 
@@ -112,15 +112,20 @@ public class Sapmarine {
                 return;
             }
 
-// self.dispatchQueue.sync {
-                if self.profilesDict[userNameOptional!] != nil{
-                    response.statusCode = .forbidden
-                    try response.send("Profile is already set and can't be changed").end()
-                    return
-                }
+            var profile: Profile?
+            self.dispatchQueue.sync {
+                profile = self.profilesDict[userNameOptional!]
+            }
 
+            if profile != nil{
+                response.statusCode = .forbidden
+                try response.send("Profile is already set and can't be changed").end()
+                return
+            }
+
+            self.dispatchQueue.sync {
                 self.profilesDict[userNameOptional!] = Profile(userNameOptional!, fullName, job, notes)
-// }
+            }
 
             try response.redirect("/profileForm").end()
         }
@@ -131,7 +136,6 @@ public class Sapmarine {
 
             var stencilContext: [String: Any] = [:]
             self.dispatchQueue.sync {
-
                 let profile = self.profilesDict[userNameOptional!]
 
                 stencilContext = [
@@ -163,7 +167,15 @@ public class Sapmarine {
                 self.newTrips[userNameOptional!] = description
             }
 
-            try response.end()
+            try response.redirect("/").end()
+        }
+
+        router.get("/addTripForm") { request, response, next in
+            let userNameOptional = try self.GetUserFromSessionOrCancelRequest(request, response)
+            if userNameOptional == nil { return }
+
+            let stencilContext: [String: Any] = [:]
+            try response.render("addtrip.stencil", context: stencilContext).end()
         }
 
         router.get("/takeTrip") { request, response, next in
@@ -223,10 +235,8 @@ public class Sapmarine {
             }
 
             if let trip = self.processingTrips.removeValue(forKey: tripId) {
-
                 self.dispatchQueue.sync {
                     let passengerName = trip.passenger
-
                     let passengerOptional = self.usersDict[passengerName]
                     if(passengerOptional == nil){
                         response.statusCode = .badRequest
@@ -245,11 +255,6 @@ public class Sapmarine {
                 try response.send("Trip with tripId '\(tripId)' not found in processing trips").end();
             }
         }
-    }
-
-    public func Start(port: Int) {
-        Kitura.addHTTPServer(onPort: port, with: router)
-        Kitura.start()
     }
 
     private func FindExistingUserOrRegister(_ user: String, _ pass: String) -> User? {
@@ -271,7 +276,7 @@ public class Sapmarine {
     }
 
     private func FindParam(_ request: RouterRequest, _ paramName: String) -> String {
-        return request.queryParameters[paramName]?.trim() ?? "";
+        return (request.queryParameters[paramName]?.replacingOccurrences(of: "+", with: " ").removingPercentEncoding ?? "").trim();
     }
 
     private func GetUserFromSessionOrCancelRequest(_ request: RouterRequest, _ response: RouterResponse) throws -> String? {
@@ -290,6 +295,11 @@ public class Sapmarine {
     }
 
 
+    public func Start(port: Int) {
+        Kitura.addHTTPServer(onPort: port, with: router)
+        Kitura.start()
+    }
+
     private func SaveState() {
         self.dispatchQueue.sync {
             SaveUsers()
@@ -300,11 +310,9 @@ public class Sapmarine {
 
     private func SaveUsers() {
         do {
-            // let fileDestinationUrl = docmentDirectoryURL.appendingPathComponent("users.state.new")
-
             let fileDestinationUrl = URL(fileURLWithPath: "users.state")
 
-            let usersJsons = self.usersSet.map { $0.toJson() }
+            let usersJsons = self.usersSet.map { $0.toJson().toBase64() }
             let state = usersJsons.joined(separator: "\n")
 
             try state.write(to: fileDestinationUrl, atomically: false, encoding: .utf8)
@@ -319,7 +327,7 @@ public class Sapmarine {
         do {
             let fileDestinationUrl = URL(fileURLWithPath: "profiles.state")
 
-            let profilesJsons = self.profilesDict.map { (key, value) in value.toJson() }
+            let profilesJsons = self.profilesDict.map { (key, value) in value.toJson().toBase64() }
             let state = profilesJsons.joined(separator: "\n")
 
             try state.write(to: fileDestinationUrl, atomically: false, encoding: .utf8)
@@ -333,7 +341,7 @@ public class Sapmarine {
         do {
             let fileDestinationUrl = URL(fileURLWithPath: "trips.state")
 
-            let tripsJsons = self.processingTrips.map { (key, value) in value.toJson() }
+            let tripsJsons = self.processingTrips.map { (key, value) in value.toJson().toBase64() }
             let state = tripsJsons.joined(separator: "\n")
 
             try state.write(to: fileDestinationUrl, atomically: false, encoding: .utf8)
@@ -362,8 +370,14 @@ public class Sapmarine {
 
             for line in lines {
                 // do {
-                    let user = User(line)
+                    if line == "" { continue }
+
+                    let json = line.fromBase64();
+                    if json == nil { continue }
+
+                    let user = User(json!)
                     usersSet.insert(user)
+                    usersDict[user.name] = user
                 // } catch let error as NSError { }
             }
         } catch let error as NSError {
@@ -384,7 +398,12 @@ public class Sapmarine {
 
             for line in lines {
                 // do {
-                    let profile = Profile(line)
+                    if line == "" { continue }
+
+                    let json = line.fromBase64();
+                    if json == nil { continue }
+
+                    let profile = Profile(json!)
                     self.profilesDict[profile.name] = profile
                 // } catch let error as NSError { }
             }
@@ -406,7 +425,12 @@ public class Sapmarine {
 
             for line in lines {
                 // do {
-                    let trip = Trip(line)
+                    if line == "" { continue }
+
+                    let json = line.fromBase64();
+                    if json == nil { continue }
+
+                    let trip = Trip(json!)
                     self.processingTrips[trip.id] = trip
                 // } catch let error as NSError { }
             }

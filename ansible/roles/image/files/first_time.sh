@@ -40,6 +40,9 @@ echo "Network configuration is over"
 sed -i '/ONETIME/d' /root/.bashrc
 
 echo
-echo "Restart nginx with new dns"
+echo "Restarting nginx with new dns"
 
 systemctl restart nginx
+
+echo
+echo "Let's play"

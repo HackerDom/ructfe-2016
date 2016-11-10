@@ -6,9 +6,6 @@ public class Comment{
     var text:String? = nil
     var mark:Int = 0;
 
-    // init(){
-    // }
-
     init(_ driver: String?, _ passenger: String?, _ text: String?, _ mark: Int) {
         self.driver = driver
         self.passenger = passenger
@@ -26,7 +23,9 @@ public class Comment{
         driver = json["driver"].stringValue
         passenger = json["passenger"].stringValue
         text = json["text"].stringValue
-        mark = json["text"].int!
+        if json["mark"].int != nil {
+            mark = json["mark"].int!
+        }
     }
 
     public func toJson() -> String {

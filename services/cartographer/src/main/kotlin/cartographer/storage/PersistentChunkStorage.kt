@@ -4,35 +4,40 @@ import cartographer.helpers.bytesToInt
 import cartographer.helpers.bytesToUuid
 import cartographer.helpers.intToBytes
 import cartographer.helpers.uuidToBytes
+import cartographer.settings.IntSetting
 import cartographer.settings.SettingsContainer
 import cartographer.settings.StringSetting
 import org.apache.logging.log4j.LogManager
-import org.springframework.context.annotation.Primary
 import org.springframework.stereotype.Component
 import java.io.*
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 @Component
-@Primary
 class PersistentChunkStorage : ChunkStorage, Closeable {
     companion object {
         private val storageFileNameSetting = StringSetting("persistent_storage.file_name", "data/storage")
+        private val maxMostRecentChunksNumberSetting = IntSetting("persistent_storage.max_most_recent_chunks", 1000)
 
         private val logger = LogManager.getFormatterLogger()
     }
 
     private val storageFileStream: OutputStream
     private val cache = ConcurrentHashMap<UUID, ByteArray>()
+    private val mostRecentChunks = ConcurrentLinkedDeque<UUID>()
     private val taskExecutor: ExecutorService
+    private val maxMostRecentChunksNumber: Int
 
     constructor(settingsContainer: SettingsContainer) {
         val storageFileName = storageFileNameSetting.getValue(settingsContainer)
         val storageFile = getStorageFile(storageFileName)
         populateCacheFromFile(storageFile)
         storageFileStream = FileOutputStream(storageFile)
+
+        maxMostRecentChunksNumber = maxMostRecentChunksNumberSetting.getValue(settingsContainer)
 
         taskExecutor = Executors.newSingleThreadExecutor()
     }
@@ -41,10 +46,20 @@ class PersistentChunkStorage : ChunkStorage, Closeable {
         return cache[id]
     }
 
+    override fun getRecentChunks(): Collection<UUID> {
+        return mostRecentChunks.toList()
+    }
+
     override fun putChunk(id: UUID, chunk: ByteArray): Boolean {
         if (cache.getOrPut(id, { chunk }) == chunk) {
             logger.debug("Received new chunk with id $id")
-            taskExecutor.submit { saveToFile(id, chunk) }
+            taskExecutor.submit {
+                saveToFile(id, chunk)
+                mostRecentChunks.addFirst(id)
+                if (mostRecentChunks.size > maxMostRecentChunksNumber) {
+                    mostRecentChunks.removeLast()
+                }
+            }
             return true
         }
 
@@ -58,7 +73,13 @@ class PersistentChunkStorage : ChunkStorage, Closeable {
 
     private fun getStorageFile(storageFileName: String): File {
         val file = File(storageFileName)
-        if (file.exists() || (file.parentFile.mkdirs() && file.createNewFile())) {
+        if (file.exists()) {
+            return file
+        }
+
+        file.parentFile.mkdirs();
+
+        if (file.createNewFile()) {
             return file
         }
 
@@ -89,6 +110,10 @@ class PersistentChunkStorage : ChunkStorage, Closeable {
             }
 
             cache.put(id, bytesBuffer)
+            mostRecentChunks.addFirst(id)
+            if (mostRecentChunks.size > maxMostRecentChunksNumber) {
+                mostRecentChunks.removeLast()
+            }
         }
     }
 }
