@@ -23,18 +23,13 @@ import java.util.concurrent.ConcurrentMap
 class HistoricalLatencyCalculator : LatencyCalculator {
     companion object {
         private val movingAverageExponentSetting = DoubleSetting("latency_calculator.ema_exponent", 0.2)
-        private val backOffExponentSetting = IntSetting("latency_calculater.back_off_exponent", 2)
-        private val maxBackOffNumberSetting = IntSetting("latency_calculater.max_back_off_number", 8)
         private val endpointSetting = StringSetting("latency_calculator.endpoint", "timesync")
     }
 
     private val history: ConcurrentMap<InetSocketAddress, AddressLatencyHistory> =
             ConcurrentHashMap<InetSocketAddress, AddressLatencyHistory>()
-    private val logger = LogManager.getFormatterLogger()!!
 
     private val movingAverageExponent: Double
-    private val backOffExponent: Int
-    private val maxBackOffNumber: Int
     private val endpoint: String
 
     private val objectMapper: ObjectMapper
@@ -42,8 +37,6 @@ class HistoricalLatencyCalculator : LatencyCalculator {
 
     constructor(dateTimeProvider: DateTimeProvider, objectMapper: ObjectMapper, settingsContainer: SettingsContainer) {
         movingAverageExponent = movingAverageExponentSetting.getValue(settingsContainer)
-        backOffExponent = backOffExponentSetting.getValue(settingsContainer)
-        maxBackOffNumber = maxBackOffNumberSetting.getValue(settingsContainer)
         endpoint = endpointSetting.getValue(settingsContainer)
 
         this.objectMapper = objectMapper
@@ -51,7 +44,7 @@ class HistoricalLatencyCalculator : LatencyCalculator {
     }
 
     override fun CalcLatency(addr: InetSocketAddress): Long? {
-        val addressHistory = history.getOrPut(addr, { AddressLatencyHistory(null, 0, 0) })
+        val addressHistory = history.getOrPut(addr, { AddressLatencyHistory(null) })
         val newAddressHistory = calcNewHistory(addr, addressHistory)
         history.put(addr, newAddressHistory)
         return newAddressHistory.averageLatency
@@ -59,10 +52,6 @@ class HistoricalLatencyCalculator : LatencyCalculator {
 
     private fun calcNewHistory(addr: InetSocketAddress,
                                addressHistory: AddressLatencyHistory): AddressLatencyHistory {
-        if (addressHistory.backOffLeft > 0) {
-            return AddressLatencyHistory(addressHistory.backOffLeft - 1, addressHistory.lastBackOff)
-        }
-
         val latency = tryCalcLatency(addr)
 
         if (latency != null) {
@@ -75,8 +64,7 @@ class HistoricalLatencyCalculator : LatencyCalculator {
             return AddressLatencyHistory(newLatencyValue.toLong())
         }
 
-        val newBackOff = Math.min(maxBackOffNumber, Math.max(1, addressHistory.lastBackOff * backOffExponent))
-        return AddressLatencyHistory(newBackOff, newBackOff)
+        return AddressLatencyHistory(null)
     }
 
     private fun tryCalcLatency(addr: InetSocketAddress): Long? {
@@ -89,7 +77,6 @@ class HistoricalLatencyCalculator : LatencyCalculator {
 
             return if (response != null) calcLatencyFromResponse(response) else null
         } catch (t: Throwable) {
-            logger.warn("Failed to synchronize time with $addr due to $t")
             return null
         }
     }
