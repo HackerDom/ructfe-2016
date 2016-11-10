@@ -9,7 +9,7 @@ path-include=/usr/share/locale/currency/*
 path-include=/usr/share/locale/l10n/*
 
 # Delete man pages
-path-exclude=/usr/share/man/*
+# path-exclude=/usr/share/man/*
 
 # Delete docs
 path-exclude=/usr/share/doc/*
