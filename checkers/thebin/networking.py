@@ -10,7 +10,7 @@ from crypto import Signer
 import UserAgents
 
 async def check_status(response):
-	if response.status >= 500 || response.status == 404:
+	if response.status >= 500 or response.status == 404:
 		checker.down(error='status code is {}. Content: {}\n'.format(response.status, await response.text()))
 	if response.status != 200:
 		checker.mumble(error='status code is {}. Content: {}\n'.format(response.status, await response.text()))
