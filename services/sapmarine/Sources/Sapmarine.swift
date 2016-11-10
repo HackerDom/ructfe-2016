@@ -26,7 +26,7 @@ public class Sapmarine {
     init(){
         LoadState()
 
-        let saveStateTimer = Timer.scheduledTimer(withTimeInterval: 60.0, repeats: true) { t in
+        let saveStateTimer = Timer.scheduledTimer(withTimeInterval: 30.0, repeats: true) { t in
             self.SaveState()
         }
         // RunLoop.current.add(saveStateTimer, RunLoop.currentMode)
@@ -36,7 +36,7 @@ public class Sapmarine {
 
         router.all(middleware: BodyParser())
 
-        router.all("/static", middleware: StaticFileServer(path: "./static"))
+        router.all("/static", middleware: StaticFileServer(path: "./static", options: StaticFileServer.Options(cacheOptions:StaticFileServer.CacheOptions(maxAgeCacheControlHeader:2419200))))
 
         router.add(templateEngine: StencilTemplateEngine())
 
@@ -249,7 +249,7 @@ public class Sapmarine {
                     self.usersSet.insert(passengerOptional!)
                 }
 
-                try response.end()
+                try response.redirect("/").end()
             } else {
                 response.statusCode = .notFound
                 try response.send("Trip with tripId '\(tripId)' not found in processing trips").end();
