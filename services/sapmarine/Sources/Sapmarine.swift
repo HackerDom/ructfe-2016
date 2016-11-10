@@ -112,15 +112,20 @@ public class Sapmarine {
                 return;
             }
 
-// self.dispatchQueue.sync {
-                if self.profilesDict[userNameOptional!] != nil{
-                    response.statusCode = .forbidden
-                    try response.send("Profile is already set and can't be changed").end()
-                    return
-                }
+            var profile: Profile?
+            self.dispatchQueue.sync {
+                profile = self.profilesDict[userNameOptional!]
+            }
 
+            if profile != nil{
+                response.statusCode = .forbidden
+                try response.send("Profile is already set and can't be changed").end()
+                return
+            }
+
+            self.dispatchQueue.sync {
                 self.profilesDict[userNameOptional!] = Profile(userNameOptional!, fullName, job, notes)
-// }
+            }
 
             try response.redirect("/profileForm").end()
         }
@@ -131,7 +136,6 @@ public class Sapmarine {
 
             var stencilContext: [String: Any] = [:]
             self.dispatchQueue.sync {
-
                 let profile = self.profilesDict[userNameOptional!]
 
                 stencilContext = [
@@ -163,7 +167,15 @@ public class Sapmarine {
                 self.newTrips[userNameOptional!] = description
             }
 
-            try response.end()
+            try response.redirect("/").end()
+        }
+
+        router.get("/addTripForm") { request, response, next in
+            let userNameOptional = try self.GetUserFromSessionOrCancelRequest(request, response)
+            if userNameOptional == nil { return }
+
+            let stencilContext: [String: Any] = [:]
+            try response.render("addtrip.stencil", context: stencilContext).end()
         }
 
         router.get("/takeTrip") { request, response, next in
@@ -264,7 +276,7 @@ public class Sapmarine {
     }
 
     private func FindParam(_ request: RouterRequest, _ paramName: String) -> String {
-        return request.queryParameters[paramName]?.trim() ?? "";
+        return (request.queryParameters[paramName]?.replacingOccurrences(of: "+", with: " ").removingPercentEncoding ?? "").trim();
     }
 
     private func GetUserFromSessionOrCancelRequest(_ request: RouterRequest, _ response: RouterResponse) throws -> String? {
