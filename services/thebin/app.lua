@@ -35,6 +35,15 @@ local function parse_skills(skills)
 	return skills_list
 end
 
+local original_cookie_attributes = app.cookie_attributes;
+app.cookie_attributes = function(self, k, v)
+	if k == 'name' then
+		return ''
+	else
+		return original_cookie_attributes(self, k, v)
+	end
+end
+
 app:before_filter(function(self)
 	self.options.layout = false
 end)
@@ -51,6 +60,7 @@ app:post('/login', function(self)
 
 	if client:create_user(user, password, skills_list) then
 		self.session.user = user
+		self.cookies.name = user
 	else
 		return {status = 400, json = {'wrong username or password'}}
 	end
@@ -58,6 +68,7 @@ end)
 
 app:post('/logout', function(self)
 	self.session.user = nil
+	self.cookies.name = ''
 end)
 
 app:post('/publish', function(self)
