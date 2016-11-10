@@ -13,6 +13,10 @@
 		<td>Crash address</td>
 		<td id="crash_address"></td>
 	</tr>
+	<tr>
+		<td>Remote IP</td>
+		<td id="remote_ip"></td>
+	</tr>
 </table>
 
 <a id="load-crash" class="btn btn-default btn-lg" href="#" role="button">Download</a>

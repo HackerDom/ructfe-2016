@@ -24,7 +24,9 @@ public class Sapmarine {
     var processingTrips: Dictionary<String, Trip> = Dictionary<String, Trip>()
 
     init(){
-        let saveStateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { t in
+        LoadState()
+
+        let saveStateTimer = Timer.scheduledTimer(withTimeInterval: 60.0, repeats: true) { t in
             sapmarine.SaveState()
         }
         // RunLoop.current.add(saveStateTimer, RunLoop.currentMode)
@@ -117,7 +119,7 @@ public class Sapmarine {
                     return
                 }
 
-                self.profilesDict[userNameOptional!] = Profile(fullName, job, notes)
+                self.profilesDict[userNameOptional!] = Profile(userNameOptional!, fullName, job, notes)
 // }
 
             try response.redirect("/profileForm").end()
@@ -245,24 +247,6 @@ public class Sapmarine {
         }
     }
 
-    public func SaveState() {
-        self.dispatchQueue.sync {
-            
-        }
-    }
-
-    public func SaveUsers() {
-
-    }
-
-    public func SaveProfiles() {
-
-    }
-
-    public func SaveTrips() {
-
-    }
-
     public func Start(port: Int) {
         Kitura.addHTTPServer(onPort: port, with: router)
         Kitura.start()
@@ -303,5 +287,132 @@ public class Sapmarine {
         let sess = request.session!
         let user = sess["user"].string
         return user
+    }
+
+
+    private func SaveState() {
+        self.dispatchQueue.sync {
+            SaveUsers()
+            SaveProfiles()
+            SaveTrips()
+        }
+    }
+
+    private func SaveUsers() {
+        do {
+            // let fileDestinationUrl = docmentDirectoryURL.appendingPathComponent("users.state.new")
+
+            let fileDestinationUrl = URL(fileURLWithPath: "users.state")
+
+            let usersJsons = self.usersSet.map { $0.toJson() }
+            let state = usersJsons.joined(separator: "\n")
+
+            try state.write(to: fileDestinationUrl, atomically: false, encoding: .utf8)
+            // try FileManager.default.moveItem(at: URL(fileURLWithPath: "users.state.new"), to: URL(fileURLWithPath: "users.state"))
+        } catch let error as NSError {
+            print("Error saving users state")
+            print(error.localizedDescription)
+        }
+    }
+
+    private func SaveProfiles() {
+        do {
+            let fileDestinationUrl = URL(fileURLWithPath: "profiles.state")
+
+            let profilesJsons = self.profilesDict.map { (key, value) in value.toJson() }
+            let state = profilesJsons.joined(separator: "\n")
+
+            try state.write(to: fileDestinationUrl, atomically: false, encoding: .utf8)
+        } catch let error as NSError {
+            print("Error saving profiles state")
+            print(error.localizedDescription)
+        }
+    }
+
+    private func SaveTrips() {
+        do {
+            let fileDestinationUrl = URL(fileURLWithPath: "trips.state")
+
+            let tripsJsons = self.processingTrips.map { (key, value) in value.toJson() }
+            let state = tripsJsons.joined(separator: "\n")
+
+            try state.write(to: fileDestinationUrl, atomically: false, encoding: .utf8)
+        } catch let error as NSError {
+            print("Error saving trips state")
+            print(error.localizedDescription)
+        }
+    }
+
+
+    private func LoadState() {
+        LoadUsers()
+        LoadProfiles()
+        LoadTrips()
+    }
+
+    private func LoadUsers() {
+        do {
+            let stateFilePath = URL(fileURLWithPath: "users.state")
+            if !FileManager.default.fileExists(atPath: stateFilePath.path) {
+                return
+            }
+
+            let state = try String(contentsOf: stateFilePath, encoding: .utf8)
+            let lines = state.components(separatedBy: "\n")
+
+            for line in lines {
+                // do {
+                    let user = User(line)
+                    usersSet.insert(user)
+                // } catch let error as NSError { }
+            }
+        } catch let error as NSError {
+            print("Error loading users state")
+            print(error.localizedDescription)
+        }
+    }
+
+    private func LoadProfiles() {
+        do {
+            let stateFilePath = URL(fileURLWithPath: "profiles.state")
+            if !FileManager.default.fileExists(atPath: stateFilePath.path) {
+                return
+            }
+
+            let state = try String(contentsOf: stateFilePath, encoding: .utf8)
+            let lines = state.components(separatedBy: "\n")
+
+            for line in lines {
+                // do {
+                    let profile = Profile(line)
+                    self.profilesDict[profile.name] = profile
+                // } catch let error as NSError { }
+            }
+        } catch let error as NSError {
+            print("Error loading profiles state")
+            print(error.localizedDescription)
+        }
+    }
+
+    private func LoadTrips() {
+        do {
+            let stateFilePath = URL(fileURLWithPath: "trips.state")
+            if !FileManager.default.fileExists(atPath: stateFilePath.path) {
+                return
+            }
+
+            let state = try String(contentsOf: stateFilePath, encoding: .utf8)
+            let lines = state.components(separatedBy: "\n")
+
+            for line in lines {
+                // do {
+                    let trip = Trip(line)
+                    self.processingTrips[trip.id] = trip
+                // } catch let error as NSError { }
+            }
+        } catch let error as NSError {
+            print("Error loading trips state")
+            print(error.localizedDescription)
+        }
     }
 }

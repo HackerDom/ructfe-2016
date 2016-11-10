@@ -87,6 +87,6 @@
     - { name: cartographer, mem: 512000000 }
     - { name: crash }
     - { name: atlablog }
-    - { name: pastebin, mem: 256000000 }
     - { name: sapmarine }
+    - { name: thebin, mem: 256000000 }
     - { name: weather, mem: 256000000 }

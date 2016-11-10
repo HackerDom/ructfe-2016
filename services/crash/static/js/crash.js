@@ -31,6 +31,7 @@ function loadCrash() {
 			return;
 		$("#crash_reason").text(crash_data.crash_reason);
 		$("#crash_address").text(crash_data.crash_address);
+		$("#remote_ip").text(crash_data.remote_ip);
 		$("#load-crash").attr("href", "/" + guid + "/get");
 		var $table = $("#crash-thread-stack-table");
 		for (var i=0; i<crash_data.crash_thread_stack.length; i++) {

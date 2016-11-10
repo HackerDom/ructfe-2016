@@ -55,9 +55,12 @@ def put(*args):
 		r = requests.post(url, files=files, headers=headers )
 		if r.status_code != 200:
 			close( MUMBLE, "Submit error", "Invalid status code: %s %d" % ( url, r.status_code ), minidumpFilePath )	
-		r_json = r.json()
-		if r_json[ 'status' ] != 'ok':
-			close( MUMBLE, "Submit error", "Can not put flag", minidumpFilePath )
+		try:
+			r_json = r.json()
+			if r_json[ 'status' ] != 'ok':
+				close( MUMBLE, "Submit error", "Can not put flag", minidumpFilePath )
+		except Exception as e:
+			close(CORRUPT, "Service corrupted", "Service returns invalid json: %s" % e, minidumpFilePath)			
 	except Exception as e:
 		 close(DOWN, "HTTP Error", "HTTP error: %s" % e, minidumpFilePath)
 	close(OK, minidumpFilePath=minidumpFilePath)

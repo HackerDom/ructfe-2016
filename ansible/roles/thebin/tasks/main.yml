@@ -8,7 +8,7 @@
 
 - name: Copy service
   synchronize:
-    src: "{{ playbook_dir }}/../services/pastebin/"
+    src: "{{ playbook_dir }}/../services/thebin/"
     dest: "/etc/nginx/"
     recursive: yes
     use_ssh_args: yes

@@ -57,7 +57,7 @@ class EntryService:
     def dropdb(self):
         self._dropdb()
 
-    async def get_entries(self, limit=100, **kwargs):
+    def _prepare_query(self, limit=None, offset=None, order_by=None, **kwargs):
         query = self._model.select()
         conditions = []
         for key, value in kwargs.items():
@@ -68,7 +68,26 @@ class EntryService:
                 conditions.append(getattr(self._model, key) == value)
         if conditions:
             query = query.where(*conditions)
-        return await self.manager.execute(query.limit(limit))
+        if limit:
+            query = query.limit(limit)
+        if offset:
+            query = query.offset(offset)
+        if order_by and isinstance(order_by, str):
+            if order_by[0] == '-':
+                order_by = getattr(self._model, order_by[1:]).desc()
+            else:
+                order_by = getattr(self._model, order_by)
+            query = query.order_by(order_by)
+        return query
+
+    async def get_entries_count(self, **kwargs):
+        query = self._prepare_query(**kwargs)
+        return await self.manager.count(query)
+
+    async def get_entries(self, limit=100, offset=0, order_by=None, **kwargs):
+        query = self._prepare_query(limit=limit, offset=offset,
+                                    order_by=order_by, **kwargs)
+        return await self.manager.execute(query)
 
     async def create_entry(self, title, content, meta=None,
                            slug=None, is_published=False):

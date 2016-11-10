@@ -32,8 +32,7 @@ def make_models(db, db_name, loop):
                 pass
             return None
 
-        @property
-        def html_content(self):
+        def html_content(self, attachments=True):
             """
             Generate HTML representation of the markdown-formatted entry,
             and also convert any media URLs into rich media objects such as
@@ -51,19 +50,20 @@ def make_models(db, db_name, loop):
                 print(e)
                 raise
 
-            attachments = ''
-            if self.meta and isinstance(self.meta.get('attachments'), list):
-                attachments = self.meta['attachments']
+            attachments_content = ''
+            has_meta_attachments = (
+                self.meta and isinstance(self.meta.get('attachments'), list))
+            if has_meta_attachments and attachments:
                 urls = ['<div><a href="{0}">{0}</a></div>'.format(x)
-                        for x in attachments]
-                attachments = ''.join(urls)
+                        for x in self.meta['attachments']]
+                attachments_content = ''.join(urls)
 
             content = (
                 "<div class=content-wrapper>"
                 "<div class=markdown-content>{}</div>"
                 "<div class=attachments>{}</div>"
                 "</div>")
-            return content.format(markdown_content, attachments)
+            return content.format(markdown_content, attachments_content)
 
         class Meta:
             database = db

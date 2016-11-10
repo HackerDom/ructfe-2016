@@ -11,11 +11,17 @@ public class User : Comparable {
         self.passHash = passHash
     }
 
-    init(json: JSON) {
+    convenience init(_ jsonString : String) {
+        let dataFromString = jsonString.data(using: .utf8, allowLossyConversion: false)!
+        let json = JSON(data: dataFromString)
+        self.init(json)
+    }
+
+    init(_ json: JSON) {
         name = json["name"].stringValue
         passHash = json["passHash"].stringValue
         comments = json["comments"].arrayValue.map {
-            Comment(json: $0)
+            Comment($0)
         }
     }
 

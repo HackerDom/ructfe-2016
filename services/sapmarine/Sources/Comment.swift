@@ -16,7 +16,13 @@ public class Comment{
         self.mark = mark
     }
 
-    init(json: JSON) {
+    convenience init(_ jsonString : String) {
+        let dataFromString = jsonString.data(using: .utf8, allowLossyConversion: false)!
+        let json = JSON(data: dataFromString)
+        self.init(json)
+    }
+
+    init(_ json: JSON) {
         driver = json["driver"].stringValue
         passenger = json["passenger"].stringValue
         text = json["text"].stringValue
