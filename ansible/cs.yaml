@@ -1,3 +1,12 @@
+- hosts: cs-flags
+  tasks:
+  - name: start flags
+    command: systemctl start flags@1 flags@2 flags@3 flags@4
+    tags: ['start', 'flags-start']
+  - name: stop flags
+    command: systemctl stop flags@*
+    tags: ['stop', 'flags-stop']
+
 - hosts: cs-checker
   tasks:
   - name: start checker
