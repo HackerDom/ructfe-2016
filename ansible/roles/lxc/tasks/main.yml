@@ -25,9 +25,6 @@
   template: src=default.conf.j2 dest=/etc/lxc/default.conf
   register: lxc_conf
 
-- name: Add lxc-net to resolv.conf
-  lineinfile: dest=/etc/resolv.conf line="nameserver 192.168.254.254" insertafter=EOF
-
 - name: Enable lxc-net
   service: name=lxc-net enabled=yes
 
@@ -36,6 +33,9 @@
   when: "lxc_net.changed or lxc_conf.changed"
   tags:
     - skip_ansible_lint
+
+- name: Add lxc-net to resolv.conf
+  lineinfile: dest=/etc/resolv.conf line="nameserver 192.168.254.254" insertbefore=BOF
 
 - name: Enable forwarding
   sysctl: name="net.ipv4.ip_forward" value=1 sysctl_set=yes state=present reload=yes
