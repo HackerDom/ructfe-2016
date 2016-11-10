@@ -9,7 +9,7 @@ from functools import wraps
 from time import time
 
 
-ROUND_TIME = 10*1000
+ROUND_TIME = 60*1000
 
 
 def team_(x): return 't{}'.format(x)
