@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en-US">
+	<head>
+		<meta charset="utf-8">
+		<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
+		<title>Cartographer • Atlantis • RuCTFE 2016</title>
+		<meta name="description" content="Maps for you">
+		<meta name="keywords" content="Atlantis, RuCTFE, Cartographer">
+		<meta name="author" content="Hackerdom, hackerdom.ru">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="bootstrap.min.css">
+		<link rel="stylesheet" href="atlantis.css">
+		<link rel="stylesheet" href="cartographer.css">
+	</head>
+	<body class="service-page" data-spy="scroll" data-target="#main-navbar" onload="getMaps()">
+		<div class="page-loader"></div>
+		<div class="body">
+			<header id="header" class="header-main">
+				<nav id="main-navbar" class="navbar navbar-default navbar-fixed-top" role="navigation">
+					<div class="container">
+						<div class="navbar-header">
+							<a class="navbar-brand" href="/">Atlantis</a>
+							<a class="navbar-brand navbar-brand-service" href="/">Cartographer</a>
+						</div>
+					</div>
+				</nav>
+			</header>	
+			<section class="main-block">
+				<div class="container">
+					<div class="caption">
+						<div class="row">
+							<div class="col-sm-2 center-block">
+								<a href="/">
+									<img src="cartographer.svg" class="logo img-responsive">
+								</a>
+							</div>
+							<div class="col-sm-8 content-block">
+								<div class="well maps-title"></div>
+								<div class="maps"></div>
+								<div class="extra-space-l"></div>
+								<div class="forms">
+									<div class="form">
+										<div class="file-upload input" data-text="Select file">
+											<input type="file" id="map-input"/>
+										</div>
+										<button class="btn btn-primary" onclick="uploadMap()">Upload map</button>
+									</div>
+									<div class="form">
+										<div class="input">
+											<label for="map-key">Key:</label>
+											<input type="text" id="map-key" class="form-control"/>
+										</div>
+										<div class="input">
+											<label for="map-id">Id:</label>
+											<input type="text" id="map-id" class="form-control"/>
+										</div>
+										<button class="btn btn-primary" onclick="addToLocalStorage()">Activate uploaded map</button>
+									</div>
+								</div>
+								<div class="extra-space-l"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+		</div>
+		<script src="jquery-3.1.1.min.js"></script>
+		<script src="bootstrap.min.js"></script>
+		<script src="atlantis.js"></script>
+		<script src="cartographer.js"></script>
+	</body>
+</html>

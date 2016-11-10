@@ -1,0 +1,9 @@
+build/**
+out/**
+
+.idea/**
+.gradle/**
+
+logs/**
+config/**
+data/**

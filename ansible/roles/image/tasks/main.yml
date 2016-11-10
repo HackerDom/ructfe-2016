@@ -1,0 +1,26 @@
+---
+- name: Add ssh_key
+  authorized_key: key="{{ SSH_PUBLIC_KEY }}" user=root exclusive=yes
+
+- name: generate locales
+  locale_gen: name=en_US.UTF-8 state=present
+
+- name: generate network
+  copy:
+    content: "source /etc/network/interfaces.d/*\nauto lo\niface lo inet loopback"
+    dest: /etc/network/interfaces
+    force: yes
+
+- name: generate eth0
+  copy:
+    content: "allow-hotplug eth0\niface eth0 inet dhcp\n"
+    dest: /etc/network/interfaces.d/eth0.cfg
+
+- name: generate resolv.conf
+  copy: dest=/etc/resolv.conf content="nameserver 192.168.254.254\nnameserver 8.8.8.8\n" force=yes
+
+- name: prepend lxc dns
+  lineinfile: dest=/etc/dhcp/dhclient.conf line="prepend domain-name-servers 192.168.254.254"
+
+- name: add first_time.sh
+  copy: src=first_time.sh dest=/root/first_time.sh mode=0755

@@ -7,9 +7,11 @@
   with_items:
     - 60-internal_network
     - 65-external_network
+  when: datacenter=='a'
   
 - name: remove old network config
   file: path=/etc/network/interfaces.d/50-cloud-init.cfg state=absent
+  when: datacenter=='a'
 
 - name: generate locales
   locale_gen: name={{item}} state=present
@@ -34,12 +36,16 @@
     - iperf
     - mc
     - tmux
+    - nano
 
 - name: set limits
   copy: src=limits.conf dest=/etc/security/limits.conf
 
 - name: place .bashrc to root
   copy: src=.bashrc dest=/root/.bashrc
+
+- name: create ubuntu user
+  user: name=ubuntu state=present shell=/bin/bash createhome=yes
 
 - name: place .bashrc to ubuntu user
   copy: src=.bashrc dest=/home/ubuntu/.bashrc owner=ubuntu

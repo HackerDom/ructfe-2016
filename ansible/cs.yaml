@@ -1,0 +1,38 @@
+- hosts: cs-flags
+  tasks:
+  - name: start flags
+    command: systemctl start flags@1 flags@2 flags@3 flags@4
+    tags: ['start', 'flags-start']
+  - name: stop flags
+    command: systemctl stop flags@*
+    tags: ['stop', 'flags-stop']
+
+- hosts: cs-checker
+  tasks:
+  - name: start checker
+    command: systemctl start worker-checkers
+    tags: ['start', 'checker-start']
+  - name: stop checker
+    command: systemctl stop worker-checkers
+    tags: ['stop', 'checker-stop']
+
+- hosts: cs-master
+  tasks:
+  - name: start manager
+    command: systemctl start manager
+    tags: ['start', 'master-start']
+  - name: stop manager
+    command: systemctl stop manager
+    tags: ['stop', 'master-stop']
+  - name: start web
+    command: systemctl start web
+    tags: ['start', 'web-start']
+  - name: stop web
+    command: systemctl stop web
+    tags: ['stop', 'web-stop']
+  - name: start worker
+    command: systemctl start worker
+    tags: ['start', 'worker-start']
+  - name: stop worker
+    command: systemctl stop worker
+    tags: ['stop', 'worker-stop']

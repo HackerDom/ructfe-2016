@@ -1,0 +1,8 @@
+*_temp
+logs
+nginx.conf.compiled
+*.o
+*.so
+*.swp
+*.out
+*.s

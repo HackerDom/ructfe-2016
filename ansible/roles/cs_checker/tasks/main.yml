@@ -1,0 +1,57 @@
+- name: systemd configs
+  template: src=worker-checkers.service.j2 dest=/etc/systemd/system/worker-checkers.service
+  with_items:
+    - { jobs: 128 }
+
+- name: systemd reload
+  command: systemctl daemon-reload
+
+- name: catalog for checkers
+  file: path={{cs_dir}}/app/checkers state=directory
+
+- name: selenium checker
+  template: src=selenium_checker.py dest={{cs_dir}}/app/checkers/selenium_checker.py mode=a+x
+
+- name: selenium checker sites
+  template: src=sites.txt dest={{cs_dir}}/app/checkers/sites.txt
+
+- name: selenium checker deps
+  apt: name={{item}} state=latest update_cache=yes
+  with_items:
+    - nodejs-legacy
+    - npm
+    - python3-pip
+
+- name: selenium checker npm deps
+  npm: name=phantomjs global=yes
+
+- name: selenium checker python deps
+  pip: executable=pip3 name=selenium
+
+- name: checkers
+  synchronize: src=../../../../checkers dest={{cs_dir}}/app
+
+- name: crash dumps
+  file: path={{cs_dir}}/app/checkers/crash/dumps state=directory
+
+- name: thebin deps
+  apt: name={{item}} state=latest update_cache=yes
+  with_items:
+    - python3-crypto
+
+- name: thebin checker python deps
+  pip: executable=pip3 name=aiohttp
+
+- name: weather deps
+  apt: name={{item}} state=latest update_cache=yes
+  with_items:
+    - libc6-i386
+
+- name: cartographer deps
+  pip: executable=pip3 name={{item}}
+  with_items:
+    - Pillow
+    - requests
+
+- name: checkers owner
+  file: path={{cs_dir}}/app/checkers/ owner={{cs_user}} group={{cs_user}} recurse=yes

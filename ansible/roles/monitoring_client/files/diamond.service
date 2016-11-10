@@ -1,0 +1,16 @@
+[Unit]
+    Description=Diamond
+    After=network.target
+
+[Service]
+    ExecStart=/usr/local/bin/diamond --foreground
+    WorkingDirectory=/
+    User=diamond
+    Group=diamond
+    Restart=on-failure
+    RestartSec=3s
+    CPUQuota=100%
+    MemoryLimit=2000M
+
+[Install]
+    WantedBy=multi-user.target

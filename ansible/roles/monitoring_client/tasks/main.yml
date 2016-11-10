@@ -1,0 +1,17 @@
+- name: create diamond user
+  user: name=diamond shell=/bin/false createhome=no
+
+- name: install diamond
+  pip: name=diamond
+
+- name: copy diamond configs
+  copy: src=diamond dest=/etc/
+  notify: enable and restart diamond
+
+- name: create diamond dirs
+  file: path=/var/log/diamond/ state=directory owner=diamond group=diamond
+  notify: enable and restart diamond
+
+- name: copy diamond systemd service
+  copy: src=diamond.service dest=/etc/systemd/system/diamond.service
+  notify: enable and restart diamond

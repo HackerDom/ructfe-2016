@@ -1,0 +1,7 @@
+---
+- name: Stretch | Packages | Add testing repo
+  apt_repository: repo='deb http://httpredir.debian.org/debian stretch main' state=present update_cache=yes
+
+- name: Stretch | Packages | Fix testing priority
+  become: yes
+  template: src=apt_preferences.j2 dest=/etc/apt/preferences

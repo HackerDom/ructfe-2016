@@ -1,0 +1,18 @@
+---
+- name: Copy service
+  copy:
+    src: "{{ playbook_dir }}/../services/cartographer/"
+    dest: "/opt/cartographer/"
+
+- name: Add executable bit to gradlew
+  file: name=/opt/cartographer/gradlew mode=0755
+
+- name: Build project
+  command: ./gradlew build
+  args:
+    chdir: /opt/cartographer/
+  tags:
+    - skip_ansible_lint
+
+- name: Fetch binary
+  fetch: src=/opt/cartographer/build/libs/cartographer-1.0.0.jar dest=/tmp/cartographer.jar flat=yes

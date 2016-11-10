@@ -1,0 +1,13 @@
+[Unit]
+Description=Crash
+After=network.target
+
+[Service]
+ExecStart=/home/crash/crash_report.py
+User=crash
+Restart=always
+RestartSec=5
+WorkingDirectory=/home/crash/
+
+[Install]
+WantedBy=multi-user.target

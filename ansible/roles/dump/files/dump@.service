@@ -1,0 +1,16 @@
+[Unit]
+    Description=Dump service for %i
+    After=network.target
+
+[Service]
+    ExecStart=/home/dump/start_dump.sh %i
+    WorkingDirectory=/home/dump 
+    User=root
+    Group=root
+    Restart=on-failure
+    RestartSec=3s
+    CPUQuota=100%
+    MemoryLimit=2000M
+
+[Install]
+    WantedBy=multi-user.target

@@ -1,0 +1,62 @@
+---
+- name: Install requirements
+  apt: name={{ item }} default_release=testing
+  with_items:
+    - build-essential
+    - libpq-dev
+    - python3.5
+    - python3.5-dev
+    - python3.5-venv
+    - python-psycopg2
+    - postgresql
+
+- name: Create user
+  user: createhome=yes name=atlablog
+
+- name: Copy service
+  copy:
+    src: "{{ playbook_dir }}/../services/atlablog/"
+    dest: "/home/atlablog/"
+    owner: root
+    mode: 0755
+
+- name: Set permissions
+  file: name="/home/atlablog" state=directory owner=root recurse=yes
+
+- name: Create venv
+  pip:
+    requirements: /home/atlablog/requirements.txt
+    state: latest
+    virtualenv: /home/atlablog/venv
+    virtualenv_command: pyvenv-3.5
+
+- name: Create __data__
+  file: name="/home/atlablog/__data__" state=directory owner=atlablog recurse=yes
+
+- name: Ensure database is created
+  become: yes
+  become_user: postgres
+  postgresql_db: name=test
+
+- name: Ensure user has access to the database
+  become: yes
+  become_user: postgres
+  postgresql_user: db=test name=atlablog priv=ALL state=present
+
+- name: Recreate db
+  become: yes
+  become_user: atlablog
+  command: ./venv/bin/python main.py recreatedb
+  args:
+    chdir: /home/atlablog/
+  tags:
+    - skip_ansible_lint
+
+- name: Add systemd service
+  template: src=service.j2 dest=/lib/systemd/system/atlablog.service
+
+- name: Enable service
+  service: name=atlablog enabled=yes
+
+- name: Start service
+  service: name=atlablog state=restarted

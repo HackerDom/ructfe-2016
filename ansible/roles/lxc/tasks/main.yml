@@ -1,35 +1,39 @@
 ---
-- name: Add backports repo
-  apt_repository: repo="deb http://ftp.debian.org/debian jessie-backports main" state=present update_cache=yes
-
-- name: Create bridge0
-  template: src=lxc-br0.j2 dest=/etc/network/interfaces.d/lxc-br0.cfg
-  register: lxc_bridge
-
-- name: Restart network
-  when: lxc_bridge.changed
-  service: name=networking state=restarted
-
-- name: Enable forwarding
-  sysctl: name="net.ipv4.ip_forward" value=1 sysctl_set=yes state=present reload=yes
-
-- name: Add nat rule
-  when: lxc_bridge.changed
-  iptables: table=nat chain=POSTROUTING source=192.168.254.0/24 jump=MASQUERADE
-
 - name: Install lxc
-  apt: pkg={{ item }} state=latest default_release=jessie-backports
+  apt: pkg={{ item }} default_release=testing
   with_items:
     - lxc
     - lxc-dev
     - debootstrap
-    - bridge-utils
     - python
     - python-pip
     - python-dev
 
 - name: Install lxc-python2
-  pip: name=lxc-python2 state=latest
+  pip: name=lxc-python2
+
+- name: Create lxc-net
+  template: src=lxc-net.j2 dest=/etc/default/lxc-net
+  register: lxc_net
+
+- name: Create lxc default.conf
+  template: src=default.conf.j2 dest=/etc/lxc/default.conf
+  register: lxc_conf
+
+- name: Add lxc-net to resolv.conf
+  lineinfile: dest=/etc/resolv.conf line="nameserver 192.168.254.254" insertbefore=BOF
+
+- name: Enable lxc-net
+  service: name=lxc-net enabled=yes
+
+- name: Restart lxc-net
+  service: name=lxc-net state=restarted
+  when: "lxc_net.changed or lxc_conf.changed"
+  tags:
+    - skip_ansible_lint
+
+- name: Enable forwarding
+  sysctl: name="net.ipv4.ip_forward" value=1 sysctl_set=yes state=present reload=yes
 
 - name: Create lxc container
   lxc_container:
@@ -37,28 +41,21 @@
     template: debian
     state: started
     backing_store: loop
-    fs_size: "4G"
-    container_log: true
+    fs_size: "2G"
     container_config:
-      - "lxc.network.type = veth"
-      - "lxc.network.flags = up"
-      - "lxc.network.name = eth0"
-      - "lxc.network.link = lxc-br0"
-      - "lxc.network.veth.pair = veth-{{ item.num }}"
-      - "lxc.network.ipv4 = 192.168.254.{{ item.num }}/24"
-      - "lxc.network.ipv4.gateway = 192.168.254.254"
-      #- "lxc.cgroup.memory.limit_in_bytes = {{ item.mem }}"    # TODO: Fix memory limits
-      #- "lxc.cgroup.memory.memsw.limit_in_bytes = {{ item.mem }}"
+      - "lxc.cgroup.memory.limit_in_bytes = {{ item.mem | default(512000000) }}"
+      - "lxc.cgroup.memory.memsw.limit_in_bytes = {{ item.mem | default(512000000) }}"
     container_command: |
       sed -i 's/PermitRootLogin\s*without-password/PermitRootLogin yes/g' /etc/ssh/sshd_config
-      systemctl restart ssh
       mkdir -p /root/.ssh/
-      echo "{{ SSH_PUBLIC_KEY }}" >> /root/.ssh/authorized_keys
+      echo "{{ SSH_PUBLIC_KEY }}" > /root/.ssh/authorized_keys
+      systemctl restart ssh
       bash
   with_items:
-    - { name: nginx, num: 1, mem: "512M" }
-    # - { name: service1, num: 2, mem: "512M" }
-    # - { name: service2, num: 3, mem: "512M" }
-    # - { name: service3, num: 4, mem: "512M" }
-
-
+    - { name: build, mem: "1000000000" }
+    - { name: cartographer, mem: 512000000 }
+    - { name: crash }
+    - { name: atlablog }
+    - { name: sapmarine }
+    - { name: thebin, mem: 256000000 }
+    - { name: weather, mem: 256000000 }

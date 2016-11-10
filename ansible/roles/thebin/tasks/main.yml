@@ -1,0 +1,31 @@
+---
+- name: Install requirements
+  apt: name={{ item }} default_release=testing
+  with_items:
+    - libssl-dev
+    - luarocks
+    - git
+
+- name: Copy service
+  synchronize:
+    src: "{{ playbook_dir }}/../services/thebin/"
+    dest: "/etc/nginx/"
+    recursive: yes
+    use_ssh_args: yes
+    rsync_opts:
+      - "--exclude=rand.c"
+  notify: restart nginx
+
+- name: Install lua requirements
+  command: luarocks install {{ item.name }} creates=/usr/local/share/lua/5.1/{{ item.creates }}
+  with_items:
+    - { name: md5, creates: md5.lua }
+    - { name: lapis, creates: lapis }
+  notify: restart nginx
+
+- name: Fix permissions
+  file: name="/etc/nginx/" state=directory owner=www-data recurse=yes
+  notify: restart nginx
+
+- name: Add startup for config.lua
+  lineinfile: dest=/etc/rc.local insertbefore="exit 0"  line="/etc/nginx/startup.sh"

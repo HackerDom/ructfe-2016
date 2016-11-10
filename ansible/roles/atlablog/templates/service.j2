@@ -1,0 +1,13 @@
+[Unit]
+Description=atlablog
+After=network.target
+
+[Service]
+ExecStart=/home/atlablog/venv/bin/python /home/atlablog/main.py
+User=atlablog
+Restart=always
+RestartSec=5
+WorkingDirectory=/home/atlablog/
+
+[Install]
+WantedBy=multi-user.target

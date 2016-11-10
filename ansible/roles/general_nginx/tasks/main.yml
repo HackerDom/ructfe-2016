@@ -1,0 +1,39 @@
+---
+- name: Set nginx.conf
+  template: src=nginx.conf.j2 dest=/etc/nginx/nginx.conf validate="nginx -t -c %s"
+  notify: restart nginx
+
+- name: Copy default site
+  copy:
+    src: "{{ playbook_dir }}/../static/"
+    dest: "/var/www/"
+    force: yes
+    owner: www-data
+    group: www-data
+
+- name: Create directories for nginx conf
+  file: name=/etc/nginx/{{ item }} state=directory owner=www-data group=www-data
+  with_items:
+    - web
+    - stream
+
+- name: Install nginx configuration file.
+  template: src=vhost.conf.j2 dest=/etc/nginx/web/default.conf owner=www-data group=www-data
+  notify: reload nginx
+
+- name: Install service web conf
+  template: src=web.service.conf.j2 dest=/etc/nginx/web/{{ item.name }}.conf owner=www-data group=www-data
+  notify: reload nginx
+  with_items:
+    - { name: atlablog, port: 8000 }
+    - { name: cartographer, port: 8080 }
+    - { name: crash, port: 1080 }
+    - { name: sapmarine, port: 31337 }
+    - { name: thebin, port: 80 }
+    - { name: weather, port: 16780 }
+
+- name: Install service conf
+  template: src=service.conf.j2 dest=/etc/nginx/stream/{{ item.name }}.conf owner=www-data group=www-data
+  notify: reload nginx
+  with_items:
+    - { name: weather, port: 16761 }

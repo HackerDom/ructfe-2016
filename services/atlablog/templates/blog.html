@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% import '_form_macro.html' as forms %}
+
+{% block extra_head %}
+<style type="text/css">
+    textarea .hover {
+        border: solid 5px greenyellow;
+    }
+    textarea .drop {
+        border: solid 5px green;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="jumbotron">
+    <h1>Be short and quick</h1>
+    <p>
+        We are not the twitter.
+        And we are not a forum. We do not like long discussions.
+        Your blog post can't have more than 100 comments.
+        There is a our rule.
+    </p>
+</div>
+
+<script>
+    var ENTRIES_COUNT = {{entries_count}};
+    (function(){
+        function stateChange(event) {
+            if (event.target.readyState == 4) {
+                if (event.target.status == 200) {
+                    var data = JSON.parse(event.target.response)
+                    console.log(data)
+                    if (data.entries_count > ENTRIES_COUNT) {
+                        $('#newposturl').attr({
+                            'href': data.last
+                        })
+                        $('.bs-example-modal-sm').modal('show')
+                    }
+                } else {
+                    console.error('api error')
+                }
+            }
+        }
+
+        setInterval(function(){
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = stateChange;
+            xhr.open('GET', '/blog-count.json');
+            xhr.send();
+        }, 5000)
+    })()
+</script>
+
+{% for entry in entries %}
+    <div class="row">
+        <div class="col-xs-12">
+            <a href="/{{ entry.slug }}"><h2>{{ entry.title }}</h2></a>
+            <div class="text">
+                {{ entry.html_content(attachments=False) | safe }}
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+    <form action="" method="POST" style="margin-top: 30px; margin-bottom: 50px">
+        {{ forms.input_with_errors(form.title, style='font-weight: bold') }}
+        {{ forms.input_with_errors(form.text, style='font-weight: bold', id="js-file-upload-area") }}
+        {{ form.attachments(id="js-file-uploaded-input") }}
+        <div id="js-file-uploaded-list"></div>
+        <button type="submit" class="btn btn-default">Submit </button> <span id="js-file-upload-status"></span>
+
+        <script>
+            (function() {
+                var el = document.querySelector('#js-file-upload-area')
+                var elStatus = document.querySelector('#js-file-upload-status')
+                var elList = document.querySelector('#js-file-uploaded-list')
+                var input = document.querySelector('#js-file-uploaded-input')
+                if (typeof(window.FileReader) == 'undefined') {
+                    elStatus.innerHTML = "your browser doesn't support attachments"
+                    el.classList.add('error')
+                }
+
+                el.ondragover = function() {
+                    el.classList.add('hover')
+                    el.classList.remove('error')
+                    return false
+                };
+
+                el.ondragleave = function() {
+                    el.classList.remove('hover')
+                    el.classList.remove('error')
+                    return false
+                };
+
+                function uploadProgress(event) {
+                    var percent = parseInt(event.loaded / event.total * 100)
+                    elStatus.innerHTML = 'Uploading: ' + percent + '%'
+                }
+
+                function stateChange(event) {
+                    if (event.target.readyState == 4) {
+                        if (event.target.status == 200) {
+                            elStatus.innerHTML = 'Uploaded!'
+                            var data = JSON.parse(event.target.response)
+                            input.value += data.url + ';'
+                            elList.innerHTML += "<div><a href='" + encodeURI(data.url) + "'>" + encodeURI(data.url) + "</a></div>"
+                        } else {
+                            elStatus.innerHTML = 'Upload error!'
+                            el.classList.add('error')
+                        }
+                    }
+                }
+
+                el.ondrop = function(event) {
+                    event.preventDefault()
+                    el.classList.remove('hover')
+                    el.classList.remove('error')
+                    el.classList.add('drop')
+
+                    var file = event.dataTransfer.files[0]
+
+                    if (file.size > 1000000) {
+                        elStatus.innerHTML = 'File too large!'
+                        el.classList.add('error')
+                        return false
+                    }
+
+                    var xhr = new XMLHttpRequest();
+                    xhr.upload.addEventListener('progress', uploadProgress, false);
+                    xhr.onreadystatechange = stateChange;
+                    xhr.open('POST', '/upload');
+                    xhr.setRequestHeader('X-File-Name', file.name);
+                    xhr.send(file);
+                };
+            })()
+        </script>
+    </form>
+
+    {% if next_page %}
+    <a class="label label-default" href="?page={{next_page}}">next</a>
+    {% endif %}
+
+<!-- Small modal -->
+<div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+  <div class="modal-dialog modal-sm" role="document">
+    <div class="modal-content">
+      <h1 style="margin: 19px; text-align: center;">new post! <a id="newposturl" href="">here</a></h1>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

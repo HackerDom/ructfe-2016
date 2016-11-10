@@ -1,0 +1,5 @@
+- name: systemd configs
+  template: src=flags@.service.j2 dest=/etc/systemd/system/flags@.service
+
+- name: systemd reload
+  command: systemctl daemon-reload

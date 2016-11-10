@@ -1,0 +1,8 @@
+- name: enable and restart elasticsearch
+  service: name=elasticsearch enabled=yes state=restarted
+
+- name: enable and restart graylog
+  service: name=graylog-server enabled=yes state=restarted
+
+- name: restart nginx
+  service: name=nginx state=restarted
