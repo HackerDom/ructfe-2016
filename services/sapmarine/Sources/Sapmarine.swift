@@ -245,11 +245,6 @@ public class Sapmarine {
         }
     }
 
-    public func Start(port: Int) {
-        Kitura.addHTTPServer(onPort: port, with: router)
-        Kitura.start()
-    }
-
     private func FindExistingUserOrRegister(_ user: String, _ pass: String) -> User? {
         let digest = Digest(using: .sha1).update(string: pass)!.final();
         let passHash = CryptoUtils.hexString(from: digest);
@@ -288,6 +283,11 @@ public class Sapmarine {
     }
 
 
+    public func Start(port: Int) {
+        Kitura.addHTTPServer(onPort: port, with: router)
+        Kitura.start()
+    }
+
     private func SaveState() {
         self.dispatchQueue.sync {
             SaveUsers()
@@ -298,11 +298,9 @@ public class Sapmarine {
 
     private func SaveUsers() {
         do {
-            // let fileDestinationUrl = docmentDirectoryURL.appendingPathComponent("users.state.new")
-
             let fileDestinationUrl = URL(fileURLWithPath: "users.state")
 
-            let usersJsons = self.usersSet.map { $0.toJson() }
+            let usersJsons = self.usersSet.map { $0.toJson().toBase64() }
             let state = usersJsons.joined(separator: "\n")
 
             try state.write(to: fileDestinationUrl, atomically: false, encoding: .utf8)
@@ -317,7 +315,7 @@ public class Sapmarine {
         do {
             let fileDestinationUrl = URL(fileURLWithPath: "profiles.state")
 
-            let profilesJsons = self.profilesDict.map { (key, value) in value.toJson() }
+            let profilesJsons = self.profilesDict.map { (key, value) in value.toJson().toBase64() }
             let state = profilesJsons.joined(separator: "\n")
 
             try state.write(to: fileDestinationUrl, atomically: false, encoding: .utf8)
@@ -331,7 +329,7 @@ public class Sapmarine {
         do {
             let fileDestinationUrl = URL(fileURLWithPath: "trips.state")
 
-            let tripsJsons = self.processingTrips.map { (key, value) in value.toJson() }
+            let tripsJsons = self.processingTrips.map { (key, value) in value.toJson().toBase64() }
             let state = tripsJsons.joined(separator: "\n")
 
             try state.write(to: fileDestinationUrl, atomically: false, encoding: .utf8)
@@ -361,7 +359,11 @@ public class Sapmarine {
             for line in lines {
                 // do {
                     if line == "" { continue }
-                    let user = User(line)
+
+                    let json = line.fromBase64();
+                    if json == nil { continue }
+
+                    let user = User(json!)
                     usersSet.insert(user)
                     usersDict[user.name] = user
                 // } catch let error as NSError { }
@@ -385,7 +387,11 @@ public class Sapmarine {
             for line in lines {
                 // do {
                     if line == "" { continue }
-                    let profile = Profile(line)
+
+                    let json = line.fromBase64();
+                    if json == nil { continue }
+
+                    let profile = Profile(json!)
                     self.profilesDict[profile.name] = profile
                 // } catch let error as NSError { }
             }
@@ -408,7 +414,11 @@ public class Sapmarine {
             for line in lines {
                 // do {
                     if line == "" { continue }
-                    let trip = Trip(line)
+
+                    let json = line.fromBase64();
+                    if json == nil { continue }
+
+                    let trip = Trip(json!)
                     self.processingTrips[trip.id] = trip
                 // } catch let error as NSError { }
             }
