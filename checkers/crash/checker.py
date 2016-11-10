@@ -54,6 +54,8 @@ def put(*args):
 	headers = { 'User-Agent' : UserAgents.get(), 'Service-Name' : SERVICE_NAME, 'GUID' : flag_id }
 	try:
 		r = requests.post(url, files=files, headers=headers )
+		if r.status_code == 502:
+			close(DOWN, "Service is down", "Nginx 502", minidumpFilePath)
 		if r.status_code != 200:
 			close( MUMBLE, "Submit error", "Invalid status code: %s %d" % ( url, r.status_code ), minidumpFilePath )	
 		try:
@@ -75,6 +77,8 @@ def get(*args):
 	try:
 		headers = { 'User-Agent' : UserAgents.get() }
 		r = requests.get( url, headers=headers )
+		if r.status_code == 502:
+			close(DOWN, "Service is down", "Nginx 502")
 		if r.status_code != 200:
 			close( MUMBLE, "Invalid HTTP response", "Invalid status code: %s %d" % ( url, r.status_code ) )	
 	except Exception as e:
