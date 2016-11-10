@@ -27,11 +27,8 @@
   tags:
     - skip_ansible_lint
 
-- name: Add backports repo
-  apt_repository: repo="deb http://mirror.yandex.ru/debian jessie-backports main" state=present update_cache=yes
-
 - name: Install lxc
-  apt: pkg={{ item }} state=latest default_release=jessie-backports
+  apt: pkg={{ item }} state=latest default_release=testing
   with_items:
     - lxc
     - lxc-dev
