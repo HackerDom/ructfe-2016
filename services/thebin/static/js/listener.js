@@ -86,6 +86,11 @@ function ShowPost(url) {
 		$('#postTitle').text(data.title);
 		$('#postBody').text(data.body);
 		$('#postAuthor').text(data.owner);
+		var ok = $('#verified');
+		if (typeof data.sign !== 'undefined' && data.sign !== '')
+			ok.removeClass('hidden');
+		else
+			ok.addClass('hidden');
 		$('#postModal').modal('show');
 	})
 	.fail(function(data) {
