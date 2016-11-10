@@ -69,7 +69,7 @@
     template: debian
     state: started
     backing_store: loop
-    fs_size: "4G"
+    fs_size: "2G"
     container_config:
       - "lxc.cgroup.memory.limit_in_bytes = {{ item.mem | default(512000000) }}"
       - "lxc.cgroup.memory.memsw.limit_in_bytes = {{ item.mem | default(512000000) }}"
