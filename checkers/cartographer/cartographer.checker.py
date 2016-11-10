@@ -101,7 +101,7 @@ def try_get(client, flag, metadata):
     # close(CORRUPT, "Flag is missing from all replicas")
 
 def check_replicas(client, flag, me):
-
+    rs = (grequests.get(u) for u in urls)
 
 def get(*args):
     addr = args[0]
