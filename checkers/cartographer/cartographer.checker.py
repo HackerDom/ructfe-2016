@@ -5,11 +5,9 @@ from urllib.error import URLError as http_error
 from socket import error as network_error
 import urllib
 import requests
-import grequests
 import json
 import string
 import random
-import time
 
 from maps_generator import SeafloorMap, SeafloorMapsGenerator
 
@@ -39,11 +37,6 @@ class Client(object):
         data = {'key': key, 'id': id}
         return self.request("POST", "images/decrypt", lambda res: res.content, json=data)
 
-    def getImagesAsync(self, replicas, key, id):
-        data = {'key': key, 'id': id}
-        rs = (self.requestAsync("POST", replica.address, "images/decrypt", json=data) for replica in replicas)
-        return grequests.map(rs)
-
     def postImage(self, image):
         return self.request("POST", "images/encrypt", lambda res: res.json(), data=image)
 
@@ -52,6 +45,9 @@ class Client(object):
 
     def getChunk(self, chunkid):
         return self.request("GET", "chunks/"+chunkid, lambda res: res.content)
+
+    def getRecentChunks(self):
+        return self.request("GET", "chunks/_recent", lambda res: res.json())
 
     def request(self, method, relative_url, fun, **kwargs):
         headers = kwargs.get("headers", {})
@@ -65,12 +61,6 @@ class Client(object):
         return fun(response)
 
 
-    def requestAsync(self, method, address, relative_url, **kwargs):
-        headers = kwargs.get("headers", {})
-        headers["User-Agent"] = UserAgents.get()
-        kwargs["headers"] = headers
-        return grequests.request(method, "http://%s/%s" % (address, relative_url), **kwargs)
-
 class CheckerException(Exception):
     """Custom checker error"""
     def __init__(self, msg):
@@ -82,15 +72,14 @@ def try_put(client, flag):
     seafloorMap = generator.generate()
     seafloorMap.addFlag(flag)
     postResult = client.postImage(seafloorMap.toBytes())
-    postResult['time'] = time.time()
-    print(json.dumps(postResult))
+    return json.dumps(postResult)
 
 
 def put(*args):
     addr = args[0]
     flag_id = args[1]
     flag = args[2]
-    client = Client(addr)
+    client = Client(addr)   
     try:
         put_result = try_put(client, flag)
         close(OK, put_result)
@@ -108,25 +97,22 @@ def try_get(client, flag, metadata):
     image = client.getImage(metadata["key"], metadata["id"])
     seafloorMap = SeafloorMap.fromBytes(image)
     if (seafloorMap.getFlag() != flag):
-        raise CheckerException("Didn't find posted flag")
-    if (not check_replicas(client, flag, metadata)):
-        close(CORRUPT, "Flag is missing from all replicas")
+        close(CORRUPT, "Flag is missing")
+    if (not check_chunk_in_recent(client, metadata["id"])):
+        close(CORRUPT, "Flag is missing")
 
 
-def check_replicas(client, flag, metadata):
-    responses = client.getImagesAsync(metadata["replicas"], metadata["key"], metadata["id"])
-    for response in responses:
-        if response is not None and response.status_code == 200:
-            seafloorMap = SeafloorMap.fromBytes(response.content)
-            if (seafloorMap.getFlag() == flag):
-                return true
-    return false
+def check_chunk_in_recent(client, chunkid):
+    chunks = client.getRecentChunks()
+    for chunk in chunks:
+        if chunk == chunkid:
+            return True
+    return False
+
 
 def get(*args):
     addr = args[0]
     metadata = json.loads(args[1])
-    if (time.time() - metadata['time'] < NECESSARY_TIME_DIFFERENCE):
-        close(OK)
     flag = args[2]
     client = Client(addr)
     try:

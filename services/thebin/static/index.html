@@ -8,6 +8,7 @@
 		<meta name="keywords" content="Atlantis, RuCTFE, Bin">
 		<meta name="author" content="Hackerdom, hackerdom.ru, Tinkturianec">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="shortcut icon" href="/static/ico/thebin.ico" type="image/x-icon">
 		<link rel="stylesheet" href="/static/lib/bootstrap/css/bootstrap.min.css">
 		<link rel="stylesheet" href="/static/css/atlantis.css">
 		<link rel="stylesheet" href="/static/css/bin.css">
@@ -45,7 +46,27 @@
 							<div class="col-sm-8 content-block">
 								<h1>The Bin</h1>
 								<div class="well">
-									TODO Description
+									<p>Here you can suggest an idea or make a proposition, enjoy it or criticize it, 
+									share it with the entire world or just friends, share it with everyone or only 
+									people with certain skills. Regardless, after twenty minutes it will be thrown into the bin.</b>
+
+									<p>And so that everybody can be certain that it's your idea, you may sign it.</p>
+
+									<p>We propose this scheme: <pre>RSASSA-PSS(sha256('{"body": "post-body", "hostname": "doman-name", "title": "post-title", "username": "username"}')))</pre></p>
+
+									<p>Try found author's posts with key 
+<pre>
+-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA5SgjKVaGtSF3c4bF/6Aa
+5P5vxmM7A1akGTkcbk7v54Mr/bwKkqWv5pmAC5T7aTO1b9jvuZleHLaarc4odfGJ
+DyANuHyvh0o0ogh7PjY2BGyDdABaH7HS0c8v35FF6LYaApnYIbV/YXNtLsrQVFVe
+SYI4d+usZhjQtA3hNA+EH8tGoBDDtfHJ/oXUfKTNaKSRUq3B7iXIsvciw1eHatX3
+b2LuXXjxrMdwQo/z0LYcMHz739OC9WeJ0bKTcpbR8HNIuvVfQ0u4Fwj64OUG/KP/
+r/BStaLvj8u5BIWbWxO6NtqkXTtAzoK4HyImw5carBtredSGlioJPX8Lkx4GKO1n
+BQIDAQAB
+-----END PUBLIC KEY-----
+</pre></p>
+
 									<div class="extra-space-l"></div>
 									<br/><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#uploadModal">Publish message</button>
 								</div>

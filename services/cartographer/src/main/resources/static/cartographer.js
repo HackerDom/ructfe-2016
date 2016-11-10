@@ -77,6 +77,9 @@ function addMapKeyToLocalStorage(key, id) {
 function uploadMap() {
     var reader = new FileReader();
     var file = document.getElementById("map-input").files[0];
+    if (!file) {
+        return;
+    }
     if (file.size > MAX_FILE_SIZE){
         document.getElementsByClassName('maps-title')[0].innerText = "Too big file to upload";
         return;

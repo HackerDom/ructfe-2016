@@ -29,11 +29,11 @@ public class User : Comparable {
         return JSONSerializer.toJson(self)
     }
 
-    public func rating() -> Int {
-        return comments
-            .filter { $0.mark != 0}
-            .map { $0.mark }
-            .reduce(0,+)
+    public func rating() -> Double {
+        let positiveBiasMarks = (0..<15).map{_ in 5}
+        let marks = comments.filter { $0.mark != 0}.map { $0.mark }
+        let allMarks = positiveBiasMarks + marks
+        return Double(allMarks.reduce(0,+)) / Double(allMarks.count)
     }
 
     public static func < (lhs: User, rhs: User) -> Bool {
@@ -41,8 +41,8 @@ public class User : Comparable {
             return false;
         }
 
-        let lhsRating = lhs.rating()
-        let rhsRating = rhs.rating()
+        let lhsRating = round(lhs.rating())
+        let rhsRating = round(rhs.rating())
         if lhsRating != rhsRating {
             return lhsRating > rhsRating
         } else {

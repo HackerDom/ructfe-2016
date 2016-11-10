@@ -18,4 +18,13 @@ extension String
     func toBase64() -> String {
         return Data(self.utf8).base64EncodedString()
     }
+
+    func htmlEncode() -> String {
+        return self.replacingOccurrences(of: "&", with: "&amp;")
+                .replacingOccurrences(of: "\"", with: "&quot;")
+                .replacingOccurrences(of: "'", with: "&#x27;")
+                .replacingOccurrences(of: "<", with: "&lt;")
+                .replacingOccurrences(of: ">", with: "&gt;")
+                .replacingOccurrences(of: "/", with: "&#x2F;")
+    }
 }

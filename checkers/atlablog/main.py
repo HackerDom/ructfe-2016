@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import sys
+from urllib.error import URLError
 from comands import\
     check, put, get, OK, MUMBLE, CORRUPT, DOWN, CHECKER_ERROR
 
@@ -24,7 +25,7 @@ class CheckerException(Exception):
 
 def on_check(command_ip):
     check_result = check.non_selenium_check(command_ip)
-    close(check_result)
+    close(**check_result)
 
 
 def on_put(command_ip, flag_id, flag, vuln=None):
@@ -63,6 +64,8 @@ if __name__ == '__main__':
     except CheckerException as e:
         close(CORRUPT, "Service did not work as expected",
               "Checker exception: %s" % e)
+    except URLError as e:
+        close(DOWN, "Bad command address", "Checksystem fail {}".format(e))
     except OSError as e:
         close(CORRUPT, "Socket I/O error", "SOCKET ERROR: %s" % e)
     except Exception as e:
