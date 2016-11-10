@@ -20,6 +20,7 @@
 	LINE("		<meta name=\"keywords\" content=\"Atlantis, RuCTFE, Weather center\">") \
 	LINE("		<meta name=\"author\" content=\"Hackerdom, hackerdom.ru, Krait\">") \
 	LINE("		<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">") \
+	LINE("		<link rel=\"shortcut icon\" href=\"/static/ico/weather.ico\" type=\"image/x-icon\">") \
 	LINE("		<link rel=\"stylesheet\" href=\"/static/lib/bootstrap/css/bootstrap.min.css\">") \
 	LINE("		<link rel=\"stylesheet\" href=\"/static/css/atlantis.css\">") \
 	LINE("		<link rel=\"stylesheet\" href=\"/static/css/weather.css\">") \
