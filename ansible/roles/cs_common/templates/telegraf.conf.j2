@@ -1,0 +1,37 @@
+[global_tags]
+
+[agent]
+  interval = "2s"
+  round_interval = true
+
+  metric_batch_size = 1000
+  metric_buffer_limit = 10000
+
+  collection_jitter = "0s"
+  flush_interval = "5s"
+  flush_jitter = "0s"
+
+  precision = ""
+
+  debug = false
+  quiet = false
+  logfile = ""
+
+  omit_hostname = true
+
+
+# # Send telegraf metrics to file(s)
+# [[outputs.file]]
+#   files = ["stdout"]
+#   data_format = "influx"
+
+[[outputs.graphite]]
+  servers  = ["10.10.10.10:2003"]
+  prefix   = "cs"
+  template = "measurement.tags.field"
+  timeout  = 20
+
+[[inputs.tail]]
+  files = ["/home/cs/app/log/metrics.log"]
+  from_beginning = false
+  data_format = "influx"

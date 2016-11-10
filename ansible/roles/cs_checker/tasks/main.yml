@@ -52,6 +52,7 @@
   with_items:
     - Pillow
     - requests
+    - grequests
 
 - name: checkers owner
   file: path={{cs_dir}}/app/checkers/ owner={{cs_user}} group={{cs_user}} recurse=yes
