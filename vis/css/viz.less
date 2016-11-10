@@ -48,8 +48,8 @@ html, body, #svg-wrapper, #svg-viz  {
 
 #filters-container {
 	position: absolute;
-	right: 20px;
-	bottom: 20px;
+	left: 20px;
+	top: 20px;
 	-webkit-user-select: none;
 	-moz-user-select: none;
 	-ms-user-select: none;
@@ -60,7 +60,12 @@ html, body, #svg-wrapper, #svg-viz  {
 		cursor: pointer;
 		text-align: right;
 		&.deselected {
-			text-decoration: line-through;
+			.service-name {
+				text-decoration: line-through;
+			}
+		 	.bullet {
+				color: #1D3542 !important;
+			}
 		}
 	}
 }

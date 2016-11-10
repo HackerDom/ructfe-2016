@@ -42,8 +42,8 @@ body,
 }
 #filters-container {
   position: absolute;
-  right: 20px;
-  bottom: 20px;
+  left: 20px;
+  top: 20px;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
@@ -55,8 +55,11 @@ body,
   cursor: pointer;
   text-align: right;
 }
-#filters-container .filter.deselected {
+#filters-container .filter.deselected .service-name {
   text-decoration: line-through;
+}
+#filters-container .filter.deselected .bullet {
+  color: #1D3542 !important;
 }
 #atlantis {
   font-family: 'Roboto', sans-serif;

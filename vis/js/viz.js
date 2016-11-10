@@ -1,5 +1,5 @@
 var Viz = function(infoData, startScoreboard) {
-	var LOAD_DATA_INTERVAL = 10*1000;
+	var LOAD_DATA_INTERVAL = 30*1000;
 	var EVENTS_VISUALIZATION_INTERVAL = 1000;
 	var COLOR_CONSTANTS = ["#ED953A", "#E5BD1F", "#3FE1D6", "#568AFF", "#8C41DA", "#BA329E"];
 	var RED_COLOR = "#EC2B34";
@@ -145,14 +145,20 @@ var Viz = function(infoData, startScoreboard) {
 	}
 
 	function draw_services_statuses() {
+		var teams_with_alive = 0; // количество команд с хотя бы 1 сервисом
 		d3.selectAll(".node").each(function () {
 			var n = d3.select(this);
 			var nData = n.data()[0];
+			var hasUp = false;
 			for (var i=0; i<services.length; i++) {
-				var isUp = nData.servicesStatuses[i];
+				var isUp = services[i].visible && nData.servicesStatuses[i];
+				hasUp = hasUp || isUp;
 				n.select(".service_" + i).attr("fill", isUp ? services[i].color : DOWN_SERVICE_COLOR);
 			}
+			if (hasUp)
+			teams_with_alive++;
 		});
+		$("#alive").find(".value").text(teams_with_alive);
 	}
 
 	function events_visualization_loop() {
@@ -182,17 +188,11 @@ var Viz = function(infoData, startScoreboard) {
 	}
 
 	function updateStatistics() {
-		var teams_with_alive = 0; // количество команд с хотя бы 1 сервисом
 		var flags_count = 0;
 
 		var i, j;
 		for (i = 0; i < scoreboardPageData['scoreboard'].length; i++) {
 			var _team = scoreboardPageData['scoreboard'][i];
-
-			for (j = 0; j < _team['services'].length; j++) {
-				var _svc = _team['services'][j];
-				if (_svc['status'] == 101) { ++teams_with_alive; break; }
-			}
 
 			for (j = 0; j < _team['services'].length; j++) {
 				flags_count += parseInt(_team['services'][j]['flags']);
@@ -202,13 +202,8 @@ var Viz = function(infoData, startScoreboard) {
 		var round_flags_count = (prev_flags_count === undefined ? undefined : flags_count - prev_flags_count); // количество флагов за раунд
 		prev_flags_count = flags_count;
 
-		drawStatistics(round_flags_count, teams_with_alive);
-	}
-
-	function drawStatistics(round_flags_count, teams_with_alive) {
 		if (round_flags_count !== undefined)
 			$("#attacks").find(".value").text(round_flags_count);
-		$("#alive").find(".value").text(teams_with_alive);
 	}
 
 	function updateScore() {
@@ -450,15 +445,18 @@ var Viz = function(infoData, startScoreboard) {
 
 		for (var i=0; i<services.length; i++) {
 			var service = services[i];
-			var $filter = $('<div class="filter">' + service.name + '</div>');
-			$filter.css("color", service.color);
+			var $filter = $('<div class="filter"><span class="bullet">&#9679;&ensp;&thinsp;</span><span class="service-name">' + service.name + '</span></div>');
+			$filter.css("color", "#B7E99B");
+			$filter.find(".bullet").css("color", service.color);
 			$filter.click( function(index) {return function () {
 				if ($(this).hasClass(deselectionFlag)) {
 					$(this).removeClass(deselectionFlag);
 					services[index].visible = true;
+					draw_services_statuses();
 				} else {
 					$(this).addClass(deselectionFlag);
 					services[index].visible = false;
+					draw_services_statuses();
 				}
 			}
 			}(i));
