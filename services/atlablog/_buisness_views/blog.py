@@ -34,11 +34,11 @@ def registered(state):
 
 class BlogEntryForm(Form):
     title = StringField('Title', [
-        validators.Length(min=6, message='Little short for an title?'),
+        validators.Length(min=3, message='Little short for an title?'),
         validators.Length(max=1000, message='Longer then usual title!'),
     ])
     text = TextAreaField('Text (drop the file here)', [
-        validators.Length(min=6, message='Little short for an blog entry?'),
+        validators.Length(min=3, message='Little short for an blog entry?'),
         validators.Length(max=65000, message='Longer then usual blog entry!'),
     ])
     attachments = HiddenField()
@@ -46,8 +46,8 @@ class BlogEntryForm(Form):
 
 class BlogCommentForm(Form):
     text = TextAreaField('Text (drop the file here)', [
-        validators.Length(min=6, message='Little short for an blog entry?'),
-        validators.Length(max=65000, message='Longer then usual blog entry!'),
+        validators.Length(min=1, message='Little short for comment?'),
+        validators.Length(max=65000, message='Longer then usual comment!'),
     ])
     attachments = HiddenField()
 
@@ -116,12 +116,13 @@ async def blog(request):
         title = form.title.data
         attachments = _clean_attachments(form.attachments.data)
         try:
-            await blog.create_entry(title, content=text, meta={
+            slug = blog.slugify(title) + str(time())
+            await blog.create_entry(title, content=text, slug=slug, meta={
                 'user': user.username,
                 'attachments': attachments,
             })
             notify[entries_count + 1].set_result(True)
-            for key, value in notify.items():
+            for key, value in list(notify.items()):
                 if key < entries_count:
                     value.cancel()
                     del notify[key]

@@ -10,6 +10,8 @@ from micawber.cache import Cache as OEmbedCache
 # Configure micawber with the default OEmbed providers (YouTube, Flickr, etc).
 # We'll use a simple in-memory cache so that multiple requests for the same
 # video don't require multiple network requests.
+from slugify import slugify
+
 oembed_providers = bootstrap_basic(OEmbedCache())
 
 
@@ -21,6 +23,10 @@ def make_models(db, db_name, loop):
         is_published = peewee.BooleanField(default=False, index=True)
         created = peewee.DateTimeField(default=datetime.now, index=True)
         raw_meta = peewee.TextField(default='')
+
+        @staticmethod
+        def slugify(text):
+            return slugify(text.lower())
 
         @property
         def meta(self):

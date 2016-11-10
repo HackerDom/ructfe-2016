@@ -80,6 +80,9 @@ class EntryService:
             query = query.order_by(order_by)
         return query
 
+    def slugify(self, text):
+        return self._model.slugify(text)
+
     async def get_entries_count(self, **kwargs):
         query = self._prepare_query(**kwargs)
         return await self.manager.count(query)
@@ -95,7 +98,7 @@ class EntryService:
             raise TypeError('meta is not a dict')
         raw_meta = dumps(meta) if meta else ''
         if not slug:
-            slug = slugify(title.lower())
+            slug = self._model.slugify(title)
         obj = await self.manager.create(
             self._model, title=title, content=content, raw_meta=raw_meta,
             slug=slug, is_published=is_published)

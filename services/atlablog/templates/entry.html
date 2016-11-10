@@ -3,7 +3,12 @@
 {% import '_form_macro.html' as forms %}
 
 {% block content %}
-
+    <style>
+        .contentcomment {
+            word-break: break-all;
+            margin-bottom: 10px;
+        }
+    </style>
     <div class="row">
         <div class="col-xs-12">
             <h2>{{ entry.title }}</h2>
@@ -16,10 +21,10 @@
     <hr>
     {% for entry in comments %}
     <div class="row">
-        <div class="col-xs-push-2 col-xs-2">
+        <div class="col-xs-push-1 col-xs-3 contentcomment">
             {{ entry.meta.user }}
         </div>
-        <div class="col-xs-push-2 col-xs-6">
+        <div class="col-xs-push-1 col-xs-7 contentcomment">
             <div class="text" id="comment-{{ entry.slug }}">
                 {{ entry.html_content() | safe }}
             </div>
