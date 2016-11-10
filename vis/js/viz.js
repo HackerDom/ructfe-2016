@@ -79,7 +79,7 @@ var Viz = function(infoData, startScoreboard) {
 
 	drawTeams();
 
-	setTimeout(function () {
+	/*setTimeout(function () {
 		events_visualization_loop();
 		setInterval(events_visualization_loop, EVENTS_VISUALIZATION_INTERVAL);
 	}, 0);
@@ -87,7 +87,7 @@ var Viz = function(infoData, startScoreboard) {
 	setTimeout(function () {
 		load_data();
 		setInterval(load_data, LOAD_DATA_INTERVAL);
-	}, 0);
+	}, 0);*/
 
 	function load_data() {
 		$.getJSON("./api/scoreboard").done(function (scoreboardData) {
@@ -421,9 +421,10 @@ var Viz = function(infoData, startScoreboard) {
 	$(".ui-helper-hidden-accessible").remove();
 
 	function createTooltipHtml(nodeData) {
-		return "<span><span class='header'>Team name:</span> <span class='value'>" + htmlEncode(nodeData.name) + "</span></span><br/>"
+		return "<img src='https://ructfe.org/logos/" + md5(nodeData.name) + ".png'/>"
+			+ "<div class='team-values'><span><span class='header'></span> <span class='value team-name'>" + htmlEncode(nodeData.name) + "</span></span><br/>"
 			+ "<span><span class='header'>Place:</span> <span class='value'>" + nodeData.place + "</span></span><br/>"
-			+ "<span><span class='header'>Score:</span> <span class='value'>" + nodeData.score + "</span></span>";
+			+ "<span><span class='header'>Score:</span> <span class='value'>" + nodeData.score + "</span></span></div>";
 	}
 
 	function htmlEncode(value){

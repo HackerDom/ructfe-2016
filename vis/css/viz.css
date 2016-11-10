@@ -27,18 +27,30 @@ body,
   position: absolute !important;
 }
 .ui-tooltip .team-tooltip {
-  background: white;
-  max-width: 200px;
-  height: auto;
+  background: #1D3542;
+  color: white;
+  max-width: 250px;
+  height: 80px;
   padding: 5px;
-  border-radius: 2px;
   position: relative;
+  border: solid #B7E99B 1px;
 }
 .ui-tooltip .team-tooltip .header {
   font-weight: normal;
 }
 .ui-tooltip .team-tooltip .value {
   font-weight: bold;
+}
+.ui-tooltip .team-tooltip .value.team-name {
+  color: #B7E99B;
+}
+.ui-tooltip .team-tooltip img {
+  float: left;
+  margin: 10px;
+}
+.ui-tooltip .team-tooltip .team-values {
+  float: left;
+  margin: 10px 10px 10px 10px;
 }
 #filters-container {
   position: absolute;

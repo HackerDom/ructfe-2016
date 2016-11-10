@@ -31,17 +31,29 @@ html, body, #svg-wrapper, #svg-viz  {
 .ui-tooltip {
 	position: absolute !important;
 	.team-tooltip {
-		background: white;
-		max-width: 200px;
-		height: auto;
+		background: #1D3542;
+		color: white;
+		max-width: 250px;
+		height: 80px;
 		padding: 5px;
-		border-radius: 2px;
 		position: relative;
+		border: solid #B7E99B 1px;
 		.header {
 			font-weight: normal;
 		}
 		.value {
 			font-weight: bold;
+		}
+	 	.value.team-name {
+			color: #B7E99B;
+		}
+		img {
+			float: left;
+			margin: 10px;
+		}
+		.team-values {
+			float: left;
+			margin: 10px 10px 10px 10px;
 		}
 	}
 }
