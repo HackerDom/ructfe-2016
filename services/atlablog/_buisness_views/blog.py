@@ -116,7 +116,7 @@ async def blog(request):
         title = form.title.data
         attachments = _clean_attachments(form.attachments.data)
         try:
-            slug = blog.slugify(title) + str(time())
+            slug = blog.slugify(title) + '-' + str(time()).replace('.', '')
             await blog.create_entry(title, content=text, slug=slug, meta={
                 'user': user.username,
                 'attachments': attachments,
@@ -162,7 +162,7 @@ async def comment(request, name):
         text = form.text.data
         attachments = _clean_attachments(form.attachments.data)
         try:
-            slug = name + str(time())
+            slug = name + '-' + str(time()).replace('.', '')
             await comments.create_entry("", content=text, slug=slug, meta={
                 'user': user.username,
                 'attachments': attachments,
