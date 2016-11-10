@@ -25,3 +25,19 @@
   command: cpanm -n --installdeps {{cs_dir}}/app
   register: r
   changed_when: "r.stdout.find('Found dependencies') != -1"
+
+- name: download telegraf
+  get_url:
+    url: https://dl.influxdata.com/telegraf/releases/telegraf_1.1.0_amd64.deb
+    dest: /tmp/telegraf_1.1.0_amd64.deb
+    validate_certs: no
+
+- name: install telegraf
+  apt:
+    deb: /tmp/telegraf_1.1.0_amd64.deb
+
+- name: telegraf config
+  template: src=telegraf.conf.j2 dest=/etc/telegraf/telegraf.conf
+
+- name: start telegraf
+  command: systemctl restart telegraf
