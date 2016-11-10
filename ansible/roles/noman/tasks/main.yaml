@@ -2,7 +2,7 @@
 - name: Add nodoc in dpkg
   copy: src=01_nodoc dest=/etc/dpkg/dpkg.cfg.d/01_nodoc
 
-- name: Remove packages
+- name: Remove packages and apt-get update
   apt: name={{ item }} state=absent update_cache=yes
   with_items:
     - man-db
