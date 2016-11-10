@@ -30,8 +30,8 @@ public class User : Comparable {
     }
 
     public func rating() -> Double {
-        let positiveBiasMarks = [5, 5, 5, 5, 5]
-        let marks = comments.filter { $0.mark != 0}.map { $0.mark }//.reduce(0,+)
+        let positiveBiasMarks = (0..<15).map{_ in 5}
+        let marks = comments.filter { $0.mark != 0}.map { $0.mark }
         let allMarks = positiveBiasMarks + marks
         return Double(allMarks.reduce(0,+)) / Double(allMarks.count)
     }
