@@ -123,9 +123,9 @@ class State:
 		return helper
 	async def put_post(self, title=None, body=None, public=None, signed=False, username=None, need_skill=False, skill=None):
 		if title is None:
-			title = checker.get_rand_string(16)
+			title = checker.get_rand_string(16, ' ')
 		if body is None:
-			body = checker.get_rand_string(1024)
+			body = checker.get_rand_string(1024, ' ')
 		if public is None:
 			public = random.randrange(2) == 0
 		request = {'title': title, 'body': body}
@@ -135,7 +135,7 @@ class State:
 			request['sign'] = self.signer.sign(self.hostname, username, request)
 		if need_skill:
 			if skill is None:
-				skill = checker.get_rand_string(10)
+				skill = checker.get_rand_string(10, ' ')
 			request['requirement'] = skill
 		else:
 			requirement = None
