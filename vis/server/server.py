@@ -112,7 +112,7 @@ def scoreboard_page():
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-n', '--teams', type=int, help='teams count',
-                        default=438)
+                        default=433)
     parser.add_argument('-s', '--services', type=int, help='services count',
                         default=6)
     parser.add_argument('-q', '--frequency', type=int, help='attack frequency',

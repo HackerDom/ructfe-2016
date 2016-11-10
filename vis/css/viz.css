@@ -68,7 +68,7 @@ body,
   width: 500px;
   left: 50%;
   margin-left: -250px;
-  top: 15px;
+  top: 13px;
   color: #4E7B92;
   font-size: 65px;
   text-align: center;
@@ -84,7 +84,7 @@ body,
   width: 500px;
   left: 50%;
   margin-left: -250px;
-  top: 93px;
+  top: 88px;
   color: #4E7B92;
   font-size: 25px;
   text-align: center;
@@ -122,14 +122,14 @@ body,
   margin-left: -300px;
   text-align: right;
   border-right: solid #374B6C 1px;
-  padding-bottom: 22px;
+  padding-bottom: 14px;
 }
 #attacks .value {
   margin: 0 15px 0 10px;
 }
 #alive {
   color: #B7E99B;
-  padding-bottom: 22px;
+  padding-bottom: 14px;
 }
 #alive .value {
   margin: 0 10px 0 15px;
