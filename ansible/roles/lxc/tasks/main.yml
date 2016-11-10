@@ -1,6 +1,6 @@
 ---
 - name: Install lxc
-  apt: pkg={{ item }} state=latest default_release=testing
+  apt: pkg={{ item }} default_release=testing
   with_items:
     - lxc
     - lxc-dev
@@ -10,7 +10,7 @@
     - python-dev
 
 - name: Install lxc-python2
-  pip: name=lxc-python2 state=latest
+  pip: name=lxc-python2
 
 - name: Create lxc-net
   template: src=lxc-net.j2 dest=/etc/default/lxc-net

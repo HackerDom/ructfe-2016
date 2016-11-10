@@ -19,6 +19,7 @@
       with_items:
         - sudo
         - ca-certificates
+        - apt-utils
   roles:
     - noman
 

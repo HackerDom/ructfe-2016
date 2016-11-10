@@ -1,6 +1,6 @@
 ---
 - name: Install nginx
-  apt: pkg={{ item }} state=latest default_release=testing
+  apt: pkg={{ item }} default_release=testing
   with_items:
     - nginx-extras
     - rsync
