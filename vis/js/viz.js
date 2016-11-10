@@ -24,7 +24,7 @@ var Viz = function(infoData, startScoreboard) {
 	var scoreboard = startScoreboard;
 	var teams = [];
 	var teamIdToNum = {};
-    var teamNameToNum = {};
+	var teamNameToNum = {};
 	var services = [];
 	var serviceIdToNum = {};
 	var nodes;
@@ -32,11 +32,11 @@ var Viz = function(infoData, startScoreboard) {
 	var lastArrowId = 0;
 	var openedTooltipTeamId = undefined;
 
-    var prev_flags_count = 0;
+	var prev_flags_count = 0;
 
-    var cur_round = -1;
-    var prev_interval = -1;
-    var pending_events = [];
+	var cur_round = -1;
+	var prev_interval = -1;
+	var pending_events = [];
 
 	var allCoords = [[855,545],[855,493],[810,519],[810,571],[855,597],[900,571],[945,545],[990,571],[945,597],[900,623],[945,649],[990,675],[945,701],[900,675],[270,311],[270,363],[315,337],[360,363],[405,337],[360,311],[360,259],[315,285],[315,389],[360,415],[315,441],[360,467],[405,441],[405,389],[450,415],[450,467],[405,493],[315,493],[360,519],[405,545],[450,519],[495,493],[540,467],[540,415],[495,441],[495,389],[360,623],[360,675],[360,571],[405,597],[990,519],[1035,545],[990,467],[945,441],[1035,493],[1080,519],[1125,493],[1080,467],[1125,441],[1080,415],[1035,441],[1035,389],[990,415],[945,389],[900,363],[945,337],[990,363],[1125,545],[1170,571],[1215,597],[1260,623],[1305,649],[1350,623],[1305,597],[1260,571],[1215,545],[1170,519],[1215,493],[1170,467],[1170,415],[1215,441],[585,649],[585,701],[585,753],[630,727],[675,753],[675,701],[630,675],[540,727],[495,753],[585,857],[585,805],[630,883],[630,831],[630,779],[675,805],[720,831],[765,805],[810,831],[810,883],[765,857],[720,883],[765,909],[675,857],[540,883],[585,909],[540,831],[495,857],[450,883],[1260,467],[1305,441],[1350,467],[1305,493],[1260,519],[1305,545],[1080,571],[270,259],[225,285],[225,337],[225,389],[180,363],[135,389],[135,337],[405,233],[405,181],[360,207],[540,259],[585,233],[630,207],[585,181],[765,285],[720,311],[675,337],[720,363],[765,337],[720,415],[945,285],[990,311],[1035,337],[1035,285],[1035,233],[1080,259],[1080,311],[1080,363],[1125,337],[1125,389],[270,519],[225,545],[180,571],[180,519],[135,493],[135,545],[180,623],[225,597],[270,571],[315,545],[315,597],[630,623],[675,649],[720,675],[1215,285],[1215,233],[1215,181],[1260,207],[1305,181],[1305,129],[1395,233],[1350,259],[1305,285],[1260,259],[1305,233],[1350,207],[1350,311],[1395,285],[1395,337],[1440,311],[270,727],[225,753],[225,753],[180,727],[180,779],[135,753],[135,805],[135,857],[180,831],[225,805],[270,779],[315,805],[315,857],[270,831],[315,909],[270,883],[225,857],[990,831],[1035,805],[1080,779],[1125,753],[1035,857],[990,883],[990,935],[1035,909],[1080,883],[1125,857],[1125,805],[1080,831],[1170,779],[1215,805],[1170,831],[1215,753],[1170,883],[1215,909],[1260,935],[1305,909],[1305,857],[1305,805],[225,233],[180,207],[225,181],[270,207],[135,181],[180,155],[810,259],[540,155],[585,129],[1395,701],[1440,675],[1485,649],[1485,597],[1485,545],[1485,493],[1440,519],[1530,571],[1575,597],[1530,623],[1530,675],[1575,649],[1575,701],[1530,727],[1530,779],[1485,701],[1485,753],[1620,779],[1575,753],[1620,727],[1620,675],[1530,883],[1485,909],[1440,935],[1440,883],[1485,233],[1530,207],[1575,233],[1530,259],[1575,285],[1620,311],[1665,337],[1620,363],[1620,415],[1665,441],[1665,493],[1620,467],[1665,545],[1620,259],[1665,285],[1530,415],[1530,363],[1575,337],[1575,389],[1710,415],[135,129],[90,155],[90,363],[45,389],[0,415],[45,441],[90,415],[90,831],[45,857],[135,909],[180,987],[135,961],[90,987],[90,935],[225,1013],[180,1039],[450,935],[495,909],[495,961],[450,987],[495,1013],[540,1039],[540,987],[540,935],[585,961],[630,935],[1170,1039],[1215,1013],[1260,1039],[1305,1013],[1305,1065],[1260,1091],[1215,1065],[1170,1091],[1170,1091],[1215,1117],[1260,987],[1305,961],[1215,961],[1170,935],[1575,961],[1530,935],[1530,987],[1575,1013],[1530,1039],[1575,909],[1485,961],[450,571],[495,545],[1125,597],[90,207],[45,181],[765,545],[90,727],[1620,935],[1665,909],[1665,701],[855,805],[810,779],[1350,155],[1620,207],[1665,233],[1620,1039],[1440,1039],[1395,1013],[1395,961],[1440,987],[1485,1013],[360,1091],[360,1039],[315,1065],[270,1039],[225,1065],[180,1091],[585,493],[585,441],[0,831],[0,883],[45,701],[90,103],[1710,727],[1665,1065],[1665,1013],[1485,1065],[1440,1091],[1710,675],[1755,701],[1755,389],[1755,337],[1710,363],[1665,389],[1620,155],[1665,181],[1710,155],[1485,181],[945,233],[360,155],[225,129],[405,129],[540,779],[495,805],[405,857],[450,831],[450,779],[0,467],[45,493],[45,233],[360,103],[675,389],[1350,103],[1395,129],[810,207],[945,181],[990,207],[990,259],[1035,181],[720,207],[765,181],[765,233],[495,129],[450,155],[450,103],[405,77],[450,207],[495,181],[45,1013],[90,1039],[1170,155],[1215,129],[1215,77],[1440,103],[1620,103],[1665,129],[1530,103],[1530,51],[1710,935],[495,1065],[495,701],[540,675],[90,519],[90,571],[45,545],[540,207],[1260,155],[1620,987],[1665,961],[1665,1117],[1710,1091],[1710,1143],[1710,0],[1710,51],[1755,25],[180,103],[450,51],[405,25],[360,51],[90,779],[45,753],[90,675],[45,1065],[1440,259],[1485,285],[1530,311],[1485,129],[1440,51],[1485,77],[1350,831],[540,1091],[540,1143],[585,1117],[180,1143],[225,1117],[45,129],[45,77],[0,51],[45,25],[90,51],[1755,753],[1125,1065],[1125,1117],[360,0]];
 	var allCoordsDistinct = _.uniq(allCoords, function(item) {
@@ -49,7 +49,7 @@ var Viz = function(infoData, startScoreboard) {
 				var id = teams.length;
 				teams.push({index: id, id: id, team_id: fieldName, name: info.teams[fieldName], score: 0, place: null, status: 0});
 				teamIdToNum[fieldName] = teams.length - 1;
-                teamNameToNum[info.teams[fieldName]] = teams.length - 1;
+				teamNameToNum[info.teams[fieldName]] = teams.length - 1;
 			}
 		}
 	})();
@@ -90,52 +90,52 @@ var Viz = function(infoData, startScoreboard) {
 		$.getJSON("./api/scoreboard").done(function (scoreboardData) {
 			scoreboard = scoreboardData;
 			load_events();
-            $.getJSON("./scoreboard.json").done(function (scores_json) {
-                load_services_statuses(scores_json);
-                updateScore();
-                draw_services_statuses();
-                updateStatistics(scores_json);
-            });
+			$.getJSON("./scoreboard.json").done(function (scores_json) {
+				load_services_statuses(scores_json);
+				updateScore();
+				draw_services_statuses();
+				updateStatistics(scores_json);
+			});
 		});
 	}
 
 	// Если начался новый раунд, запрашивает данные за предыдущий и кладет события в pending_events
 	// При открытии для предыдущего раунда запрашивает данные сразу.
-    function load_events() {
+	function load_events() {
 		if (cur_round < 0) { cur_round = scoreboard.round - 1; }
 		if (cur_round === scoreboard.round) { return; }
 		var next_round = scoreboard.round;
 
 		$.getJSON('./api/events?from=' + cur_round).done(function (eventsData) {
-            var new_events = [];
+			var new_events = [];
 			for (var i = 0; i < eventsData.length; ++i) {
 				if (cur_round <= eventsData[i][0] && eventsData[i][0] < next_round) {
 					new_events.push(eventsData[i]);
 				}
 			}
-            new_events.sort(function (a, b) {
-                var x = parseInt(a[1]);
-                var y = parseInt(b[1]);
-                if (x < y) { return -1; }
-                else if (x > y) { return 1; }
-                else { return 0; }
-            });
-            pending_events = pending_events.concat(new_events);
+			new_events.sort(function (a, b) {
+				var x = parseInt(a[1]);
+				var y = parseInt(b[1]);
+				if (x < y) { return -1; }
+				else if (x > y) { return 1; }
+				else { return 0; }
+			});
+			pending_events = pending_events.concat(new_events);
 			cur_round = next_round;
 		});
-    }
+	}
 
-    function load_services_statuses(scores_json) {
-        for (var i = 0; i < scores_json['scoreboard'].length; i++) {
-            var _team = scores_json['scoreboard'][i];
-            var k = teamNameToNum[_team['name']];
-            teams[k].servicesStatuses = new Array(SERVICES_COUNT);
+	function load_services_statuses(scores_json) {
+		for (var i = 0; i < scores_json['scoreboard'].length; i++) {
+			var _team = scores_json['scoreboard'][i];
+			var k = teamNameToNum[_team['name']];
+			teams[k].servicesStatuses = new Array(SERVICES_COUNT);
 
-            for (var j = 0; j < _team['services'].length; j++) {
-                var _svc = _team['services'][j];
-                teams[k].servicesStatuses[serviceIdToNum[_svc['id']]] = (_svc['status'] == 101);
-            }
-        }
+			for (var j = 0; j < _team['services'].length; j++) {
+				var _svc = _team['services'][j];
+				teams[k].servicesStatuses[serviceIdToNum[_svc['id']]] = (_svc['status'] == 101);
+			}
+		}
 	}
 
 	function draw_services_statuses() {
@@ -176,28 +176,28 @@ var Viz = function(infoData, startScoreboard) {
 	}
 
 	function updateStatistics(scores_json) {
-        var teams_with_alive = 0;
-        var flags_count = 0;
+		var teams_with_alive = 0;
+		var flags_count = 0;
 
-        for (var i = 0; i < scores_json['scoreboard'].length; i++) {
-            var _team = scores_json['scoreboard'][i];
+		for (var i = 0; i < scores_json['scoreboard'].length; i++) {
+			var _team = scores_json['scoreboard'][i];
 
-            for (var j = 0; j < _team['services'].length; j++) {
-                var _svc = _team['services'][j];
-                if (_svc['status'] == 101) { ++teams_with_alive; break; }
-            }
+			for (var j = 0; j < _team['services'].length; j++) {
+				var _svc = _team['services'][j];
+				if (_svc['status'] == 101) { ++teams_with_alive; break; }
+			}
 
-            for (var j = 0; j < _team['services'].length; j++) {
-                flags_count += parseInt(_team['services'][j]['flags']);
-            }
-        }
+			for (var j = 0; j < _team['services'].length; j++) {
+				flags_count += parseInt(_team['services'][j]['flags']);
+			}
+		}
 
-        var round_flags_count = flags_count - prev_flags_count;
-        prev_flags_count = flags_count;
+		var round_flags_count = flags_count - prev_flags_count;
+		prev_flags_count = flags_count;
 
-        // TODO
-        // teams_with_alive :: количество команд с хотя бы 1 сервисом
-        // round_flags_count :: количество флагов за раунд
+		// TODO
+		// teams_with_alive :: количество команд с хотя бы 1 сервисом
+		// round_flags_count :: количество флагов за раунд
 	}
 
 	function updateScore() {
