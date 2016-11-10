@@ -88,6 +88,8 @@ button {
   background-color: #fff;
   border: 1px solid #ccc;
   border-radius: 4px;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .file-upload input {
