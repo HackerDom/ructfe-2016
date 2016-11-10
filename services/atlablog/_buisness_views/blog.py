@@ -1,3 +1,6 @@
+import asyncio
+from collections import defaultdict
+
 import os
 from time import time
 
@@ -68,40 +71,6 @@ def _clean_attachments(data):
     return links
 
 
-@bp.route('/')
-@login_required(login_url='/login')
-async def blog(request):
-    form = BlogEntryForm(request.form) if request.method == 'POST' else \
-        BlogEntryForm()
-    blog = get_entry_service(BLOG_ENTRY_DB_NAME)
-    user_service = get_user_service(USER_DB_NAME)
-    user = await user_service.get_request_user(request)
-    if request.method == 'POST' and form.validate():
-        text = form.text.data
-        title = form.title.data
-        attachments = _clean_attachments(form.attachments.data)
-        try:
-            await blog.create_entry(title, content=text, meta={
-                'user': user.username,
-                'attachments': attachments,
-            })
-            return redirect(request, '/')
-        except Exception as e:
-            form.text.errors.append(str(e))
-    entries_count = await blog.get_entries_count()
-    pages = entries_count // 10
-    page = request.args.get('page', "0")
-    page = int(page) if page.isdigit() else 0
-    offset = page * 10 if 0 < page <= pages else 0
-    next_page = page + 1 if page + 1 <= pages else None
-    entries = await blog.get_entries(
-        limit=10, offset=offset, order_by='-created')
-    return html(bp.view.render('blog', {
-        'form': form, 'entries': entries, 'entries_count': entries_count,
-        'user': user, 'next_page': next_page,
-    }))
-
-
 @bp.route('/blog-count.json')
 async def blog_count(request):
     blog = get_entry_service(BLOG_ENTRY_DB_NAME)
@@ -113,6 +82,63 @@ async def blog_count(request):
         'entries_count': entries_count,
         'per_page': 10,
     })
+
+
+notify = defaultdict(asyncio.Future)
+
+
+@bp.route('/blog-notify')
+async def blog_signal(request):
+    blog = get_entry_service(BLOG_ENTRY_DB_NAME)
+    entries_count = await blog.get_entries_count()
+    count = request.args.get('count', "no")
+    count = int(count) if count.isdigit() else entries_count + 1
+    if count <= entries_count:
+        return await blog_count(request)
+    elif entries_count + 10 < count:
+        return json({'error': 'you try to see so far into the future!'},
+                    status=400)
+    await notify[count]
+    return await blog_count(request)
+
+
+@bp.route('/')
+@login_required(login_url='/login')
+async def blog(request):
+    form = BlogEntryForm(request.form) if request.method == 'POST' else \
+        BlogEntryForm()
+    blog = get_entry_service(BLOG_ENTRY_DB_NAME)
+    entries_count = await blog.get_entries_count()
+    user_service = get_user_service(USER_DB_NAME)
+    user = await user_service.get_request_user(request)
+    if request.method == 'POST' and form.validate():
+        text = form.text.data
+        title = form.title.data
+        attachments = _clean_attachments(form.attachments.data)
+        try:
+            await blog.create_entry(title, content=text, meta={
+                'user': user.username,
+                'attachments': attachments,
+            })
+            notify[entries_count + 1].set_result(True)
+            for key, value in notify.items():
+                if key < entries_count:
+                    value.cancel()
+                    del notify[key]
+            return redirect(request, '/')
+        except Exception as e:
+            form.text.errors.append(str(e))
+    pages = entries_count // 10
+    page = request.args.get('page', "0")
+    page = int(page) if page.isdigit() else 0
+    offset = page * 10 if 0 < page <= pages else 0
+    next_page = page + 1 if page + 1 <= pages else None
+    entries = await blog.get_entries(
+        limit=10, offset=offset, order_by='-created')
+    return html(bp.view.render('blog', {
+        'form': form, 'entries': entries, 'entries_count': entries_count,
+        'user': user, 'next_page': next_page,
+    }))
 
 
 @bp.route('/<name>')
