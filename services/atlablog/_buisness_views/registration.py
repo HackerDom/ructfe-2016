@@ -25,10 +25,10 @@ def registered(state):
 class RegistrationForm(Form):
     username = StringField('Username', [validators.Length(min=4, max=25)])
     email = StringField('Email Address', [
-        validators.Length(min=6, message='Little short for an email address?'),
+        validators.Length(min=4, message='Little short for an email address?'),
         validators.Length(max=45, message='Longer then usual email!'),
         validators.Email(message='That\'s not a valid email address.')])
-    password = PasswordField('Password', [validators.Length(min=6, max=25)])
+    password = PasswordField('Password', [validators.Length(min=4, max=25)])
     accept_rules = BooleanField(
         'I accept the site rules', [validators.InputRequired()])
 

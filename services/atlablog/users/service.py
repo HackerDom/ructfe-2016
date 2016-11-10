@@ -1,13 +1,8 @@
 from json import dumps
-
-import peewee
 from hashlib import sha256
 import re
 
-from sanic.response import json
-from peewee import DoesNotExist
-
-import datetime
+import peewee
 
 from users.models import AnonymousUser
 
@@ -16,7 +11,7 @@ _last = None
 USERNAME_RE = re.compile('^[a-zA-Z0-9.-_@]{3,20}$')
 WEAK_PASSWORDS = {
     'qwerty', '123456', 'asdfgh', 'password', 'admin123', 'qweasdzxc',
-    'qweqwe123', '123123123',
+    'qweqwe123', '123123123', 'qwer',
 }
 
 
@@ -83,7 +78,7 @@ class UserService:
         return username.lower()
 
     def clean_password(self, password):
-        if len(password) <= 5:
+        if len(password) <= 3:
             raise self.UserServiceError('Password is too short')
         if len(password) > 100:
             raise self.UserServiceError('Password is too large')
