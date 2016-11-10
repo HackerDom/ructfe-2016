@@ -111,14 +111,14 @@ def try_get(client, flag, metadata):
         raise CheckerException("Didn't find posted flag")
     if (not check_replicas):
         close(CORRUPT, "Flag is missing from all replicas")
+    # check chunk from any replica
 
 
 def check_replicas(client, flag, metadata):
-    images = client.getImagesAsync(metadata["replicas"], metadata["key"], metadata["id"])
-    hasFlagAny = false
-    for image in images:
-        if image is not None:
-            seafloorMap = SeafloorMap.fromBytes(image)
+    responses = client.getImagesAsync(metadata["replicas"], metadata["key"], metadata["id"])
+    for response in responses:
+        if response is not None and response.status_code == 200:
+            seafloorMap = SeafloorMap.fromBytes(response.content)
             if (seafloorMap.getFlag() == flag):
                 return true
     return false
