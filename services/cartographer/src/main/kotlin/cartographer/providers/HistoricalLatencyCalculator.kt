@@ -24,7 +24,7 @@ class HistoricalLatencyCalculator : LatencyCalculator {
     companion object {
         private val movingAverageExponentSetting = DoubleSetting("latency_calculator.ema_exponent", 0.2)
         private val backOffExponentSetting = IntSetting("latency_calculater.back_off_exponent", 2)
-        private val maxBackOffNumberSetting = IntSetting("latency_calculater.max_back_off_number", 8)
+        private val maxBackOffNumberSetting = IntSetting("latency_calculater.max_back_off_number", 16)
         private val endpointSetting = StringSetting("latency_calculator.endpoint", "timesync")
     }
 
