@@ -7,7 +7,7 @@
 
 - name: Copy service
   copy:
-    src: "/tmp/weather"
+    src: "{{ playbook_dir }}/../services/weather/weather"
     dest: "/home/weather/weather"
     owner: weather
     mode: 0755
