@@ -8,6 +8,7 @@ import requests
 from io import BytesIO
 from stack_walk_parser import StackWalkParser
 import re
+import UserAgents
 
 SERVICE_NAME = "submarine_internal"
 OK, CORRUPT, MUMBLE, DOWN, CHECKER_ERROR = 101, 102, 103, 104, 110
@@ -50,7 +51,7 @@ def put(*args):
 	# submit report
 	url = 'http://%s/submit' % addr
 	files = { 'dump_zip_file': inMemoryZip.read() }
-	headers = { 'Service-Name' : SERVICE_NAME, 'GUID' : flag_id }
+	headers = { 'User-Agent' : UserAgents.get(), 'Service-Name' : SERVICE_NAME, 'GUID' : flag_id }
 	try:
 		r = requests.post(url, files=files, headers=headers )
 		if r.status_code != 200:
@@ -72,7 +73,8 @@ def get(*args):
 	flag = args[2]
 	url = 'http://%s/%s/get' % ( addr, flag_id )
 	try:
-		r = requests.get( url )
+		headers = { 'User-Agent' : UserAgents.get() }
+		r = requests.get( url, headers=headers )
 		if r.status_code != 200:
 			close( MUMBLE, "Invalid HTTP response", "Invalid status code: %s %d" % ( url, r.status_code ) )	
 	except Exception as e:
