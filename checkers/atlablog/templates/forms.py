@@ -2,7 +2,6 @@ from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, ElementNotSelectableException
 
 
-
 def parse_authorization_form(driver: webdriver.PhantomJS, ip, username, password):
     driver.get("http://{}/login".format(ip))
     try:
