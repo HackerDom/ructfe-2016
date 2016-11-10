@@ -1,6 +1,6 @@
 server {
     listen  80 default;
-    return 301 http://$hostname$redirect_uri;
+    return 301 http://$hostname$request_uri;
 }
 
 server {
