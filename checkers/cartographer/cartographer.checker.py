@@ -109,9 +109,8 @@ def try_get(client, flag, metadata):
     seafloorMap = SeafloorMap.fromBytes(image)
     if (seafloorMap.getFlag() != flag):
         raise CheckerException("Didn't find posted flag")
-    if (not check_replicas):
+    if (not check_replicas(client, flag, metadata)):
         close(CORRUPT, "Flag is missing from all replicas")
-    # check chunk from any replica
 
 
 def check_replicas(client, flag, metadata):

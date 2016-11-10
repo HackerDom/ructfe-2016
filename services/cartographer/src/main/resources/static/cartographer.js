@@ -1,3 +1,5 @@
+var MAX_FILE_SIZE = 30 * 1024
+
 document.getElementById('map-input').onchange = function () {
   document.getElementsByClassName("file-upload")[0].setAttribute("data-text", this.value.split(/(\\|\/)/g).pop());
 };
@@ -8,12 +10,13 @@ function getMaps() {
         localStorage.setItem("mapKeys", JSON.stringify([]));
         mapKeys = []
     }
-    document.getElementsByClassName('maps-title')[0].innerText = "Here are your maps:";
     clearMaps();    
     for (var mapKeyCount = 0; mapKeyCount < mapKeys.length; mapKeyCount++) {
         var mapKey = mapKeys[mapKeyCount];
         getMap(mapKey.key, mapKey.id);
     }
+    document.getElementsByClassName('maps-title')[0].innerText = 
+        document.getElementsByClassName("maps")[0].children.length > 0 ? "Here are your maps:" : "Load a map or activate the uploaded one";
 }
 
 function clearMaps(){
@@ -35,6 +38,9 @@ function getMap(key, id) {
             body: JSON.stringify(data)
         })
         .then(function(response) {
+            if (response.status !== 200) {
+                return "";
+            }
             return response.text();
         })
         .then(function(map) {  
@@ -48,8 +54,9 @@ function getMap(key, id) {
 function showMap(map) {
     var image = document.createElement('img');
     image.src = "data:image/png;base64," + btoa(map);
-    image.className = "map"
-    document.getElementsByClassName("maps")[0].appendChild(image)
+    image.className = "map";
+    document.getElementsByClassName("maps")[0].appendChild(image);
+    document.getElementsByClassName('maps-title')[0].innerText = "Here are your maps:";
 }
 
 function addToLocalStorage() {
@@ -69,6 +76,11 @@ function addMapKeyToLocalStorage(key, id) {
 
 function uploadMap() {
     var reader = new FileReader();
+    var file = document.getElementById("map-input").files[0];
+    if (file.size > MAX_FILE_SIZE){
+        document.getElementsByClassName('maps-title')[0].innerText = "Too big file to upload";
+        return;
+    }
     reader.onload = function() {
 
         var arrayBuffer = this.result,
@@ -76,7 +88,7 @@ function uploadMap() {
         binaryString = String.fromCharCode.apply(null, array);
         sendMap(binaryString);
     }
-    reader.readAsArrayBuffer(document.getElementById("map-input").files[0]);
+    reader.readAsArrayBuffer(file);
 }
 
 function sendMap(map) {
@@ -86,6 +98,9 @@ function sendMap(map) {
             body: map
         })
         .then(function(response) {
+            if (response.status !== 200) {
+                return null;
+            }
             return response.json();
         })
         .then(function(mapKey) {  
