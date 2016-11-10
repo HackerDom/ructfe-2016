@@ -107,11 +107,20 @@ var Viz = function(infoData, startScoreboard) {
 		var next_round = scoreboard.round;
 
 		$.getJSON('./api/events?from=' + cur_round).done(function (eventsData) {
+            var new_events = [];
 			for (var i = 0; i < eventsData.length; ++i) {
 				if (cur_round <= eventsData[i][0] && eventsData[i][0] < next_round) {
-					pending_events.push(eventsData[i]);
+					new_events.push(eventsData[i]);
 				}
 			}
+            new_events.sort(function (a, b) {
+                var x = parseInt(a[1]);
+                var y = parseInt(b[1]);
+                if (x < y) { return -1; }
+                else if (x > y) { return 1; }
+                else { return 0; }
+            });
+            pending_events = pending_events.concat(new_events);
 			cur_round = next_round;
 		});
     }
