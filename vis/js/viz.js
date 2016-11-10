@@ -33,7 +33,7 @@ var Viz = function(infoData, startScoreboard) {
 	var openedTooltipTeamId = undefined;
 	var scoreboardPageData = undefined;
 
-	var prev_flags_count = 0;
+	var prev_flags_count = undefined;
     var prev_stat_round = -1;
 
 	var cur_round = -1;
@@ -199,14 +199,15 @@ var Viz = function(infoData, startScoreboard) {
 			}
 		}
 
-		var round_flags_count = flags_count - prev_flags_count; // количество флагов за раунд
+		var round_flags_count = (prev_flags_count === undefined ? undefined : flags_count - prev_flags_count); // количество флагов за раунд
 		prev_flags_count = flags_count;
 
 		drawStatistics(round_flags_count, teams_with_alive);
 	}
 
 	function drawStatistics(round_flags_count, teams_with_alive) {
-		$("#attacks").find(".value").text(round_flags_count);
+		if (round_flags_count !== undefined)
+			$("#attacks").find(".value").text(round_flags_count);
 		$("#alive").find(".value").text(teams_with_alive);
 	}
 
