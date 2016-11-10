@@ -61,7 +61,8 @@ function OnLogout() {
 	})
 	.always(function(data) {
 		console.log(data);
-	});
+	})
+	.done(CheckLoginState);
 
 	return false;
 }
@@ -101,7 +102,7 @@ function LoadMy() {
 }
 
 $("#login").submit(OnLogin);
-$("#logout").click(OnLogout);
+$("#logoutBtn").click(OnLogout);
 $("#publish").submit(OnPublish);
 
 var myListener;
