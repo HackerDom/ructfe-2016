@@ -56,21 +56,23 @@ function Listener(action) {
 }
 
 function InitHistory() {
-	var url = location.search.substring(1).split('&').map(function(param) {return param.split('=');}).filter(function(pair) {return pair[0] === 'url';}).map(function(pair){return pair[1];})[0];
-	if (typeof url !== 'undefined')
-		ShowPost(url);
-
-	$('#postModal').on('hidden.bs.modal', function() { 
+	$('#postModal,#postErrorModal').on('hidden.bs.modal', function() { 
 		history.pushState('', '', '/'); 
 	});
 
 	window.onpopstate = function(event) {
 		var url = event.state;
-		if (typeof url === 'undefined' || url == '')
-			$('#postModal').modal('hide');
+		if (typeof url === 'undefined' || url === '')
+			$('#postModal, #postErrorModal').modal('hide');
+		else if (url == null)
+			$('#postErrorModal').modal('show');
 		else
 			ShowPost(url);
 	}
+
+	var url = location.search.substring(1).split('&').map(function(param) {return param.split('=');}).filter(function(pair) {return pair[0] === 'url';}).map(function(pair){return pair[1];})[0];
+	if (typeof url !== 'undefined')
+		ShowPost(url);
 }
 
 function ShowPost(url) {
@@ -88,7 +90,7 @@ function ShowPost(url) {
 	})
 	.fail(function(data) {
 		if (data.status == 404)
-			$('#postError').modal('show');
+			$('#postErrorModal').modal('show');
 	});
 }
 
