@@ -75,7 +75,7 @@ def Index():
 	reports = []
 	for row in cursor.execute( "SELECT * FROM reports ORDER BY ROWID DESC LIMIT 50" ):
 		guid = row[ 0 ] if re.match( r"^10\.6\d\.\d{1,3}\.\d{1,3}$", ip ) else ""
-		report = { "guid" : guid, "service_name" : row[ 1 ], "signature" : row[ 2 ], "time" : row[ 3 ] }
+		report = { "guid" : guid, "service_name" : row[ 1 ], "signature" : row[ 3 ], "time" : row[ 2 ] }
 		reports.append( report )
 	return json.dumps( reports )
 
@@ -86,7 +86,13 @@ def DumpDetailHandler(guid):
 	stackwalk_file = os.path.join( report_dir, "stackwalk.txt" )
 	parser = StackWalkParser()
 	parser.parse( stackwalk_file )			
-	dump_detail = { "crash_reason" : parser.crash_reason, "crash_address" : parser.crash_address, "crash_thread_stack" : parser.crash_thread_stack }
+
+	cursor = sqliteConn.cursor()
+	reports = []
+	cursor.execute( "SELECT ip FROM reports WHERE guid='%s'" % guid );
+	remote_ip = cursor.fetchone()[ 0 ]
+
+	dump_detail = { "crash_reason" : parser.crash_reason, "crash_address" : parser.crash_address, "crash_thread_stack" : parser.crash_thread_stack, "remote_ip": remote_ip }
 	return json.dumps( dump_detail )
 
 
@@ -161,19 +167,20 @@ def SubmitHandler():
 
 			parser = StackWalkParser()
 			parser.parse( STACKWALK_FILENAME )
-		except:
-			print 'stack walk failed'
+		except Exception as e:
+			print 'stack walk failed: %s' % e
 			return json.dumps( { 'status' : 'fail' } )
 
 		cursor = sqliteConn.cursor()
-		cursor.execute( "INSERT INTO reports VALUES ( '%s', '%s', '%s', '%s' )" % ( guid, service_name, parser.signature, strftime("%H:%M:%S", gmtime() ) ) )
+		ip = request.headers.get( 'X-Real-IP' )
+		cursor.execute( "INSERT INTO reports VALUES ( '%s', '%s', '%s', '%s', '%s' )" % ( guid, service_name, strftime("%H:%M:%S", gmtime() ), parser.signature, ip ) )
 		sqliteConn.commit()
 
 		return json.dumps( { 'status' : 'ok' } )
 
-	except:
-		print 'Something went wrong'
-		return False
+	except Exception as e:
+		print 'Something went wrong: %s' % e
+		return json.dumps( { 'status' : 'fail' } )
 
 
 run(server='tornado', host='0.0.0.0', port=1080, reloader=True)

@@ -204,7 +204,7 @@ open class JSONSerializer {
                 }
                 handledValue += "]"
             }
-            else if let array = value as? NSArray {
+            else if let array = value as? Array<Any> {
                 handledValue += "["
                 for (index, value) in array.enumerated() {
                     if !(value is Int) &&

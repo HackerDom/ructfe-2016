@@ -7,9 +7,9 @@ function loadCrashes() {
 			var report = reports_data[i];
 			var $row = $("<tr></tr>");
 			if (report.guid !== undefined) {
-				var $guidElem = $("<a href='#'></a>");
-				$guidElem.text(report.guid);
-				$guidElem.attr("href", "/report.html?guid=" + report.guid);
+				var $guidElem = $("<a href='#'></a>")
+					.text(report.guid)
+					.attr("href", "/report.html?guid=" + encodeURIComponent(report.guid));
 				$row.append($("<td></td>").append($guidElem));
 			} else {
 				$(".guid").hide();
@@ -26,21 +26,22 @@ function loadCrashes() {
 function loadCrash() {
 	var guid = getUrlParameter("guid");
 	$("#crash_guid").text(guid);
-	$.getJSON('/' + guid).done(function (crash_data) {
+	$.getJSON('/' + encodeURIComponent(guid)).done(function (crash_data) {
 		if (crash_data.crash_address == "" && crash_data.crash_reason == "" && crash_data.crash_thread_stack.length == 0)
 			return;
 		$("#crash_reason").text(crash_data.crash_reason);
 		$("#crash_address").text(crash_data.crash_address);
-		$("#load-crash").attr("href", "/" + guid + "/get");
+		$("#remote_ip").text(crash_data.remote_ip);
+		$("#load-crash").attr("href", "/" + encodeURIComponent(guid) + "/get");
 		var $table = $("#crash-thread-stack-table");
 		for (var i=0; i<crash_data.crash_thread_stack.length; i++) {
 			var record = crash_data.crash_thread_stack[i];
-			var $row = $("<tr></tr>");
-			$row.append($("<td></td>").text(record.idx));
-			$row.append($("<td></td>").text(record.module));
-			$row.append($("<td></td>").text(record.signature));
-			$row.append($("<td></td>").text(record.source));
-			$row.append($("<td></td>").text(record.line));
+			var $row = $("<tr></tr>")
+				.append($("<td></td>").text(record.idx))
+				.append($("<td></td>").text(record.module))
+				.append($("<td></td>").text(record.signature))
+				.append($("<td></td>").text(record.source))
+				.append($("<td></td>").text(record.line));
 			$table.append($row);
 		}
 		$("#sevice-content-wrapper").show();
@@ -57,7 +58,14 @@ function getUrlParameter(sParam) {
 		sParameterName = sURLVariables[i].split('=');
 
 		if (sParameterName[0] === sParam) {
-			return sParameterName[1] === undefined ? true : sParameterName[1];
+			return sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
 		}
 	}
 };
+
+if(!!$("#reports-table").length) {
+	loadCrashes();
+}
+if(!!$("#report-props-table").length) {
+	loadCrash();
+}

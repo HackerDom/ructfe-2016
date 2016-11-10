@@ -7,17 +7,18 @@ import cartographer.settings.IntSetting
 import cartographer.settings.SettingsContainer
 import org.apache.logging.log4j.LogManager
 import org.springframework.stereotype.Component
-import java.net.InetAddress
 import java.time.Duration
+import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 @Component
 class ClosestReplicasProvider : ReplicasProvider {
     companion object {
-        private val maxAllowedLatencySetting = DurationSetting("replicas_provider.max_latency", Duration.ofSeconds(1))
+        private val maxAllowedLatencySetting = DurationSetting("replicas_provider.max_latency", Duration.ofSeconds(10))
         private val replicasUpdatePeriodSetting = DurationSetting("replicas_provider.update_period", Duration.ofMinutes(1))
-        private val threadPoolSize = IntSetting("replicas_provider.thread_pool_size", 30)
+        private val threadPoolSizeSetting = IntSetting("replicas_provider.thread_pool_size", 30)
+        private val replicaSetSizeSetting = IntSetting("replicas_provider.replica_set_size", 20)
 
         private val logger = LogManager.getFormatterLogger()
 
@@ -42,6 +43,7 @@ class ClosestReplicasProvider : ReplicasProvider {
                             val latencyMillis = pair.second.get()
                             latencyMillis != null && maxAllowedLatency > Duration.ofMillis(latencyMillis)
                     }
+                    .sortedBy { pair -> pair.second.get() }
                     .map { pair -> Replica(pair.first) }
 
             logger.debug("New closest replicas list: " +
@@ -52,7 +54,9 @@ class ClosestReplicasProvider : ReplicasProvider {
     }
 
     private val updateReplicasAction: PeriodicalAction
+    private val replicaSetSize: Int
 
+    @Volatile
     private var closestReplicas = emptyList<Replica>()
 
     constructor(dateTimeProvider: DateTimeProvider,
@@ -61,15 +65,27 @@ class ClosestReplicasProvider : ReplicasProvider {
                 settingsContainer: SettingsContainer) {
         val maxAllowedLatency = maxAllowedLatencySetting.getValue(settingsContainer)
         val replicasUpdatePeriod = replicasUpdatePeriodSetting.getValue(settingsContainer)
-        val executorService = Executors.newFixedThreadPool(threadPoolSize.getValue(settingsContainer))
+        val executorService = Executors.newFixedThreadPool(threadPoolSizeSetting.getValue(settingsContainer))
 
+        replicaSetSize = replicaSetSizeSetting.getValue(settingsContainer)
         updateReplicasAction = PeriodicalAction(replicasUpdatePeriod, dateTimeProvider) {
             closestReplicas = updateReplicas(latencyCalculator, executorService, addressedProvider, maxAllowedLatency)
         }
     }
 
-    override fun GetReplicas(): List<Replica> {
-        return closestReplicas
+    override fun GetReplicas(): Collection<Replica> {
+        if (closestReplicas.size <= replicaSetSize) {
+            return closestReplicas
+        }
+
+        val top = closestReplicas.subList(0, replicaSetSize / 2)
+        val random = Random()
+        val low = closestReplicas
+                .subList(replicaSetSize / 2, closestReplicas.size)
+                .sortedBy { r -> random.nextInt() }
+                .subList(0, replicaSetSize / 2)
+
+        return listOf(*top.toTypedArray(), *low.toTypedArray())
     }
 }
 

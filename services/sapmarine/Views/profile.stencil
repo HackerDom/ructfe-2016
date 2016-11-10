@@ -25,8 +25,8 @@
 						</div>
 						<div class="collapse navbar-collapse" id="bs-navbar-collapse">
 							<ul class="nav navbar-nav navbar-right">
-								{% if TODO LOGGED IN %}<li><a href="TODO profile.stencil">{{ TODO USER }}</a></li>{% endif %}
-								<li>{% if TODO LOGGED IN %}<a href="TODO login.stencil">Login</a>{% else %}<a href="TODO logout">Logout</a>{% endif %}</li>
+								{% if isLoggedIn %}<li><a href="/profileForm">{{ user }}</a></li>{% endif %}
+								<li>{% if isLoggedIn %}<a href="/logout">Logout</a>{% else %}<a href="/loginForm">Login/Register</a>{% endif %}</li>
 							</ul>
 						</div>
 					</div>
@@ -45,18 +45,18 @@
 								<h1>Profile</h1>
 								<div class="well"></div>
 
-								<form action="/todo" method="POST">
+								<form action="/setProfile" method="GET">
 									<div class="form-group form-group-lg">
-										<input type="text" class="form-control" name="todo" {% if TODO FILLED %} readonly {% endif %} placeholder="Job" maxlength="256">
+										<input type="text" class="form-control" name="fullName" {% if isProfileFilledIn %} readonly {% endif %} placeholder="Full Name" maxlength="128" value="{{ fullName }}">
 									</div>
 									<div class="form-group form-group-lg">
-										<input type="text" class="form-control" name="todo" {% if TODO FILLED %} readonly {% endif %} placeholder="About" maxlength="256">
+										<input type="text" class="form-control" name="job" {% if isProfileFilledIn %} readonly {% endif %} placeholder="Job" maxlength="64" value="{{ job }}">
 									</div>
 									<div class="form-group form-group-lg">
-										<input type="text" class="form-control" name="todo" {% if TODO FILLED %} readonly {% endif %} placeholder="Private" maxlength="256">
+										<input type="text" class="form-control" name="notes" {% if isProfileFilledIn %} readonly {% endif %} placeholder="Private Notes" maxlength="256" value="{{ notes }}">
 									</div>
 									<div class="form-group form-group-lg">
-										<button type="submit" class="btn btn-lg btn-primary" {% if TODO FILLED %} disabled {% endif %}>Submit</button>
+										<button type="submit" class="btn btn-lg btn-primary" {% if isProfileFilledIn %} disabled {% endif %}>Submit</button>
 									</div>
 								</form>
 							</div>

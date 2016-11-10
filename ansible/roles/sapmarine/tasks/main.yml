@@ -24,3 +24,5 @@
 
 - name: Start service
   service: name=sapmarine state=restarted
+  tags:
+    - skip_ansible_lint

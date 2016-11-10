@@ -24,8 +24,10 @@ public class Sapmarine {
     var processingTrips: Dictionary<String, Trip> = Dictionary<String, Trip>()
 
     init(){
-        let saveStateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { t in
-            sapmarine.SaveState()
+        LoadState()
+
+        let saveStateTimer = Timer.scheduledTimer(withTimeInterval: 60.0, repeats: true) { t in
+            self.SaveState()
         }
         // RunLoop.current.add(saveStateTimer, RunLoop.currentMode)
 
@@ -43,27 +45,29 @@ public class Sapmarine {
                 next()
             }
 
-            let userNameOptional = try self.GetUserFromSessionOrCancelRequest(request, response)
-            if userNameOptional == nil {
-                response.statusCode = .badRequest
-                try response.end()
-                return
-            }
+            let userNameOptional = try self.GetUserFromSession(request, response)
 
-            var context: [String: Any] = [:]
+            var stencilContext: [String: Any] = [:]
             self.dispatchQueue.sync {
                 let allTripsArray = self.newTrips.map { (key, value) in ["passenger": key, "description": value] }
                 let driversTripsArray = self.processingTrips
-                    .filter { (key, value) in value.driver == userNameOptional!}
-                    .map { (key, value) in ["passenger": value.passenger, "driver": value.driver, "id": value.id] }
+                    .filter { (key, value) in userNameOptional != nil && value.driver == userNameOptional!}
+                    .map { (key, value) in ["passenger": value.passenger, "driver": value.driver, "id": value.id, "isMine": "1"] }
 
-                context = [
+                stencilContext = [
+                    "isLoggedIn": userNameOptional != nil,
+                    "user": userNameOptional ?? "",
                     "users": self.usersSet.map { ["name": $0.name, "rating": $0.rating()] },
                     "trips": driversTripsArray + allTripsArray
                 ]
             }
 
-            try response.render("index.stencil", context: context).end()
+            try response.render("index.stencil", context: stencilContext).end()
+        }
+
+        router.get("/loginForm") { request, response, next in
+            let stencilContext: [String: Any] = [:]
+            try response.render("login.stencil", context: stencilContext).end()
         }
 
         router.get("/login") { request, response, next in
@@ -88,13 +92,15 @@ public class Sapmarine {
             try response.redirect("/").end()
         }
 
+        router.get("/logout") { request, response, next in
+            let sess = request.session!
+            sess.destroy() { (error: Error?) in }
+            try response.redirect("/").end()
+        }
+
         router.get("/setProfile") { request, response, next in
             let userNameOptional = try self.GetUserFromSessionOrCancelRequest(request, response)
-            if userNameOptional == nil {
-                response.statusCode = .badRequest
-                try response.end()
-                return
-            }
+            if userNameOptional == nil { return }
 
             let fullName = self.FindParam(request, "fullName")
             let job = self.FindParam(request, "job")
@@ -106,26 +112,48 @@ public class Sapmarine {
                 return;
             }
 
-            if self.profilesDict[userNameOptional!] != nil{
+            var profile: Profile?
+            self.dispatchQueue.sync {
+                profile = self.profilesDict[userNameOptional!]
+            }
+
+            if profile != nil{
                 response.statusCode = .forbidden
                 try response.send("Profile is already set and can't be changed").end()
                 return
             }
 
             self.dispatchQueue.sync {
-                self.profilesDict[userNameOptional!] = Profile(fullName, job, notes)
+                self.profilesDict[userNameOptional!] = Profile(userNameOptional!, fullName, job, notes)
             }
 
-            try response.end()
+            try response.redirect("/profileForm").end()
+        }
+
+        router.get("/profileForm") { request, response, next in
+            let userNameOptional = try self.GetUserFromSessionOrCancelRequest(request, response)
+            if userNameOptional == nil { return }
+
+            var stencilContext: [String: Any] = [:]
+            self.dispatchQueue.sync {
+                let profile = self.profilesDict[userNameOptional!]
+
+                stencilContext = [
+                    "isLoggedIn": userNameOptional != nil,
+                    "isProfileFilledIn": self.profilesDict[userNameOptional!] != nil,
+                    "user": userNameOptional!,
+                    "fullName": profile?.fullName,
+                    "job": profile?.job,
+                    "notes": profile?.notes,
+                ]
+            }
+
+            try response.render("profile.stencil", context: stencilContext).end()
         }
 
         router.get("/addTrip") { request, response, next in
             let userNameOptional = try self.GetUserFromSessionOrCancelRequest(request, response)
-            if userNameOptional == nil {
-                response.statusCode = .badRequest
-                try response.end()
-                return
-            }
+            if userNameOptional == nil { return }
 
             let description = self.FindParam(request, "description");
 
@@ -139,16 +167,20 @@ public class Sapmarine {
                 self.newTrips[userNameOptional!] = description
             }
 
-            try response.end()
+            try response.redirect("/").end()
+        }
+
+        router.get("/addTripForm") { request, response, next in
+            let userNameOptional = try self.GetUserFromSessionOrCancelRequest(request, response)
+            if userNameOptional == nil { return }
+
+            let stencilContext: [String: Any] = [:]
+            try response.render("addtrip.stencil", context: stencilContext).end()
         }
 
         router.get("/takeTrip") { request, response, next in
             let driverNameOptional = try self.GetUserFromSessionOrCancelRequest(request, response)
-            if driverNameOptional == nil {
-                response.statusCode = .badRequest
-                try response.end()
-                return
-            }
+            if driverNameOptional == nil { return }
 
             let passengerName = self.FindParam(request, "passenger");
             if passengerName == "" {
@@ -166,13 +198,31 @@ public class Sapmarine {
             try response.send(trip.id).end()
         }
 
-        router.get("/finishTrip") { request, response, next in
-            let driverNameOptional = try self.GetUserFromSessionOrCancelRequest(request, response)
-            if driverNameOptional == nil {
+        router.get("/reviewForm") { request, response, next in
+            let userNameOptional = try self.GetUserFromSessionOrCancelRequest(request, response)
+            if userNameOptional == nil { return }
+
+            let tripId = self.FindParam(request, "tripId")
+            if tripId == "" {
                 response.statusCode = .badRequest
-                try response.end()
+                try response.send("Param tripId should contain trip id").end();
                 return
             }
+
+            var stencilContext: [String: Any] = [:]
+
+            stencilContext = [
+                "isLoggedIn": userNameOptional != nil,
+                "user": userNameOptional!,
+                "tripId": tripId
+            ]
+
+            try response.render("review.stencil", context: stencilContext).end()
+        }
+
+        router.get("/finishTrip") { request, response, next in
+            let driverNameOptional = try self.GetUserFromSessionOrCancelRequest(request, response)
+            if driverNameOptional == nil { return }
 
             let tripId = self.FindParam(request, "tripId")
             let comment = self.FindParam(request, "comment")
@@ -185,10 +235,8 @@ public class Sapmarine {
             }
 
             if let trip = self.processingTrips.removeValue(forKey: tripId) {
-
                 self.dispatchQueue.sync {
                     let passengerName = trip.passenger
-
                     let passengerOptional = self.usersDict[passengerName]
                     if(passengerOptional == nil){
                         response.statusCode = .badRequest
@@ -207,29 +255,6 @@ public class Sapmarine {
                 try response.send("Trip with tripId '\(tripId)' not found in processing trips").end();
             }
         }
-    }
-
-    public func SaveState() {
-        self.dispatchQueue.sync {
-            
-        }
-    }
-
-    public func SaveUsers() {
-
-    }
-
-    public func SaveProfiles() {
-
-    }
-
-    public func SaveTrips() {
-
-    }
-
-    public func Start(port: Int) {
-        Kitura.addHTTPServer(onPort: port, with: router)
-        Kitura.start()
     }
 
     private func FindExistingUserOrRegister(_ user: String, _ pass: String) -> User? {
@@ -251,17 +276,167 @@ public class Sapmarine {
     }
 
     private func FindParam(_ request: RouterRequest, _ paramName: String) -> String {
-        return request.queryParameters[paramName]?.trim() ?? "";
+        return (request.queryParameters[paramName]?.replacingOccurrences(of: "+", with: " ").removingPercentEncoding ?? "").trim();
     }
 
     private func GetUserFromSessionOrCancelRequest(_ request: RouterRequest, _ response: RouterResponse) throws -> String? {
-        let sess = request.session!
-        let user = sess["user"].string
+        let user = try GetUserFromSession(request, response)
         if(user == nil) {
             response.statusCode = .forbidden
             try response.send("User not logged in").end()
         }
-
         return user
+    }
+
+    private func GetUserFromSession(_ request: RouterRequest, _ response: RouterResponse) throws -> String? {
+        let sess = request.session!
+        let user = sess["user"].string
+        return user
+    }
+
+
+    public func Start(port: Int) {
+        Kitura.addHTTPServer(onPort: port, with: router)
+        Kitura.start()
+    }
+
+    private func SaveState() {
+        self.dispatchQueue.sync {
+            SaveUsers()
+            SaveProfiles()
+            SaveTrips()
+        }
+    }
+
+    private func SaveUsers() {
+        do {
+            let fileDestinationUrl = URL(fileURLWithPath: "users.state")
+
+            let usersJsons = self.usersSet.map { $0.toJson().toBase64() }
+            let state = usersJsons.joined(separator: "\n")
+
+            try state.write(to: fileDestinationUrl, atomically: false, encoding: .utf8)
+            // try FileManager.default.moveItem(at: URL(fileURLWithPath: "users.state.new"), to: URL(fileURLWithPath: "users.state"))
+        } catch let error as NSError {
+            print("Error saving users state")
+            print(error.localizedDescription)
+        }
+    }
+
+    private func SaveProfiles() {
+        do {
+            let fileDestinationUrl = URL(fileURLWithPath: "profiles.state")
+
+            let profilesJsons = self.profilesDict.map { (key, value) in value.toJson().toBase64() }
+            let state = profilesJsons.joined(separator: "\n")
+
+            try state.write(to: fileDestinationUrl, atomically: false, encoding: .utf8)
+        } catch let error as NSError {
+            print("Error saving profiles state")
+            print(error.localizedDescription)
+        }
+    }
+
+    private func SaveTrips() {
+        do {
+            let fileDestinationUrl = URL(fileURLWithPath: "trips.state")
+
+            let tripsJsons = self.processingTrips.map { (key, value) in value.toJson().toBase64() }
+            let state = tripsJsons.joined(separator: "\n")
+
+            try state.write(to: fileDestinationUrl, atomically: false, encoding: .utf8)
+        } catch let error as NSError {
+            print("Error saving trips state")
+            print(error.localizedDescription)
+        }
+    }
+
+
+    private func LoadState() {
+        LoadUsers()
+        LoadProfiles()
+        LoadTrips()
+    }
+
+    private func LoadUsers() {
+        do {
+            let stateFilePath = URL(fileURLWithPath: "users.state")
+            if !FileManager.default.fileExists(atPath: stateFilePath.path) {
+                return
+            }
+
+            let state = try String(contentsOf: stateFilePath, encoding: .utf8)
+            let lines = state.components(separatedBy: "\n")
+
+            for line in lines {
+                // do {
+                    if line == "" { continue }
+
+                    let json = line.fromBase64();
+                    if json == nil { continue }
+
+                    let user = User(json!)
+                    usersSet.insert(user)
+                    usersDict[user.name] = user
+                // } catch let error as NSError { }
+            }
+        } catch let error as NSError {
+            print("Error loading users state")
+            print(error.localizedDescription)
+        }
+    }
+
+    private func LoadProfiles() {
+        do {
+            let stateFilePath = URL(fileURLWithPath: "profiles.state")
+            if !FileManager.default.fileExists(atPath: stateFilePath.path) {
+                return
+            }
+
+            let state = try String(contentsOf: stateFilePath, encoding: .utf8)
+            let lines = state.components(separatedBy: "\n")
+
+            for line in lines {
+                // do {
+                    if line == "" { continue }
+
+                    let json = line.fromBase64();
+                    if json == nil { continue }
+
+                    let profile = Profile(json!)
+                    self.profilesDict[profile.name] = profile
+                // } catch let error as NSError { }
+            }
+        } catch let error as NSError {
+            print("Error loading profiles state")
+            print(error.localizedDescription)
+        }
+    }
+
+    private func LoadTrips() {
+        do {
+            let stateFilePath = URL(fileURLWithPath: "trips.state")
+            if !FileManager.default.fileExists(atPath: stateFilePath.path) {
+                return
+            }
+
+            let state = try String(contentsOf: stateFilePath, encoding: .utf8)
+            let lines = state.components(separatedBy: "\n")
+
+            for line in lines {
+                // do {
+                    if line == "" { continue }
+
+                    let json = line.fromBase64();
+                    if json == nil { continue }
+
+                    let trip = Trip(json!)
+                    self.processingTrips[trip.id] = trip
+                // } catch let error as NSError { }
+            }
+        } catch let error as NSError {
+            print("Error loading trips state")
+            print(error.localizedDescription)
+        }
     }
 }

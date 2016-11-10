@@ -22,25 +22,28 @@ import java.util.concurrent.ConcurrentMap
 @Component
 class HistoricalLatencyCalculator : LatencyCalculator {
     companion object {
-        val movingAverageExponentSetting = DoubleSetting("latency_calculator.ema_exponent", 0.2)
-        val backOffExponentSetting = IntSetting("latency_calculater.back_off_exponent", 2)
-        val endpointSetting = StringSetting("latency_calculator.endpoint", "timesync")
+        private val movingAverageExponentSetting = DoubleSetting("latency_calculator.ema_exponent", 0.2)
+        private val backOffExponentSetting = IntSetting("latency_calculater.back_off_exponent", 2)
+        private val maxBackOffNumberSetting = IntSetting("latency_calculater.max_back_off_number", 16)
+        private val endpointSetting = StringSetting("latency_calculator.endpoint", "timesync")
     }
 
-    val history: ConcurrentMap<InetSocketAddress, AddressLatencyHistory> =
+    private val history: ConcurrentMap<InetSocketAddress, AddressLatencyHistory> =
             ConcurrentHashMap<InetSocketAddress, AddressLatencyHistory>()
-    val logger = LogManager.getFormatterLogger()!!
+    private val logger = LogManager.getFormatterLogger()!!
 
-    val movingAverageExponent: Double
-    val backOffExponent: Int
-    val endpoint: String
+    private val movingAverageExponent: Double
+    private val backOffExponent: Int
+    private val maxBackOffNumber: Int
+    private val endpoint: String
 
-    val objectMapper: ObjectMapper
-    val dateTimeProvider: DateTimeProvider
+    private val objectMapper: ObjectMapper
+    private val dateTimeProvider: DateTimeProvider
 
     constructor(dateTimeProvider: DateTimeProvider, objectMapper: ObjectMapper, settingsContainer: SettingsContainer) {
         movingAverageExponent = movingAverageExponentSetting.getValue(settingsContainer)
         backOffExponent = backOffExponentSetting.getValue(settingsContainer)
+        maxBackOffNumber = maxBackOffNumberSetting.getValue(settingsContainer)
         endpoint = endpointSetting.getValue(settingsContainer)
 
         this.objectMapper = objectMapper
@@ -72,7 +75,7 @@ class HistoricalLatencyCalculator : LatencyCalculator {
             return AddressLatencyHistory(newLatencyValue.toLong())
         }
 
-        val newBackOff = Math.max(1, addressHistory.lastBackOff * backOffExponent)
+        val newBackOff = Math.min(maxBackOffNumber, Math.max(1, addressHistory.lastBackOff * backOffExponent))
         return AddressLatencyHistory(newBackOff, newBackOff)
     }
 

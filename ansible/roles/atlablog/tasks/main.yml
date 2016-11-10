@@ -49,6 +49,8 @@
   command: ./venv/bin/python main.py recreatedb
   args:
     chdir: /home/atlablog/
+  tags:
+    - skip_ansible_lint
 
 - name: Add systemd service
   template: src=service.j2 dest=/lib/systemd/system/atlablog.service

@@ -37,10 +37,10 @@
 								</a>
 							</div>
 							<div class="col-sm-8 content-block">
-								<h1>Sign (in|up)</h1>
+								<h1>Login/Register</h1>
 								<div class="well"></div>
 
-								<form action="/login" method="POST">
+								<form action="/login" method="GET">
 									<div class="form-group form-group-lg">
 										<input type="text" class="form-control" name="user" placeholder="User" maxlength="256">
 									</div>
