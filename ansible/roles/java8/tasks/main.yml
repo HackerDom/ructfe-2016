@@ -1,5 +1,5 @@
 ---
-- name: Add congtrib repo
+- name: Add contrib repo
   apt_repository: repo='deb http://httpredir.debian.org/debian jessie main contrib' state=present update_cache=yes
 
 - name: Install java-package
