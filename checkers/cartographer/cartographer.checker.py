@@ -39,6 +39,11 @@ class Client(object):
         data = {'key': key, 'id': id}
         return self.request("POST", "images/decrypt", lambda res: res.content, json=data)
 
+    def getImagesAsync(self, replicas, key, id):
+        data = {'key': key, 'id': id}
+        rs = (self.requestAsync("POST", replica.address, "images/decrypt", json=data) for replica in replicas)
+        return grequests.map(rs)
+
     def postImage(self, image):
         return self.request("POST", "images/encrypt", lambda res: res.json(), data=image)
 
@@ -58,6 +63,13 @@ class Client(object):
             raise CheckerException("Recieved status %d on request %s"
                 % (response.status_code, response.url))
         return fun(response)
+
+
+    def requestAsync(self, method, address, relative_url, **kwargs):
+        headers = kwargs.get("headers", {})
+        headers["User-Agent"] = UserAgents.get()
+        kwargs["headers"] = headers
+        return grequests.request(method, "http://%s/%s" % (address, relative_url), **kwargs)
 
 class CheckerException(Exception):
     """Custom checker error"""
@@ -97,13 +109,20 @@ def try_get(client, flag, metadata):
     seafloorMap = SeafloorMap.fromBytes(image)
     if (seafloorMap.getFlag() != flag):
         raise CheckerException("Didn't find posted flag")
-    # check replicas
-    # close(CORRUPT, "Flag is missing from all replicas")
+    if (not check_replicas):
+        close(CORRUPT, "Flag is missing from all replicas")
 
 
-def check_replicas(client, flag, me):
-    rs = (grequests.get(u) for u in urls)
-    
+def check_replicas(client, flag, metadata):
+    images = client.getImagesAsync(metadata["replicas"], metadata["key"], metadata["id"])
+    hasFlagAny = false
+    for image in images:
+        if image is not None:
+            seafloorMap = SeafloorMap.fromBytes(image)
+            if (seafloorMap.getFlag() == flag):
+                return true
+    return false
+
 def get(*args):
     addr = args[0]
     metadata = json.loads(args[1])
