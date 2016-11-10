@@ -10,7 +10,12 @@
     - python-dev
 
 - name: Install lxc-python2
-  pip: name=lxc-python2
+  pip: name={{ item }} state=latest
+  with_items:
+    - pip==9.0.1
+    - setuptools==28.8.0
+    - wheel==0.29.0
+    - lxc-python2==0.1
 
 - name: Create lxc-net
   template: src=lxc-net.j2 dest=/etc/default/lxc-net
