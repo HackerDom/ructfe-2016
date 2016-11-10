@@ -8,7 +8,6 @@ import cartographer.settings.IntSetting
 import cartographer.settings.SettingsContainer
 import cartographer.settings.StringSetting
 import org.apache.logging.log4j.LogManager
-import org.springframework.context.annotation.Primary
 import org.springframework.stereotype.Component
 import java.io.*
 import java.util.*
@@ -21,7 +20,7 @@ import java.util.concurrent.Executors
 class PersistentChunkStorage : ChunkStorage, Closeable {
     companion object {
         private val storageFileNameSetting = StringSetting("persistent_storage.file_name", "data/storage")
-        private val maxMostRecentChunksNumberSetting = IntSetting("persistent_storage.max_most_recent_chunks", 100)
+        private val maxMostRecentChunksNumberSetting = IntSetting("persistent_storage.max_most_recent_chunks", 1000)
 
         private val logger = LogManager.getFormatterLogger()
     }
@@ -112,6 +111,9 @@ class PersistentChunkStorage : ChunkStorage, Closeable {
 
             cache.put(id, bytesBuffer)
             mostRecentChunks.addFirst(id)
+            if (mostRecentChunks.size > maxMostRecentChunksNumber) {
+                mostRecentChunks.removeLast()
+            }
         }
     }
 }
