@@ -20,7 +20,8 @@
 					<div class="container">
 						<div class="navbar-header">
 							<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-navbar-collapse"></button>
-							<a class="navbar-brand" href="/">Crash</a>
+							<a class="navbar-brand" href="/home">Atlantis</a>
+							<a class="navbar-brand navbar-brand-service" href="/">Crash</a>
 						</div>
 						<div class="collapse navbar-collapse" id="bs-navbar-collapse"></div>
 					</div>
