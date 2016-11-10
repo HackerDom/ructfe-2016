@@ -10,7 +10,6 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link rel="stylesheet" href="/static/lib/bootstrap/css/bootstrap.min.css">
 		<link rel="stylesheet" href="/static/css/atlantis.css">
-		<link rel="stylesheet" href="/static/css/sapmarine.css">
 	</head>
 	<body class="service-page" data-spy="scroll" data-target="#main-navbar">
 		<div class="page-loader"></div>
@@ -53,7 +52,7 @@
 										<th>passenger</th>
 										<th>description</th>
 										<th>driver</th>
-										<th>id</th>
+										<th></th>
 									</tr></thead>
 
 									{% for trip in trips %}
@@ -61,7 +60,11 @@
 										<td>{{ trip.passenger }}</td>
 										<td>{{ trip.description }}</td>
 										<td>{{ trip.driver }}</td>
-										<td>{{ trip.id }}</td>
+										<td>
+											{% ifnot trip.isMine %}
+												<form class="take-trip-form" action="takeTrip" method="GET" class="form-inline"><input type="hidden" name="id" value="{{ trip.id }}"/><input type="submit" class="btn btn-link" value="Take"/></form>
+											{% endif %}
+										</td>
 									</tr>
 									{% endfor %}
 								</table>
