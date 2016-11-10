@@ -17,7 +17,7 @@ zf.close()
 inMemoryZip.seek(0)
 
 # submit report
-url = 'http://%s:%s/submit' % ( addr, PORT )
+url = 'http://%s/submit' % ( addr )
 print url
 files = { 'dump_zip_file': inMemoryZip.read() }
 headers = { 'Service-Name' : "submarine_internal", 'GUID' : guid }

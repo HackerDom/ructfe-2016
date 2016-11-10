@@ -25,7 +25,7 @@
 						</div>
 						<div class="collapse navbar-collapse" id="bs-navbar-collapse">
 							<ul class="nav navbar-nav navbar-right">
-								<li><a href="/chunks.html">List of chunks</a></li>
+								<li><a href="/">Back to main</a></li>
 							</ul>
 						</div>
 					</div>
@@ -41,28 +41,8 @@
 								</a>
 							</div>
 							<div class="col-sm-8 content-block">
-								<div class="well maps-title"></div>
-								<div class="maps"></div>
-								<div class="extra-space-l"></div>
-								<div class="forms">
-									<div class="form">
-										<div class="file-upload input" data-text="Select file">
-											<input type="file" id="map-input"/>
-										</div>
-										<button class="btn btn-primary" onclick="uploadMap()">Upload map</button>
-									</div>
-									<div class="form">
-										<div class="input">
-											<label for="map-key">Key:</label>
-											<input type="text" id="map-key" class="form-control"/>
-										</div>
-										<div class="input">
-											<label for="map-id">Id:</label>
-											<input type="text" id="map-id" class="form-control"/>
-										</div>
-										<button class="btn btn-primary" onclick="addToLocalStorage()">Activate uploaded map</button>
-									</div>
-								</div>
+								<div class="well">Your chunks</div>
+								<div class="chunks"></div>
 								<div class="extra-space-l"></div>
 							</div>
 						</div>
@@ -73,6 +53,6 @@
 		<script src="jquery-3.1.1.min.js"></script>
 		<script src="bootstrap.min.js"></script>
 		<script src="atlantis.js"></script>
-		<script src="cartographer.js"></script>
+		<script src="chunk.cartographer.js"></script>
 	</body>
 </html>

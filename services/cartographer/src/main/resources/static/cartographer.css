@@ -99,3 +99,15 @@ button {
   width: 100%;
   opacity: 0;
 }
+
+.chunk {
+  text-align: center;
+  padding: 10px;
+  margin: 5px 0;
+  background-color: lightgray;
+  font-style: italic;
+}
+
+.chunk:hover {
+  background-color: lightblue;
+}
