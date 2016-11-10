@@ -266,7 +266,7 @@ class Checker(HttpCheckerBase):
 
 		time.sleep(0.2)
 
-		self.debug(login + " " + password)
+		print(login + " " + password)
 
 		return EXITCODE_OK
 
