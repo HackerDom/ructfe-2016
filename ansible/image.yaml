@@ -18,7 +18,6 @@
   roles:
     - thebin-build
     - cartographer-build
-    - weather-build
 
 - hosts: thebin
   gather_facts: True

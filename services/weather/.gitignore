@@ -1,6 +1,5 @@
 *.o
 *.db
 *.log
-weather
 signtool
 about.txt
