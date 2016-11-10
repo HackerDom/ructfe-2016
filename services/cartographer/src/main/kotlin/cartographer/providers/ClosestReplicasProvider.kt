@@ -15,7 +15,7 @@ import java.util.concurrent.Executors
 @Component
 class ClosestReplicasProvider : ReplicasProvider {
     companion object {
-        private val maxAllowedLatencySetting = DurationSetting("replicas_provider.max_latency", Duration.ofSeconds(1))
+        private val maxAllowedLatencySetting = DurationSetting("replicas_provider.max_latency", Duration.ofSeconds(10))
         private val replicasUpdatePeriodSetting = DurationSetting("replicas_provider.update_period", Duration.ofMinutes(1))
         private val threadPoolSizeSetting = IntSetting("replicas_provider.thread_pool_size", 30)
         private val replicaSetSizeSetting = IntSetting("replicas_provider.replica_set_size", 20)

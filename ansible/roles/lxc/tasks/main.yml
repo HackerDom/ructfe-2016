@@ -1,37 +1,6 @@
 ---
-- name: Enable swappaccount and memory limit
-  lineinfile:
-    line: 'GRUB_CMDLINE_LINUX_DEFAULT="quiet swapaccount=1 cgroup_enable=memory"'
-    dest: "/etc/default/grub"
-  register: grub
-
-- name: Update grub
-  command: update-grub
-  when: grub.changed
-  tags:
-    - skip_ansible_lint
-
-- name: Restart image
-  shell: sleep 2 && shutdown -r now "Ansible updates triggered"
-  async: 1
-  poll: 0
-  ignore_errors: true
-  when: grub.changed
-  tags:
-    - skip_ansible_lint
-
-- name: waiting for image to come back
-  local_action: wait_for host={{ inventory_hostname }} state=started delay=15 timeout=60
-  become: false
-  when: grub.changed
-  tags:
-    - skip_ansible_lint
-
-- name: Add backports repo
-  apt_repository: repo="deb http://mirror.yandex.ru/debian jessie-backports main" state=present update_cache=yes
-
 - name: Install lxc
-  apt: pkg={{ item }} state=latest default_release=jessie-backports
+  apt: pkg={{ item }} default_release=testing
   with_items:
     - lxc
     - lxc-dev
@@ -41,7 +10,7 @@
     - python-dev
 
 - name: Install lxc-python2
-  pip: name=lxc-python2 state=latest
+  pip: name=lxc-python2
 
 - name: Create lxc-net
   template: src=lxc-net.j2 dest=/etc/default/lxc-net
@@ -72,7 +41,7 @@
     template: debian
     state: started
     backing_store: loop
-    fs_size: "4G"
+    fs_size: "2G"
     container_config:
       - "lxc.cgroup.memory.limit_in_bytes = {{ item.mem | default(512000000) }}"
       - "lxc.cgroup.memory.memsw.limit_in_bytes = {{ item.mem | default(512000000) }}"

@@ -4,20 +4,24 @@
   vars:
      SSH_PUBLIC_KEY: "{{ lookup('file', '{{ playbook_dir }}/ructfe2016_rsa.pub') }}"
   roles:
+    - noman
     - image
     - lxc
     - general_nginx
 
 - hosts: services
-  tasks:
+  pre_tasks:
     - name: Install python-minimal
       raw: "test -e /usr/bin/python || (apt-get -y update && apt-get install -y python-minimal)"
       changed_when: False
-    - name: Install ansible requirements
+    - name: Install system requirements
       apt: name={{ item }}
       with_items:
         - sudo
         - ca-certificates
+        - apt-utils
+  roles:
+    - noman
 
 - hosts: build
   gather_facts: True
