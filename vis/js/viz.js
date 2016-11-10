@@ -27,6 +27,7 @@ var Viz = function(infoData, startScoreboard) {
 	var teamNameToNum = {};
 	var services = [];
 	var serviceIdToNum = {};
+	var new_events = [];
 	var nodes;
 	var lastGradientId = 0;
 	var lastArrowId = 0;
@@ -97,10 +98,6 @@ var Viz = function(infoData, startScoreboard) {
 				load_services_statuses();
 				updateScore();
 				draw_services_statuses();
-                if (prev_stat_round != scoreboardPageData['round']) {
-    				updateStatistics();
-                    prev_stat_round = scoreboardPageData['round']
-                }
 			});
 		});
 	}
@@ -113,7 +110,7 @@ var Viz = function(infoData, startScoreboard) {
 		var next_round = scoreboard.round;
 
 		$.getJSON('./api/events?from=' + cur_round).done(function (eventsData) {
-			var new_events = [];
+			new_events = [];
 			for (var i = 0; i < eventsData.length; ++i) {
 				if (cur_round <= eventsData[i][0] && eventsData[i][0] < next_round) {
 					new_events.push(eventsData[i]);
@@ -128,7 +125,20 @@ var Viz = function(infoData, startScoreboard) {
 			});
 			pending_events = pending_events.concat(new_events);
 			cur_round = next_round;
+			show_flag_stat();
 		});
+	}
+
+	function show_flag_stat() {
+		var flags_count = 0;
+
+		for (var i = 0; i < new_events.length; i++) {
+			var service_id = new_events[i][2];
+			if (services[serviceIdToNum[service_id]].visible)
+				flags_count++;
+		}
+
+		$("#attacks").find(".value").text(flags_count);
 	}
 
 	function load_services_statuses() {
@@ -185,25 +195,6 @@ var Viz = function(infoData, startScoreboard) {
 			setTimeout(showArrowFunc, event[1] - prev_interval);
 		}
 		prev_interval = prev_interval_end;
-	}
-
-	function updateStatistics() {
-		var flags_count = 0;
-
-		var i, j;
-		for (i = 0; i < scoreboardPageData['scoreboard'].length; i++) {
-			var _team = scoreboardPageData['scoreboard'][i];
-
-			for (j = 0; j < _team['services'].length; j++) {
-				flags_count += parseInt(_team['services'][j]['flags']);
-			}
-		}
-
-		var round_flags_count = (prev_flags_count === undefined ? undefined : flags_count - prev_flags_count); // количество флагов за раунд
-		prev_flags_count = flags_count;
-
-		if (round_flags_count !== undefined)
-			$("#attacks").find(".value").text(round_flags_count);
 	}
 
 	function updateScore() {
@@ -453,10 +444,12 @@ var Viz = function(infoData, startScoreboard) {
 					$(this).removeClass(deselectionFlag);
 					services[index].visible = true;
 					draw_services_statuses();
+					show_flag_stat();
 				} else {
 					$(this).addClass(deselectionFlag);
 					services[index].visible = false;
 					draw_services_statuses();
+					show_flag_stat();
 				}
 			}
 			}(i));
