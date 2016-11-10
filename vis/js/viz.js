@@ -631,6 +631,6 @@ var Viz = function(infoData, startScoreboard) {
 		getInfo: function() { return info; },
 		getScoreboard: function() { return scoreboard; },
 		getPendingEvents: function() { return pending_events; },
-		getScoreboardPageData: function() { getScoreboardPageDatas; }
+		getScoreboardPageData: function() { return scoreboardPageData; }
 	}
 };
