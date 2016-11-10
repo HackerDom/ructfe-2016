@@ -67,7 +67,7 @@ def _clean_attachments(data):
         x = x[len(MEDIA_URL + '/'):]
         if not os.path.exists(os.path.join(settings.DATA_DIR, x)):
             continue
-        links.append(x)
+        links.append(MEDIA_URL + '/' + x)
     return links
 
 
