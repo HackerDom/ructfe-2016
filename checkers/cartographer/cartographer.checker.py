@@ -100,7 +100,7 @@ def try_get(client, flag, metadata):
     # check replicas
     # close(CORRUPT, "Flag is missing from all replicas")
 
-def check_replicas(client, flag, me):
+# def check_replicas(client, flag, me):
 
 
 def get(*args):
@@ -156,6 +156,6 @@ def main():
         HANDLERS.get(argv[1], not_found)(*argv[2:])
     except Exception as e:
         close(CHECKER_ERROR, "MY DICK IS BIG, IT'S VERY VERY BIG", "INTERNAL ERROR: %s" % e)
-    
+
 if __name__ == '__main__':
     main()
