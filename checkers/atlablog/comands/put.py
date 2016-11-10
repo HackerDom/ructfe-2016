@@ -70,13 +70,14 @@ def non_selenium_put(command_ip, flag_id, flag, vuln):
         }
 
     links = re.findall(r'(?<=href=\").*(?=\"><h2>)', response)
-    if "/" + title not in links:
-        return {
-            "code": MUMBLE,
-            "public": "Can't find checksystem post!"
-        }
+    for link in links:
+        if "/" + title in link.split("-")[0]:
+            return {
+                "code": OK,
+                "flag_id": "{}:{}:{}".format(username, password, title)
+            }
 
     return {
-        "code": OK,
-        "flag_id": "{}:{}:{}".format(username, password, title)
+        "code": MUMBLE,
+        "public": "Can't find checksystem post! {}".format("|".join(links))
     }

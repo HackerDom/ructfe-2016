@@ -64,7 +64,7 @@ async def handler_get_2(hostname, id, flag):
 	id = json.loads(id)
 	state = State(hostname)
 	skill = id["skill"]
-	await state.login(skills=skill)
+	await state.login(skills=json.dumps([skill]))
 	url = id["url"]
 	file = await state.get_post(url, True, 	id['username'])
 	if file['body'] != flag:

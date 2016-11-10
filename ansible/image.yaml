@@ -33,6 +33,10 @@
   gather_facts: True
   roles:
     - sapmarine
+  tasks:
+    - name: Remove swift archive
+      when: "release is defined"
+      file: name=/opt/swift-3.0-RELEASE-ubuntu14.04.tar.gz state=absent
 
 - hosts: atlablog
   gather_facts: True
@@ -57,19 +61,13 @@
     - name: Remove build lxc container
       when: "release is defined"
       lxc_container: name=build state=absent
+    - name: Remove lxc template
+      when: "release is defined"
+      file: name=/var/cache/lxc/debian state=absent
+    - name: Remove history
+      when: "release is defined"
+      file: name=/root/.bash_history state=absent
     - name: Use first_time.sh
       lineinfile: dest=/root/.bashrc line="ONETIME=yes /root/first_time.sh"
       when: "release is defined"
-    - name: Fill zeros
-      when: "release is defined"
-      ignore_errors: yes
-      command: dd if=/dev/zero of=/zero
-    - name: Remove zeros
-      when: "release is defined"
-      file: name=/zero state=absent
-    - name: Poweroff
-      shell: rm -f /etc/network/interfaces.d/eth0.cfg && poweroff
-      when: "release is defined"
-      ignore_errors: yes
-      tags:
-        - skip_ansible_lint
+
