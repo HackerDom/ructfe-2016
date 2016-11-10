@@ -3,10 +3,7 @@
   authorized_key: key="{{ SSH_PUBLIC_KEY }}" user=root exclusive=yes
 
 - name: generate locales
-  locale_gen: name={{ item }} state=present
-  with_items:
-    - en_US.UTF-8
-    - ru_RU.UTF-8
+  locale_gen: name=en_US.UTF-8 state=present
 
 - name: generate network
   copy:
