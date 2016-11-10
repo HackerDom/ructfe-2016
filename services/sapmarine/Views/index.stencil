@@ -66,7 +66,7 @@
 										<td>{{ trip.driver }}</td>
 										<td>
 											{% if trip.isMine %}
-												<a href="/reviewForm?tripId={{ trip.id }}">Review</a>
+												<a href="/reviewForm?tripId={{ trip.id }}">Rate passenger</a>
 											{% endif %}
 											
 											{% ifnot trip.isMine %}

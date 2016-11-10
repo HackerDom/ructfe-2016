@@ -49,15 +49,15 @@ public class Sapmarine {
 
             var stencilContext: [String: Any] = [:]
             self.dispatchQueue.sync {
-                let allTripsArray = self.newTrips.map { (key, value) in ["passenger": key, "description": value] }
+                let allTripsArray = self.newTrips.map { (key, value) in ["passenger": key.htmlEncode(), "description": value.htmlEncode()] }
                 let driversTripsArray = self.processingTrips
                     .filter { (key, value) in userNameOptional != nil && value.driver == userNameOptional!}
-                    .map { (key, value) in ["passenger": value.passenger, "driver": value.driver, "id": value.id, "isMine": "1"] }
+                    .map { (key, value) in ["passenger": value.passenger.htmlEncode(), "driver": value.driver.htmlEncode(), "id": value.id, "isMine": "1"] }
 
                 stencilContext = [
                     "isLoggedIn": userNameOptional != nil,
-                    "user": userNameOptional ?? "",
-                    "users": self.usersSet.map { ["name": $0.name, "rating": round(100 * $0.rating()) / 100.0] },
+                    "user": (userNameOptional ?? "").htmlEncode(),
+                    "users": self.usersSet.map { ["name": $0.name.htmlEncode(), "rating": round(100 * $0.rating()) / 100.0] },
                     "trips": driversTripsArray + allTripsArray
                 ]
             }
@@ -141,10 +141,10 @@ public class Sapmarine {
                 stencilContext = [
                     "isLoggedIn": userNameOptional != nil,
                     "isProfileFilledIn": self.profilesDict[userNameOptional!] != nil,
-                    "user": userNameOptional!,
-                    "fullName": profile?.fullName,
-                    "job": profile?.job,
-                    "notes": profile?.notes,
+                    "user": userNameOptional!.htmlEncode(),
+                    "fullName": profile?.fullName.htmlEncode(),
+                    "job": profile?.job.htmlEncode(),
+                    "notes": profile?.notes.htmlEncode(),
                 ]
             }
 
@@ -213,8 +213,8 @@ public class Sapmarine {
 
             stencilContext = [
                 "isLoggedIn": userNameOptional != nil,
-                "user": userNameOptional!,
-                "tripId": tripId
+                "user": userNameOptional!.htmlEncode(),
+                "tripId": tripId.htmlEncode()
             ]
 
             try response.render("review.stencil", context: stencilContext).end()
