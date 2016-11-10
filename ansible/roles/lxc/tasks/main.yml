@@ -21,7 +21,7 @@
   register: lxc_conf
 
 - name: Add lxc-net to resolv.conf
-  lineinfile: dest=/etc/resolv.conf line="nameserver 192.168.254.254" insertbefore=BOF
+  lineinfile: dest=/etc/resolv.conf line="nameserver 192.168.254.254" insertafter=EOF
 
 - name: Enable lxc-net
   service: name=lxc-net enabled=yes
@@ -38,10 +38,11 @@
 - name: Create lxc container
   lxc_container:
     name: "{{ item.name }}"
-    template: debian
     state: started
     backing_store: loop
     fs_size: "2G"
+    template: debian
+    template_options: "--mirror=http://mirror.yandex.ru/debian --security-mirror=http://mirror.yandex.ru/debian --packages=python,sudo,apt-utils,ca-certificates"
     container_config:
       - "lxc.cgroup.memory.limit_in_bytes = {{ item.mem | default(512000000) }}"
       - "lxc.cgroup.memory.memsw.limit_in_bytes = {{ item.mem | default(512000000) }}"
@@ -52,8 +53,8 @@
       systemctl restart ssh
       bash
   with_items:
-    - { name: build, mem: "1000000000" }
-    - { name: cartographer, mem: 512000000 }
+    - { name: build, mem: 1000000000 }
+    - { name: cartographer }
     - { name: crash }
     - { name: atlablog }
     - { name: sapmarine }
