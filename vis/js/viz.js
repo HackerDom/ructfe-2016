@@ -34,6 +34,7 @@ var Viz = function(infoData, startScoreboard) {
 	var scoreboardPageData = undefined;
 
 	var prev_flags_count = 0;
+    var prev_stat_round = -1;
 
 	var cur_round = -1;
 	var prev_interval = -1;
@@ -96,7 +97,10 @@ var Viz = function(infoData, startScoreboard) {
 				load_services_statuses();
 				updateScore();
 				draw_services_statuses();
-				updateStatistics();
+                if (prev_stat_round != scoreboardPageData['round']) {
+    				updateStatistics();
+                    prev_stat_round = scoreboardPageData['round']
+                }
 			});
 		});
 	}
