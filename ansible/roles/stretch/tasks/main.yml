@@ -1,6 +1,6 @@
 ---
 - name: Stretch | Packages | Add testing repo
-  apt_repository: repo='deb http://httpredir.debian.org/debian stretch main' state=present update_cache=yes
+  apt_repository: repo='deb http://mirror.yandex.ru/debian stretch main' update_cache=yes
 
 - name: Stretch | Packages | Fix testing priority
   become: yes
