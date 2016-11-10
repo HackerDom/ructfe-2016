@@ -1,5 +1,11 @@
 server {
     listen  80 default;
+    return 301 http://$hostname$request_uri;
+}
+
+server {
+    listen 80;
+    server_name $hostname;
     root /var/www/;
     location / {
         autoindex off;

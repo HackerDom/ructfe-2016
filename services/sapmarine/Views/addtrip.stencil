@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en-US">
+	<head>
+		<meta charset="utf-8">
+		<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
+		<title>Sapmarine • Atlantis • RuCTFE 2016</title>
+		<meta name="description" content="Sapmarine. Chat while enjoying free submarine transportation">
+		<meta name="keywords" content="Atlantis, RuCTFE, Sapmarine">
+		<meta name="author" content="Hackerdom, hackerdom.ru, Kost">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="shortcut icon" href="/static/sapmarine.ico" type="image/x-icon">
+		<link rel="stylesheet" href="/static/lib/bootstrap/css/bootstrap.min.css">
+		<link rel="stylesheet" href="/static/css/atlantis.css">
+		<link rel="stylesheet" href="/static/css/sapmarine.css">
+	</head>
+	<body class="service-page" data-spy="scroll" data-target="#main-navbar">
+		<div class="page-loader"></div>
+		<div class="body">
+			<header id="header" class="header-main">
+				<nav id="main-navbar" class="navbar navbar-default navbar-fixed-top" role="navigation">
+					<div class="container">
+						<div class="navbar-header">
+							<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-navbar-collapse"></button>
+							<a class="navbar-brand" href="/home">Atlantis</a>
+							<a class="navbar-brand navbar-brand-service" href="/">Sapmarine</a>
+						</div>
+						<div class="collapse navbar-collapse" id="bs-navbar-collapse"></div>
+					</div>
+				</nav>
+			</header>
+			<section class="main-block">
+				<div class="container">
+					<div class="caption">
+						<div class="row">
+							<div class="col-sm-2 center-block">
+								<a href="/">
+									<img src="/static/logos/sapmarine.svg" class="logo img-responsive">
+								</a>
+							</div>
+							<div class="col-sm-8 content-block">
+								<h1>Add new Trip</h1>
+								<div class="well"></div>
+
+								<form action="/addTrip" method="GET">
+									<div class="form-group form-group-lg">
+										<textarea class="form-control" name="description" placeholder="Trip description" rows="3" maxlength="256"></textarea>
+									</div>
+
+									<div class="form-group form-group-lg">
+										<button type="submit" class="btn btn-lg btn-default">Submit</button>
+									</div>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+		</div>
+		<script src="/static/lib/jquery/jquery-3.1.1.min.js"></script>
+		<script src="/static/lib/bootstrap/js/bootstrap.min.js"></script>
+		<script src="/static/js/sapmarine.js"></script>
+	</body>
+</html>

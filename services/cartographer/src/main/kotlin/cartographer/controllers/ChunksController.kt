@@ -15,6 +15,13 @@ import java.util.*
 
 @RestController
 class ChunksController(val chunkStorage: ChunkStorage, val throttler: Throttler) {
+    @RequestMapping("/chunks/_recent", method = arrayOf(RequestMethod.GET))
+    fun GetRecentChunks() : Collection<String> {
+        return chunkStorage
+                .getRecentChunks()
+                .map(UUID::toString)
+    }
+
     @RequestMapping("/chunks/{idString}", method = arrayOf(RequestMethod.GET))
     fun GetChunk(@PathVariable("idString") idString: String): ResponseEntity<ByteArray> {
         return throttle(throttler) {

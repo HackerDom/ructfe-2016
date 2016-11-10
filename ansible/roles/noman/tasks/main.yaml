@@ -1,0 +1,15 @@
+---
+- name: Add nodoc in dpkg
+  copy: src=01_nodoc dest=/etc/dpkg/dpkg.cfg.d/01_nodoc
+
+- name: Remove packages
+  apt: name={{ item }} state=absent update_cache=yes
+  with_items:
+    - man-db
+    - cron
+
+- name: Remove man pages
+  file: name={{ item }} state=absent
+  with_items:
+    - /usr/share/man
+
