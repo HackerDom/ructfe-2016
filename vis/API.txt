@@ -1,0 +1,39 @@
+/api/info =>
+    {
+        "teams": {"team_id": "team_name", ...}
+        "services": {"service_id": "service_name", ...}
+        "start": "time(millisec)"
+    }
+
+/api/scoreboard =>
+    {
+        "table": {"team_id": "score", ...},
+        "status": "0"|... (0 — NOT_STARTED, 1 — PLAYING, 2 — SUSPEND, 3 — FINISHED),
+        "round": "current_round"
+    }
+
+/api/events?from=<round> =>
+    [
+        ["round", "time(millisec)", "service_id", "attacker_id", "victim_id"]
+        ...
+    ]
+
+/scoreboard.json =>
+    {
+        "round": "round#"
+        "scoreboard": [
+            {
+                "name": "team_name",
+                "score": "score",
+                "services": [
+                    {
+                        "flags": "flags#",
+                        "status": 101|..., (101:OK, 102:CORRUPT, 103:MUMBLE, 104:DOWN, else:CHECKER_ERROR)
+                        "id": "service_id"
+                    },
+                    ...
+                ]
+            },
+            ...
+        ]
+    }
