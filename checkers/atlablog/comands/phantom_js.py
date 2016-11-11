@@ -9,7 +9,8 @@ def __init_phantom_js_driver():
     return webdriver.PhantomJS(service_log_path='/tmp/phant-' + current_date + '.log',
                                service_args=['--webdriver-loglevel=DEBUG',
                                              '--debug=true',
-                                             '--local-url-access=false']
+                                             '--local-url-access=false'],
+                            executable_path="./chromedriver"
                                )
 
 

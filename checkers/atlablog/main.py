@@ -34,7 +34,7 @@ def on_put(command_ip, flag_id, flag, vuln=None):
 
 
 def on_get(command_ip, flag_id, flag, vuln=None):
-    get_result = get.init_get(command_ip, flag_id, flag, vuln)
+    get_result = get.non_selenium_get(command_ip, flag_id, flag, vuln)
     close(**get_result)
 
 
