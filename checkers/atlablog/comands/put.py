@@ -1,7 +1,9 @@
 from comands import OK, MUMBLE, DOWN
-from templates.urllib_forms import try_register_user, MumbleException, DownException, try_make_post
+from templates.urllib_forms import\
+    try_register_user, MumbleException, DownException, try_make_post
 
-from urllib.request import build_opener, HTTPCookieProcessor, HTTPRedirectHandler
+from urllib.request import\
+    build_opener, HTTPCookieProcessor, HTTPRedirectHandler
 import re
 
 
@@ -11,7 +13,9 @@ def non_selenium_put(command_ip, flag_id, flag, vuln):
         HTTPRedirectHandler
     )
     try:
-        username, password, email, response = try_register_user(browser, command_ip, flag)
+        username, password, email, response = try_register_user(
+            browser, command_ip, flag
+        )
         title, response = try_make_post(browser, command_ip)
 
         links = re.findall(r'(?<=href=\").*(?=\"><h2>)', response)
@@ -19,7 +23,9 @@ def non_selenium_put(command_ip, flag_id, flag, vuln):
             if "/" + title in link.split("-")[0]:
                 return {
                     "code": OK,
-                    "flag_id": "{}:{}:{}".format(username, password, title + "-" + link.split("-")[1])
+                    "flag_id": "{}:{}:{}".format(
+                        username, password, title + "-" + link.split("-")[1]
+                    )
                 }
 
         return {
