@@ -58,7 +58,7 @@ public class Sapmarine {
                 stencilContext = [
                     "isLoggedIn": userNameOptional != nil,
                     "user": (userNameOptional ?? "").htmlEncode(),
-                    "users": users.map { ["name": $0.name.htmlEncode(), "rating": round(100 * $0.rating()) / 100.0] },
+                    "users": users.map { ["name": $0.name.htmlEncode(), "rating": Int(round($0.rating()))] },
                     "trips": Array((driversTripsArray + allTripsArray).prefix(200))
                 ]
             }

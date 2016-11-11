@@ -5,12 +5,12 @@ public class User : Comparable {
     var name: String
     var passHash: String
     var comments = [Comment]()
-    var createDt: Double
+    var createDt: Int
 
     init(_ name: String, _ passHash: String) {
         self.name = name
         self.passHash = passHash
-        self.createDt = Double(Date().timeIntervalSince1970)
+        self.createDt = Int(Date().timeIntervalSince1970)
     }
 
     convenience init(_ jsonString : String) {
@@ -25,7 +25,7 @@ public class User : Comparable {
         comments = json["comments"].arrayValue.map {
             Comment($0)
         }
-        createDt = json["createDt"].double!
+        createDt = json["createDt"].int!
     }
 
     public func toJson() -> String {
@@ -49,9 +49,9 @@ public class User : Comparable {
         if lhsRating != rhsRating {
             return lhsRating > rhsRating
         } else if lhs.createDt != rhs.createDt {
-            return lhs.createDt < rhs.createDt
+            return lhs.createDt > rhs.createDt
         } else {
-            return lhs.name > rhs.name
+            return lhs.name < rhs.name
         }
     }
 
