@@ -88,10 +88,10 @@ def run_get_logic(driver: PhantomJS, comand_id, post, flag, cookies):
         else:
             return {
                 "code": CORRUPT,
-                "public": "Can't find my post!"
+                "public": "Can't find my private data!"
             }
     except NoSuchElementException:
         return {
             "code": CORRUPT,
-            "public": "Can't find my post!"
+            "public": "Can't find my private data!"
         }
