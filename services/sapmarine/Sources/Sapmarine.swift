@@ -53,11 +53,13 @@ public class Sapmarine {
                     .filter { (key, value) in userNameOptional != nil && value.driver == userNameOptional!}
                     .map { (key, value) in ["passenger": value.passenger.htmlEncode(), "driver": value.driver.htmlEncode(), "id": value.id, "isMine": "1"] }
 
+                let users = self.usersSet.map { $0 }.prefix(200)
+
                 stencilContext = [
                     "isLoggedIn": userNameOptional != nil,
                     "user": (userNameOptional ?? "").htmlEncode(),
-                    "users": self.usersSet.map { ["name": $0.name.htmlEncode(), "rating": round(100 * $0.rating()) / 100.0] },
-                    "trips": driversTripsArray + allTripsArray
+                    "users": users.map { ["name": $0.name.htmlEncode(), "rating": round(100 * $0.rating()) / 100.0] },
+                    "trips": Array((driversTripsArray + allTripsArray).prefix(200))
                 ]
             }
 
