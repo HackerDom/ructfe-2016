@@ -1,5 +1,6 @@
 import logging
 import sys
+from datetime import datetime
 
 from dockerlib import docker_run
 
@@ -38,15 +39,20 @@ def main():
     tid = team_ip.replace('.', '-')
 
     command = TARGET + [command, team_ip] + argv
-    print(command)
-    # print(docker_run(tid, command))
-
-    print(argv)
+    t1 = datetime.now()
+    logger.info("start command inside docker: %r", command)
+    r = (docker_run(tid, command, network='bridge'))
+    t2 = datetime.now()
+    logger.info("finish docker (%sms): status=%d",
+                (t2 - t1).microseconds, r.returncode)
+    sysclose(public=r.stdout)
 
 
 if __name__ == '__main__':
     try:
         main()
+    except SystemExit:
+        raise
     except:
         _, e, _ = sys.exc_info()
         logger.exception(e)
