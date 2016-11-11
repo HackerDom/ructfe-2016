@@ -74,7 +74,7 @@ def run_get_logic(driver: PhantomJS, comand_id, post, flag, cookies):
     driver.add_cookie({
         'name': 'sessions',
         'value': cookies['sessions'],
-        'domain': comand_id.split(":")[0],
+        'domain': "." + comand_id.split(":")[0],
         'path': '/'
     })
     driver.get("http://{}/{}".format(comand_id, post))
