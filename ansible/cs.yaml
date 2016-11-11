@@ -18,6 +18,12 @@
 
 - hosts: cs-master
   tasks:
+  - name: start watcher
+    command: systemctl start watcher
+    tags: ['start', 'master-start']
+  - name: stop watcher
+    command: systemctl stop watcher
+    tags: ['stop', 'master-stop']
   - name: start manager
     command: systemctl start manager
     tags: ['start', 'master-start']
