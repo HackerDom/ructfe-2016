@@ -26,8 +26,7 @@ def non_selenium_get(command_ip, flag_id, flag, vuln):
 
         request = prepare_post_request("{}/login".format(command_ip), data)
         response = browser.open(request).read().decode()
-        print(browser)
-        if flag.lower() in response:
+        if flag in response:
             return {
                 "code": OK
             }
