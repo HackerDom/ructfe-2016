@@ -14,7 +14,7 @@ config("development", {
 		host = "127.0.0.1",
 		port = "6379"
 	},
-	ttl = 1200,
+	ttl = 1800,
 	show_time = 10,
 })
 END
