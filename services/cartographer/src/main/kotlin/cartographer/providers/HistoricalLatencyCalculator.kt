@@ -13,9 +13,11 @@ import org.apache.logging.log4j.LogManager
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
+import org.springframework.http.client.SimpleClientHttpRequestFactory
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
 import java.net.InetSocketAddress
+import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 
@@ -50,20 +52,21 @@ class HistoricalLatencyCalculator : LatencyCalculator {
         this.dateTimeProvider = dateTimeProvider
     }
 
-    override fun CalcLatency(addr: InetSocketAddress): Long? {
+    override fun CalcLatency(addr: InetSocketAddress, maxAllowedDuration: Duration): Long? {
         val addressHistory = history.getOrPut(addr, { AddressLatencyHistory(null, 0, 0) })
-        val newAddressHistory = calcNewHistory(addr, addressHistory)
+        val newAddressHistory = calcNewHistory(addr, addressHistory, maxAllowedDuration)
         history.put(addr, newAddressHistory)
         return newAddressHistory.averageLatency
     }
 
     private fun calcNewHistory(addr: InetSocketAddress,
-                               addressHistory: AddressLatencyHistory): AddressLatencyHistory {
+                               addressHistory: AddressLatencyHistory,
+                               maxAllowedDuration: Duration): AddressLatencyHistory {
         if (addressHistory.backOffLeft > 0) {
             return AddressLatencyHistory(addressHistory.backOffLeft - 1, addressHistory.lastBackOff)
         }
 
-        val latency = tryCalcLatency(addr)
+        val latency = tryCalcLatency(addr, maxAllowedDuration)
 
         if (latency != null) {
             if (addressHistory.averageLatency == null) {
@@ -79,11 +82,11 @@ class HistoricalLatencyCalculator : LatencyCalculator {
         return AddressLatencyHistory(newBackOff, newBackOff)
     }
 
-    private fun tryCalcLatency(addr: InetSocketAddress): Long? {
+    private fun tryCalcLatency(addr: InetSocketAddress, maxAllowedDuration: Duration): Long? {
         try {
             val request = SynchronizeTimeRequest(dateTimeProvider.get())
             val requestSerialized = objectMapper.writeValueAsString(request)
-            val responseSerialized = sendRequest(addr, requestSerialized)
+            val responseSerialized = sendRequest(addr, requestSerialized, maxAllowedDuration)
 
             val response = objectMapper.readValue(responseSerialized, SynchronizeTimeResponse::class.java)
 
@@ -94,14 +97,20 @@ class HistoricalLatencyCalculator : LatencyCalculator {
         }
     }
 
-    private fun sendRequest(addr: InetSocketAddress, requestSerialized: String): String? {
+    private fun sendRequest(addr: InetSocketAddress,
+                            requestSerialized: String,
+                            maxAllowedDuration: Duration): String? {
         val uri = "http://${addr.hostName}:${addr.port}/$endpoint"
 
         val headers = HttpHeaders()
         headers.add("Content-Type", "application/json")
         headers.add("Accept", "*/*")
 
-        val rest = RestTemplate()
+        val clientHttpRequestFactory = SimpleClientHttpRequestFactory()
+        clientHttpRequestFactory.setConnectTimeout(maxAllowedDuration.toMillis().toInt())
+        clientHttpRequestFactory.setReadTimeout(maxAllowedDuration.toMillis().toInt())
+
+        val rest = RestTemplate(clientHttpRequestFactory)
         val requestEntity = HttpEntity<String>(requestSerialized, headers)
 
         val responseEntity = rest.exchange(uri, HttpMethod.POST, requestEntity, String::class.java)

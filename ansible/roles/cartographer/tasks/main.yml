@@ -7,6 +7,7 @@
     src: "/tmp/cartographer.jar"
     dest: "/home/cartographer/cartographer.jar"
     owner: cartographer
+    force: yes
 
 - name: Fix permissions
   file: name="/home/cartographer" state=directory owner=cartographer recurse=yes

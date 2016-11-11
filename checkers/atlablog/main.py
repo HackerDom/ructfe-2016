@@ -2,8 +2,7 @@
 
 import sys
 from urllib.error import URLError
-from comands import\
-    check, put, get, OK, MUMBLE, CORRUPT, DOWN, CHECKER_ERROR
+from comands import check, put, get, OK, MUMBLE, CORRUPT, DOWN, CHECKER_ERROR
 
 
 def close(code, public="", private="", flag_id=""):
@@ -19,6 +18,7 @@ def close(code, public="", private="", flag_id=""):
 
 class CheckerException(Exception):
     """Custom checker error"""
+
     def __init__(self, msg):
         super(CheckerException, self).__init__(msg)
 
