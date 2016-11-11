@@ -60,7 +60,6 @@ def __register_user(browser, command_addr, email):
 
 def prepare_post_request(url, data):
     data = ["{}={}".format(key, quote(data[key])) for key in data]
-
     request = Request(url="http://{}".format(url))
     request.method = "POST"
     request.data = bytes("&".join(data), "utf-8")

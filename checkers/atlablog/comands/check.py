@@ -2,7 +2,8 @@ from comands import OK, MUMBLE, DOWN
 from templates.urllib_forms import \
     MumbleException, DownException, try_register_user, try_make_post
 
-from urllib.request import Request, build_opener, HTTPCookieProcessor, HTTPRedirectHandler
+from urllib.request import Request, build_opener, HTTPCookieProcessor, \
+    HTTPRedirectHandler
 from urllib.parse import quote
 from urllib.error import HTTPError
 import re
@@ -21,10 +22,7 @@ def non_selenium_check(command_ip):
 
         post_links = re.findall(r'(?<=href=\").*(?=\"><h2>)', response)
         if not post_links:
-            return {
-                "code": MUMBLE,
-                "public": "Can't find any post!"
-            }
+            raise MumbleException("Can't find any post!")
 
         try_register_user(browser, command_ip)
         request = Request(url="http://{}{}".format(command_ip, post_links[0]))
