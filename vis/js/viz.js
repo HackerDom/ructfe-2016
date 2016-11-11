@@ -79,7 +79,7 @@ var Viz = function(infoData, startScoreboard) {
 
 	drawTeams();
 
-	/*setTimeout(function () {
+	setTimeout(function () {
 		events_visualization_loop();
 		setInterval(events_visualization_loop, EVENTS_VISUALIZATION_INTERVAL);
 	}, 0);
@@ -87,7 +87,7 @@ var Viz = function(infoData, startScoreboard) {
 	setTimeout(function () {
 		load_data();
 		setInterval(load_data, LOAD_DATA_INTERVAL);
-	}, 0);*/
+	}, 0);
 
 	function load_data() {
 		$.getJSON("./api/scoreboard").done(function (scoreboardData) {
@@ -363,7 +363,8 @@ var Viz = function(infoData, startScoreboard) {
 			var polygon = node.append("polygon")
 				.classed("island", true)
 				.attr("points", poly.map(function(d) { return [d.x, d.y].join(",");	}).join(" "))
-				.attr("transform", "translate(" + nodeData.x + ", " + nodeData.y + ")");
+				.attr("transform", "translate(" + nodeData.x + ", " + nodeData.y + ")")
+				.attr("fill-opacity", 0);
 
 			var center = {"x": nodeData.width / 2, "y": nodeData.height / 2};
 			var shift = 0.55;
@@ -382,6 +383,16 @@ var Viz = function(infoData, startScoreboard) {
 		});
 
 		setOptimalZoom();
+
+		$("#find-team-wrapper").find("input").on("keyup paste", function () {
+			var text = $(this).val().toLowerCase();
+			nodes.each(function (){
+				var n = d3.select(this);
+				var nData = n.data()[0];
+				var isFiltered = !text.length ? false : nData.name.toLowerCase().indexOf(text) === 0;
+				n.select(".island").attr("fill-opacity", isFiltered ? 1 : 0);
+			});
+		})
 	}
 
 	function getCoordsForTeams(count) {
