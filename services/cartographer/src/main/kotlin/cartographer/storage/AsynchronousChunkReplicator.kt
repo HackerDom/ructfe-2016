@@ -18,7 +18,7 @@ import java.util.concurrent.Executors
 class AsynchronousChunkReplicator : ChunkReplicator {
     companion object {
         private val maxRetriesCountSetting = IntSetting("replicator.retries_count", 3)
-        private val threadCountSetting = IntSetting("replicator.threads_count", 20)
+        private val threadCountSetting = IntSetting("replicator.threads_count", 2)
         private val chunksEndpointSeting = StringSetting("replicator.chunksEndpoint", "chunks")
 
         private val logger = LogManager.getFormatterLogger()
