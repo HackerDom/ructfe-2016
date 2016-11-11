@@ -3,6 +3,7 @@ var Viz = function(infoData, startScoreboard) {
 	var EVENTS_VISUALIZATION_INTERVAL = 1000;
 	var SERVICE_NAME_TO_NUM = {"atlablog": 4, "weather": 1, "cartographer": 3, "sapmarine": 2, "crash": 0, "thebin": 5};
 	var COLOR_CONSTANTS = ["#ED953A", "#E5BD1F", "#3FE1D6", "#568AFF", "#8C41DA", "#BA329E"];
+	var SERVICE_NAME_TO_SPHERE_NUM = {"atlablog": 3, "weather": 4, "cartographer": 5, "sapmarine": 0, "crash": 1, "thebin": 2};
 	var RED_COLOR = "#EC2B34";
 	var DOWN_SERVICE_COLOR = "#1D3542";
 	var WIDTH = 1366; // Это базовый размер экрана.
@@ -363,15 +364,16 @@ var Viz = function(infoData, startScoreboard) {
 				{"x": 0, "y": nodeData.height / 2}];
 			var polygon = node.append("polygon")
 				.classed("island", true)
-				.attr("points", poly.map(function(d) { return [d.x, d.y].join(",");	}).join(" "))
+				.attr("points", poly.map(function(d) { return [d.x, d.y].join(","); }).join(" "))
 				.attr("transform", "translate(" + nodeData.x + ", " + nodeData.y + ")")
 				.attr("fill-opacity", 0);
 
 			var center = {"x": nodeData.width / 2, "y": nodeData.height / 2};
 			var shift = 0.55;
 			for (var i=0; i<SERVICES_COUNT; i++) {
-				var cx = center.x + (center.x - poly[i].x) * shift;
-				var cy = center.y + (center.y - poly[i].y) * shift;
+				var sphere_num = SERVICE_NAME_TO_SPHERE_NUM[services[i].name];
+				var cx = center.x + (center.x - poly[sphere_num ].x) * shift;
+				var cy = center.y + (center.y - poly[sphere_num ].y) * shift;
 				node.append("circle")
 					.classed("service", true)
 					.classed("service_" + services[i].id, true)
