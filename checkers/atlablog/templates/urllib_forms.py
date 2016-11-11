@@ -51,7 +51,7 @@ def __register_user(browser, command_addr, email):
         response = browser.open(request, timeout=5).read().decode()
         return username, password, email, response
     except HTTPError:
-        raise DownException("Serivce timed out!")
+        raise DownException("Service timed out!")
     except ValueError:
         raise MumbleException("Can't check public api!")
     except KeyError:
