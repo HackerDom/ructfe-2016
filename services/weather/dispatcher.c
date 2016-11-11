@@ -48,12 +48,6 @@ void add_client(struct pollfd *fds, struct client *clients, int32 *lastConnected
 	*lastConnected = fdIndex;
 }
 
-void wt_close_client(const struct client *client)
-{
-	close(client->socket);
-	memset(client->pollfd, 0, sizeof(struct pollfd));
-}
-
 int32 accept_client(int32 serverSocket)
 {
 	struct sockaddr_in clientAddress;
