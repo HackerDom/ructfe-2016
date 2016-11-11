@@ -26,17 +26,16 @@ public class Sapmarine {
     init(){
         LoadState()
 
-        let saveStateTimer = Timer.scheduledTimer(withTimeInterval: 60.0, repeats: true) { t in
+        let saveStateTimer = Timer.scheduledTimer(withTimeInterval: 30.0, repeats: true) { t in
             self.SaveState()
         }
-        // RunLoop.current.add(saveStateTimer, RunLoop.currentMode)
 
         let session = Session(secret: UUID().uuidString)
         router.all(middleware: session)
 
         router.all(middleware: BodyParser())
 
-        router.all("/static", middleware: StaticFileServer(path: "./static"))
+        router.all("/static", middleware: StaticFileServer(path: "./static", options: StaticFileServer.Options(cacheOptions:StaticFileServer.CacheOptions(maxAgeCacheControlHeader:2419200))))
 
         router.add(templateEngine: StencilTemplateEngine())
 
@@ -49,16 +48,18 @@ public class Sapmarine {
 
             var stencilContext: [String: Any] = [:]
             self.dispatchQueue.sync {
-                let allTripsArray = self.newTrips.map { (key, value) in ["passenger": key, "description": value] }
+                let allTripsArray = self.newTrips.map { (key, value) in ["passenger": key.htmlEncode(), "description": value.htmlEncode()] }
                 let driversTripsArray = self.processingTrips
                     .filter { (key, value) in userNameOptional != nil && value.driver == userNameOptional!}
-                    .map { (key, value) in ["passenger": value.passenger, "driver": value.driver, "id": value.id, "isMine": "1"] }
+                    .map { (key, value) in ["passenger": value.passenger.htmlEncode(), "driver": value.driver.htmlEncode(), "id": value.id, "isMine": "1"] }
+
+                let users = self.usersSet.map { $0 }.prefix(200)
 
                 stencilContext = [
                     "isLoggedIn": userNameOptional != nil,
-                    "user": userNameOptional ?? "",
-                    "users": self.usersSet.map { ["name": $0.name, "rating": $0.rating()] },
-                    "trips": driversTripsArray + allTripsArray
+                    "user": (userNameOptional ?? "").htmlEncode(),
+                    "users": users.map { ["name": $0.name.htmlEncode(), "rating": Int(round($0.rating()))] },
+                    "trips": Array((driversTripsArray + allTripsArray).prefix(200))
                 ]
             }
 
@@ -141,10 +142,10 @@ public class Sapmarine {
                 stencilContext = [
                     "isLoggedIn": userNameOptional != nil,
                     "isProfileFilledIn": self.profilesDict[userNameOptional!] != nil,
-                    "user": userNameOptional!,
-                    "fullName": profile?.fullName,
-                    "job": profile?.job,
-                    "notes": profile?.notes,
+                    "user": userNameOptional!.htmlEncode(),
+                    "fullName": profile?.fullName.htmlEncode(),
+                    "job": profile?.job.htmlEncode(),
+                    "notes": profile?.notes.htmlEncode(),
                 ]
             }
 
@@ -213,8 +214,8 @@ public class Sapmarine {
 
             stencilContext = [
                 "isLoggedIn": userNameOptional != nil,
-                "user": userNameOptional!,
-                "tripId": tripId
+                "user": userNameOptional!.htmlEncode(),
+                "tripId": tripId.htmlEncode()
             ]
 
             try response.render("review.stencil", context: stencilContext).end()
@@ -243,13 +244,12 @@ public class Sapmarine {
                         return
                     }
 
-                    // TODO create method addAfterRemove
                     self.usersSet.remove(passengerOptional!)
                     passengerOptional!.comments.append(Comment(driverNameOptional!, passengerName, comment, markOptional!))
                     self.usersSet.insert(passengerOptional!)
                 }
 
-                try response.end()
+                try response.redirect("/").end()
             } else {
                 response.statusCode = .notFound
                 try response.send("Trip with tripId '\(tripId)' not found in processing trips").end();
@@ -369,16 +369,14 @@ public class Sapmarine {
             let lines = state.components(separatedBy: "\n")
 
             for line in lines {
-                // do {
-                    if line == "" { continue }
+                if line == "" { continue }
 
-                    let json = line.fromBase64();
-                    if json == nil { continue }
+                let json = line.fromBase64();
+                if json == nil { continue }
 
-                    let user = User(json!)
-                    usersSet.insert(user)
-                    usersDict[user.name] = user
-                // } catch let error as NSError { }
+                let user = User(json!)
+                usersSet.insert(user)
+                usersDict[user.name] = user
             }
         } catch let error as NSError {
             print("Error loading users state")
@@ -397,15 +395,13 @@ public class Sapmarine {
             let lines = state.components(separatedBy: "\n")
 
             for line in lines {
-                // do {
-                    if line == "" { continue }
+                if line == "" { continue }
 
-                    let json = line.fromBase64();
-                    if json == nil { continue }
+                let json = line.fromBase64();
+                if json == nil { continue }
 
-                    let profile = Profile(json!)
-                    self.profilesDict[profile.name] = profile
-                // } catch let error as NSError { }
+                let profile = Profile(json!)
+                self.profilesDict[profile.name] = profile
             }
         } catch let error as NSError {
             print("Error loading profiles state")
@@ -424,15 +420,13 @@ public class Sapmarine {
             let lines = state.components(separatedBy: "\n")
 
             for line in lines {
-                // do {
-                    if line == "" { continue }
+                if line == "" { continue }
 
-                    let json = line.fromBase64();
-                    if json == nil { continue }
+                let json = line.fromBase64();
+                if json == nil { continue }
 
-                    let trip = Trip(json!)
-                    self.processingTrips[trip.id] = trip
-                // } catch let error as NSError { }
+                let trip = Trip(json!)
+                self.processingTrips[trip.id] = trip
             }
         } catch let error as NSError {
             print("Error loading trips state")

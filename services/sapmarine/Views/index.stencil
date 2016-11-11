@@ -8,6 +8,7 @@
 		<meta name="keywords" content="Atlantis, RuCTFE, Sapmarine">
 		<meta name="author" content="Hackerdom, hackerdom.ru, Kost">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="shortcut icon" href="/static/sapmarine.ico" type="image/x-icon">
 		<link rel="stylesheet" href="/static/lib/bootstrap/css/bootstrap.min.css">
 		<link rel="stylesheet" href="/static/css/atlantis.css">
 	</head>
@@ -46,7 +47,10 @@
 									Chat while enjoying free submarine transportation
 								</div>
 
-								<br/><h3>Requests</h3>
+								{% if isLoggedIn %}<a class="btn btn-primary" href="/addTripForm">New trip</a>{% endif %}
+								
+								<br/><h3>Requested trips</h3>
+								
 								<table class="table">
 									<thead><tr>
 										<th>passenger</th>
@@ -61,8 +65,14 @@
 										<td>{{ trip.description }}</td>
 										<td>{{ trip.driver }}</td>
 										<td>
+											{% if trip.isMine %}
+												<a href="/reviewForm?tripId={{ trip.id }}">Rate passenger</a>
+											{% endif %}
+											
 											{% ifnot trip.isMine %}
-												<form class="take-trip-form" action="takeTrip" method="GET" class="form-inline"><input type="hidden" name="id" value="{{ trip.id }}"/><input type="submit" class="btn btn-link" value="Take"/></form>
+												
+												<form class="take-trip-form" action="takeTrip" method="GET" class="form-inline"><input type="hidden" name="passenger" value="{{ trip.passenger }}"/><input type="submit" class="btn btn-primary" value="Take"/></form>
+												
 											{% endif %}
 										</td>
 									</tr>
@@ -90,7 +100,6 @@
 			</section>
 		</div>
 		<script src="/static/lib/jquery/jquery-3.1.1.min.js"></script>
-		<script src="/static/lib/bootstrap/js/bootstrap.min.js"></script>
-		<script src="/static/js/atlantis.js"></script>
+		<script src="/static/js/sapmarine.js"></script>
 	</body>
 </html>

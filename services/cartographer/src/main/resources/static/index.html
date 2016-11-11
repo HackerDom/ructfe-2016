@@ -11,6 +11,7 @@
 		<link rel="stylesheet" href="bootstrap.min.css">
 		<link rel="stylesheet" href="atlantis.css">
 		<link rel="stylesheet" href="cartographer.css">
+		<link rel="icon" href="cartographer.ico">
 	</head>
 	<body class="service-page" data-spy="scroll" data-target="#main-navbar" onload="getMaps()">
 		<div class="page-loader"></div>
@@ -19,8 +20,13 @@
 				<nav id="main-navbar" class="navbar navbar-default navbar-fixed-top" role="navigation">
 					<div class="container">
 						<div class="navbar-header">
-							<a class="navbar-brand" href="/">Atlantis</a>
+							<a class="navbar-brand" href="/home">Atlantis</a>
 							<a class="navbar-brand navbar-brand-service" href="/">Cartographer</a>
+						</div>
+						<div class="collapse navbar-collapse" id="bs-navbar-collapse">
+							<ul class="nav navbar-nav navbar-right">
+								<li><a href="/chunks.html">List of chunks</a></li>
+							</ul>
 						</div>
 					</div>
 				</nav>
@@ -66,6 +72,7 @@
 		</div>
 		<script src="jquery-3.1.1.min.js"></script>
 		<script src="bootstrap.min.js"></script>
+		<script src="fetch.js"></script>
 		<script src="atlantis.js"></script>
 		<script src="cartographer.js"></script>
 	</body>

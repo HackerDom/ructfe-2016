@@ -8,6 +8,7 @@
 		<meta name="keywords" content="Atlantis, RuCTFE, Crash">
 		<meta name="author" content="Hackerdom, hackerdom.ru, Ruslan Kutdusov, vorkulsky">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="shortcut icon" href="/static/ico/crash.ico" type="image/x-icon">
 		<link rel="stylesheet" href="/static/lib/bootstrap/css/bootstrap.min.css">
 		<link rel="stylesheet" href="/static/css/atlantis.css">
 	</head>
@@ -19,7 +20,8 @@
 					<div class="container">
 						<div class="navbar-header">
 							<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-navbar-collapse"></button>
-							<a class="navbar-brand" href="/">Crash</a>
+							<a class="navbar-brand" href="/home">Atlantis</a>
+							<a class="navbar-brand navbar-brand-service" href="/">Crash</a>
 						</div>
 						<div class="collapse navbar-collapse" id="bs-navbar-collapse"></div>
 					</div>

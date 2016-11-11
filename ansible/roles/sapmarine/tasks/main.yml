@@ -16,6 +16,9 @@
   tags:
     - skip_ansible_lint
 
+- name: Fix permissions
+  file: name="/home/sapmarine" state=directory owner=sapmarine recurse=yes
+
 - name: Add systemd service
   template: src=service.j2 dest=/lib/systemd/system/sapmarine.service
 

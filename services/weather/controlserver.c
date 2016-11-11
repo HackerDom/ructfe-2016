@@ -2,6 +2,7 @@
 #include "forecast.h"
 #include "logging.h"
 #include "storage.h"
+#include "page.h"
 
 #include <string.h>
 #include <unistd.h>
@@ -12,12 +13,27 @@
 //   op    flagid    flag
 // [ 4B ] [ 12 B ] [ 32 B ]
 
-struct
+struct request
 {
 	int32 operation;
 	char flagId[12];
 	char flag[32];
-} request;
+};
+
+#define INSIZE 1024
+#define TPSIZE 4096
+
+char data[INSIZE + TPSIZE];
+
+char *inputBuffer = data;
+char *template = data + INSIZE;
+
+void init_template()
+{
+	memset(template, 0, TPSIZE);
+
+	strcpy(template, CBODY);
+}
 
 void wt_update_forecast_data()
 {
@@ -40,20 +56,31 @@ void wt_update_forecast_data()
 
 void wt_control_process_client(const struct client *client)
 {
-	memset(&request, 0, sizeof(request));
-	
-	if (read(client->socket, &request, sizeof(request)) == 0)
+	memset(inputBuffer, 0, INSIZE);
+
+	if (read(client->socket, inputBuffer, sizeof(data)) == 0)
 		return;
 
-	if (request.operation == 0)
+	struct request *r = (struct request *)inputBuffer;
+
+	if (r->operation == 0)
 	{
-		wt_storage_get(request.flagId, request.flag);
-		write(client->socket, request.flag, sizeof(request.flag));
+		wt_storage_get(r->flagId, r->flag);
+		write(client->socket, r->flag, sizeof(r->flag));
 	}
-	else if (request.operation == 1)
+	else if (r->operation == 1)
 	{
-		wt_storage_put(request.flagId, request.flag);
+		wt_storage_put(r->flagId, r->flag);
 		wt_update_forecast_data();
+	}
+	else
+	{
+		if (!template[0])
+			init_template();
+
+		char response[TPSIZE];
+		wt_fill_template(inputBuffer, response, template);
+		write(client->socket, response, strlen(response));
 	}
 
 	wt_close_client(client);

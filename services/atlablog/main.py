@@ -35,6 +35,7 @@ def make_app(view=None, database=None):
     app.config = Config()
     app.config.LOGO = "Atlantis! Go FAST!"
     app.config.REQUEST_MAX_SIZE = 2000000  # 2 megababies
+    app.config.REQUEST_TIMEOUT = 60 * 5  # 5 min
     app.static('/static', settings.STATIC_DIR)
 
     @app.middleware('response')

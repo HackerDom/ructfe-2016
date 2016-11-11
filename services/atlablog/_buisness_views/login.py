@@ -24,7 +24,7 @@ def registered(state):
 
 class LoginForm(Form):
     username = StringField('Username', [validators.Length(min=4, max=25)])
-    password = PasswordField('Password', [validators.Length(min=5, max=25)])
+    password = PasswordField('Password', [validators.Length(min=4, max=25)])
 
 
 @bp.route('/login')

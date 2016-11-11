@@ -1,5 +1,14 @@
+html {
+	word-wrap: break-word;
+}
+
+.table {
+	table-layout: fixed;
+}
+
 .table tr td:nth-child(1) {
 	font-size: larger;
+	width: 85%;
 }
 
 .table tr td:nth-child(2) {
@@ -16,4 +25,16 @@
 
 .text {
 	font-size: larger;
+}
+
+.verified {
+	position: absolute;
+	right: -7px;
+	top: -10px;
+	color: green;
+	font-size: 20px;
+}
+
+.verified abbr {
+	border: none;
 }

@@ -55,22 +55,35 @@ function Listener(action) {
 	this.table = $('#' + action);
 }
 
+function TrimStart(s, ch) {
+	for (var i = 0; i < s.length; ++i) {
+		if (s.charAt(i) != ch)
+			return s.substring(i);
+	}
+
+	return '';
+}
+
+function ExtractUrl() {
+	var url = TrimStart(location.search, '?').split('&').map(function(param) {return param.split('=');}).filter(function(pair) {return pair[0] === 'url';}).map(function(pair){return pair[1];})[0];
+	if (typeof url !== 'undefined')
+		return decodeURI(url);
+}
+
 function InitHistory() {
 	$('#postModal,#postErrorModal').on('hidden.bs.modal', function() { 
 		history.pushState('', '', '/'); 
 	});
 
-	window.onpopstate = function(event) {
-		var url = event.state;
+	window.onpopstate = function() {
+		var url = ExtractUrl();
 		if (typeof url === 'undefined' || url === '')
 			$('#postModal, #postErrorModal').modal('hide');
-		else if (url == null)
-			$('#postErrorModal').modal('show');
 		else
 			ShowPost(url);
 	}
 
-	var url = location.search.substring(1).split('&').map(function(param) {return param.split('=');}).filter(function(pair) {return pair[0] === 'url';}).map(function(pair){return pair[1];})[0];
+	var url = ExtractUrl();
 	if (typeof url !== 'undefined')
 		ShowPost(url);
 }
@@ -86,6 +99,11 @@ function ShowPost(url) {
 		$('#postTitle').text(data.title);
 		$('#postBody').text(data.body);
 		$('#postAuthor').text(data.owner);
+		var ok = $('#verified');
+		if (typeof data.sign !== 'undefined' && data.sign !== '')
+			ok.removeClass('hidden');
+		else
+			ok.addClass('hidden');
 		$('#postModal').modal('show');
 	})
 	.fail(function(data) {

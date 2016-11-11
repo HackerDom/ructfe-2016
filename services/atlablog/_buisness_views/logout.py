@@ -23,8 +23,6 @@ def registered(state):
 @bp.route('/logout')
 async def logout(request):
     response = redirect(request, REDIRECT_AFTER_LOGOUT)
-    # TODO: remove this line to make a venerability!
-    if request.method == 'POST':
-        service = get_user_service(USER_DB_NAME)
-        await service.set_request_user(request, response, user=None)
+    service = get_user_service(USER_DB_NAME)
+    await service.set_request_user(request, response, user=None)
     return response

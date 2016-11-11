@@ -20,6 +20,7 @@
 	LINE("		<meta name=\"keywords\" content=\"Atlantis, RuCTFE, Weather center\">") \
 	LINE("		<meta name=\"author\" content=\"Hackerdom, hackerdom.ru, Krait\">") \
 	LINE("		<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">") \
+	LINE("		<link rel=\"shortcut icon\" href=\"/static/ico/weather.ico\" type=\"image/x-icon\">") \
 	LINE("		<link rel=\"stylesheet\" href=\"/static/lib/bootstrap/css/bootstrap.min.css\">") \
 	LINE("		<link rel=\"stylesheet\" href=\"/static/css/atlantis.css\">") \
 	LINE("		<link rel=\"stylesheet\" href=\"/static/css/weather.css\">") \
@@ -91,3 +92,18 @@
 	LINE("		<script src=\"/static/js/atlantis.js\"></script>") \
 	LINE("	</body>") \
 	LINE("</html>")
+
+
+#define CBODY \
+	LINE("Current weather forecast:") \
+	LINE("") \
+	LINE("Today: %d*C, %s") \
+	LINE("") \
+	LINE("Next 5 days:") \
+	LINE("    - %d*C, %s") \
+	LINE("    - %d*C, %s") \
+	LINE("    - %d*C, %s") \
+	LINE("    - %d*C, %s") \
+	LINE("    - %d*C, %s") \
+	LINE("") \
+	LINE("Signature: %016llx")

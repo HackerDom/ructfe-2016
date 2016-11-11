@@ -2,14 +2,14 @@
 - name: Install requirements
   apt: name={{ item }}
   with_items:
-    - python-setuptools
     - sqlite3
     - rsync
+    - python-pip
+    - python-wheel
 
 - name: Install python dependencies
-  easy_install: name={{ item }}
+  pip: name={{ item }}
   with_items:
-    - pip
     - bottle
     - tornado
 

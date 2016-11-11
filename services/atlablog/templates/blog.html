@@ -18,10 +18,10 @@
 <div class="jumbotron">
     <h1>Be short and quick</h1>
     <p>
-        We are not the twitter.
+        We are not Twitter.
         And we are not a forum. We do not like long discussions.
         Your blog post can't have more than 100 comments.
-        There is a our rule.
+        This is our rule.
     </p>
 </div>
 
@@ -35,9 +35,11 @@
                     console.log(data)
                     if (data.entries_count > ENTRIES_COUNT) {
                         $('#newposturl').attr({
-                            'href': data.last
+                            'href': data.first
                         })
+                        ENTRIES_COUNT += 1
                         $('.bs-example-modal-sm').modal('show')
+                        setTimeout(waitBlogPost, 1000)
                     }
                 } else {
                     console.error('api error')
@@ -45,12 +47,14 @@
             }
         }
 
-        setInterval(function(){
+        function waitBlogPost(){
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = stateChange;
-            xhr.open('GET', '/blog-count.json');
+            xhr.open('GET', '/blog-notify');
             xhr.send();
-        }, 5000)
+        }
+
+        setTimeout(waitBlogPost, 1000)
     })()
 </script>
 
@@ -147,7 +151,7 @@
 <div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
   <div class="modal-dialog modal-sm" role="document">
     <div class="modal-content">
-      <h1 style="margin: 19px; text-align: center;">new post! <a id="newposturl" href="">here</a></h1>
+      <h1 style="margin: 19px; text-align: center;">new post! <a id="newposturl" href="">view</a></h1>
     </div>
   </div>
 </div>

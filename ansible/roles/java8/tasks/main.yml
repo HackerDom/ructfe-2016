@@ -1,6 +1,6 @@
 ---
 - name: Add contrib repo
-  apt_repository: repo='deb http://httpredir.debian.org/debian jessie main contrib' state=present update_cache=yes
+  apt_repository: repo='deb http://mirror.yandex.ru/debian jessie contrib' state=present update_cache=yes
 
 - name: Install java-package
   apt: name={{ item }}
