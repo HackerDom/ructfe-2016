@@ -33,7 +33,7 @@ class ClosestReplicasProvider : ReplicasProvider {
                     .map {
                         addr ->
                         Pair(addr, executorService.submit<Long?>({
-                            latencyCalculator.CalcLatency(addr)
+                            latencyCalculator.CalcLatency(addr, maxAllowedLatency)
                         }))
                     }
                     .toList();
