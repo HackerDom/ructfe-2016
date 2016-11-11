@@ -7,7 +7,7 @@
 - name: systemd configs
   template: src=worker-checkers.service.j2 dest=/etc/systemd/system/worker-checkers.service
   with_items:
-    - { jobs: 800 }
+    - { jobs: 600 }
 
 - name: systemd reload
   command: systemctl daemon-reload
@@ -27,6 +27,7 @@
     - nodejs-legacy
     - npm
     - python3-pip
+    - libfontconfig
 
 - name: selenium checker npm deps
   npm: name=phantomjs global=yes

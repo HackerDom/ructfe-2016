@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
 @Component
 class StaticThrottler : Throttler {
     companion object {
-        val maxConcurrentRequestsSetting = IntSetting("throttler.max_concurrent_requests", 100)
+        val maxConcurrentRequestsSetting = IntSetting("throttler.max_concurrent_requests", 1000)
         val timeoutSetting = DurationSetting("throttler.timeout", Duration.ofSeconds(30))
     }
 

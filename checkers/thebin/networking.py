@@ -3,7 +3,6 @@
 import checker
 import aiohttp
 import random
-import queue
 import asyncio
 from crypto import Signer
 
