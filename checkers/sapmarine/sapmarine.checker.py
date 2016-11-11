@@ -239,6 +239,43 @@ class Checker(HttpCheckerBase):
 			print('get / failed')
 			return EXITCODE_MUMBLE
 
+		login1 = self.randlogin() + uuid.uuid4().hex[:4]
+		password1 = self.randengword() + uuid.uuid4().hex[:4]
+		result = self.sget(s, addr, '/login', data={'user':login1, 'pass':password1})
+		if not result:
+			print('get /login failed')
+			return EXITCODE_MUMBLE
+		time.sleep(0.1)
+
+		description = self.randphrase()
+		result = self.sget(s, addr, '/addTrip', data={'description':description})
+		if not result:
+			print('get /addTrip failed')
+			return EXITCODE_MUMBLE
+		time.sleep(0.1)
+
+		login2 = self.randlogin() + uuid.uuid4().hex[:4]
+		password2 = self.randengword() + uuid.uuid4().hex[:4]
+		result = self.sget(s, addr, '/login', data={'user':login2, 'pass':password2})
+		if not result:
+			print('get /login failed')
+			return EXITCODE_MUMBLE
+		time.sleep(0.1)
+
+		result = self.sget(s, addr, '/takeTrip', data={'passenger':login1})
+		if not result or len(result) > 40:
+			print('get /takeTrip failed')
+			return EXITCODE_MUMBLE
+		time.sleep(0.1)
+
+		tripId = result
+
+		result = self.sget(s, addr, '/finishTrip', data={'tripId':tripId, 'comment':self.randphrase(), 'mark':random.randrange(1,5)})
+		if not result:
+			print('get /takeTrip failed')
+			return EXITCODE_MUMBLE
+		time.sleep(0.1)
+
 		return EXITCODE_OK
 
 	#################
@@ -248,23 +285,20 @@ class Checker(HttpCheckerBase):
 		s = self.session(addr)
 
 		login = self.randlogin() + uuid.uuid4().hex[:4]
-		fullName = login.capitalize() + "_" + self.randlogin().capitalize()
-		job = self.randengword()
 		password = flag_id
-
 		result = self.sget(s, addr, '/login', data={'user':login, 'pass':password})
 		if not result:
 			print('get /login failed')
 			return EXITCODE_MUMBLE
+		time.sleep(0.1)
 
-		time.sleep(0.2)
-
+		fullName = login.capitalize() + "_" + self.randlogin().capitalize()
+		job = self.randengword()
 		result = self.sget(s, addr, '/setProfile', data={'fullName': fullName,'job': job, 'notes': flag})
 		if not result:
 			print('get /setProfile failed')
 			return EXITCODE_MUMBLE
-
-		time.sleep(0.2)
+		time.sleep(0.1)
 
 		print(login + " " + password)
 
