@@ -34,7 +34,8 @@ html, body, #svg-wrapper, #svg-viz  {
 		background: #1D3542;
 		color: white;
 		max-width: 250px;
-		height: 80px;
+		min-width: 200px;
+		min-height: 80px;
 		padding: 5px;
 		position: relative;
 		border: solid #B7E99B 1px;
@@ -47,13 +48,15 @@ html, body, #svg-wrapper, #svg-viz  {
 	 	.value.team-name {
 			color: #B7E99B;
 		}
-		img {
-			float: left;
-			margin: 10px;
+		.header-wrapper {
+			margin-bottom: 8px;
+			line-height: 1;
 		}
-		.team-values {
-			float: left;
-			margin: 10px 10px 10px 10px;
+		td {
+			vertical-align: top;
+		}
+		img {
+			margin-right: 5px;
 		}
 	}
 }

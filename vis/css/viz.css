@@ -30,7 +30,8 @@ body,
   background: #1D3542;
   color: white;
   max-width: 250px;
-  height: 80px;
+  min-width: 200px;
+  min-height: 80px;
   padding: 5px;
   position: relative;
   border: solid #B7E99B 1px;
@@ -44,13 +45,15 @@ body,
 .ui-tooltip .team-tooltip .value.team-name {
   color: #B7E99B;
 }
-.ui-tooltip .team-tooltip img {
-  float: left;
-  margin: 10px;
+.ui-tooltip .team-tooltip .header-wrapper {
+  margin-bottom: 8px;
+  line-height: 1;
 }
-.ui-tooltip .team-tooltip .team-values {
-  float: left;
-  margin: 10px 10px 10px 10px;
+.ui-tooltip .team-tooltip td {
+  vertical-align: top;
+}
+.ui-tooltip .team-tooltip img {
+  margin-right: 5px;
 }
 #filters-container {
   position: absolute;
