@@ -2,7 +2,7 @@ import random
 import string
 
 
-def generate_user_credentials(email=None):
+def generate_user_credentials(email):
     num_range = [str(i) for i in range(9)]
     letters = list(string.ascii_lowercase)
     user_suffix = random.sample(letters + num_range, 15)

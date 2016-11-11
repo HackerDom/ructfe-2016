@@ -9,7 +9,7 @@ $(".take-trip-form").submit(function() {
         alert("Failed to take trip: " + (xhr.responseText || xhr.statusMessage || "Unknown error"));
     }).done(function(data) {
         $form.closest("tr").addClass("warning");
-        $form.replaceWith($("<a>Review</a>").attr("href", "/reviewForm?tripId=" + encodeURIComponent(data)));
+        $form.replaceWith($("<a>Rate passenger</a>").attr("href", "/reviewForm?tripId=" + encodeURIComponent(data)));
     });
     return false;
 });

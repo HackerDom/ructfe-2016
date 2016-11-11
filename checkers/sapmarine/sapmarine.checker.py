@@ -23,7 +23,8 @@ class Checker(HttpCheckerBase):
 	def parseresponse(self, response, path):
 		try:
 			if response.status_code != 200:
-				raise HttpWebException(response.status_code, path)
+				queryPos = path.find('?')
+				raise HttpWebException(response.status_code, path[queryPos] if queryPos != -1 else '')
 			try:
 				result = response.json()
 				#self.debug(result)
@@ -43,20 +44,20 @@ class Checker(HttpCheckerBase):
 		finally:
 			response.close()
 
-	def jpost(self, s, addr, suffix, data = None):
-		response = s.post(self.url(addr, suffix), data, timeout=5)
+	def jpost(self, s, addr, suffix, data=None):
+		response = s.post(self.url(addr, suffix), data=data, timeout=5)
 		return self.parseresponse(response, suffix)
 
-	def spost(self, s, addr, suffix, data = None):
-		response = s.post(self.url(addr, suffix), data, timeout=5)
+	def spost(self, s, addr, suffix, data=None):
+		response = s.post(self.url(addr, suffix), data=data, timeout=5)
 		return self.parsestringresponse(response, suffix)
 
-	def jget(self, s, addr, suffix):
-		response = s.get(self.url(addr, suffix), timeout=5)
+	def jget(self, s, addr, suffix, data=None):
+		response = s.get(self.url(addr, suffix), params=data, timeout=5)
 		return self.parseresponse(response, suffix)
 
-	def sget(self, s, addr, suffix):
-		response = s.get(self.url(addr, suffix), timeout=5)
+	def sget(self, s, addr, suffix, data=None):
+		response = s.get(self.url(addr, suffix), params=data, timeout=5)
 		return self.parsestringresponse(response, suffix)
 
 	def randword(self):
@@ -238,6 +239,43 @@ class Checker(HttpCheckerBase):
 			print('get / failed')
 			return EXITCODE_MUMBLE
 
+		login1 = self.randlogin() + uuid.uuid4().hex[:4]
+		password1 = self.randengword() + uuid.uuid4().hex[:4]
+		result = self.sget(s, addr, '/login', data={'user':login1, 'pass':password1})
+		if not result:
+			print('get /login failed')
+			return EXITCODE_MUMBLE
+		time.sleep(0.1)
+
+		description = self.randphrase()
+		result = self.sget(s, addr, '/addTrip', data={'description':description})
+		if not result:
+			print('get /addTrip failed')
+			return EXITCODE_MUMBLE
+		time.sleep(0.1)
+
+		login2 = self.randlogin() + uuid.uuid4().hex[:4]
+		password2 = self.randengword() + uuid.uuid4().hex[:4]
+		result = self.sget(s, addr, '/login', data={'user':login2, 'pass':password2})
+		if not result:
+			print('get /login failed')
+			return EXITCODE_MUMBLE
+		time.sleep(0.1)
+
+		result = self.sget(s, addr, '/takeTrip', data={'passenger':login1})
+		if not result or len(result) > 40:
+			print('get /takeTrip failed')
+			return EXITCODE_MUMBLE
+		time.sleep(0.1)
+
+		tripId = result
+
+		result = self.sget(s, addr, '/finishTrip', data={'tripId':tripId, 'comment':self.randphrase(), 'mark':random.randrange(1,5)})
+		if not result:
+			print('get /takeTrip failed')
+			return EXITCODE_MUMBLE
+		time.sleep(0.1)
+
 		return EXITCODE_OK
 
 	#################
@@ -246,26 +284,23 @@ class Checker(HttpCheckerBase):
 	def put(self, addr, flag_id, flag, vuln):
 		s = self.session(addr)
 
-		login = self.randlogin()
-		fullName = login + " " + self.randlogin()
-		job = self.randengword()
+		login = self.randlogin() + uuid.uuid4().hex[:4]
 		password = flag_id
-
-		result = self.sget(s, addr, '/login?user={0}&pass={1}'.format(login, password))
+		result = self.sget(s, addr, '/login', data={'user':login, 'pass':password})
 		if not result:
 			print('get /login failed')
 			return EXITCODE_MUMBLE
+		time.sleep(0.1)
 
-		time.sleep(0.2)
-
-		result = self.sget(s, addr, '/setProfile?fullName={0}&job={1}&notes={2}'.format(fullName, job, flag))
+		fullName = login.capitalize() + "_" + self.randlogin().capitalize()
+		job = self.randengword()
+		result = self.sget(s, addr, '/setProfile', data={'fullName': fullName,'job': job, 'notes': flag})
 		if not result:
 			print('get /setProfile failed')
 			return EXITCODE_MUMBLE
+		time.sleep(0.1)
 
-		time.sleep(0.2)
-
-		self.debug(login + " " + password)
+		print(login + " " + password)
 
 		return EXITCODE_OK
 
@@ -279,7 +314,7 @@ class Checker(HttpCheckerBase):
 		login = tokens[0]
 		password = tokens[1]
 
-		result = self.sget(s, addr, '/login?user={0}&pass={1}'.format(login, password))
+		result = self.sget(s, addr, '/login', data={'user':login, 'pass':password})
 		if not result:
 			print('get /login failed')
 			return EXITCODE_MUMBLE

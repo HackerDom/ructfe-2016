@@ -1,7 +1,13 @@
+- name: set sysctl settings
+  sysctl:  name={{item}} value=1 state=present
+  with_items:
+    - net.ipv4.tcp_thin_linear_timeouts
+    - net.ipv4.tcp_thin_dupack
+
 - name: systemd configs
   template: src=worker-checkers.service.j2 dest=/etc/systemd/system/worker-checkers.service
   with_items:
-    - { jobs: 128 }
+    - { jobs: 600 }
 
 - name: systemd reload
   command: systemctl daemon-reload
@@ -21,6 +27,7 @@
     - nodejs-legacy
     - npm
     - python3-pip
+    - libfontconfig
 
 - name: selenium checker npm deps
   npm: name=phantomjs global=yes

@@ -39,8 +39,8 @@ def down(status=104, *args, **kwargs):
 def make_err_message(message, request, reply):
 	return "{}\n->\n{}\n<-\n{}\n=".format(message, request, reply)
 
-def get_rand_string(l):
-	return ''.join(random.choice(string.ascii_lowercase + ' ') for _ in range(l + random.randint(-l//2, l//2)))
+def get_rand_string(l, additional=''):
+	return ''.join(random.choice(string.ascii_lowercase + additional) for _ in range(l + random.randint(-l//2, l//2))).strip()
 
 def parse_json(string, expected=[]):
 	try:

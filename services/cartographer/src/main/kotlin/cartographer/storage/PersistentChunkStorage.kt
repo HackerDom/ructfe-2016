@@ -35,7 +35,7 @@ class PersistentChunkStorage : ChunkStorage, Closeable {
         val storageFileName = storageFileNameSetting.getValue(settingsContainer)
         val storageFile = getStorageFile(storageFileName)
         populateCacheFromFile(storageFile)
-        storageFileStream = FileOutputStream(storageFile)
+        storageFileStream = FileOutputStream(storageFile, true)
 
         maxMostRecentChunksNumber = maxMostRecentChunksNumberSetting.getValue(settingsContainer)
 

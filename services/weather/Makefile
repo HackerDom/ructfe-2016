@@ -14,7 +14,11 @@ SIGNTOOL_OBJS = signtool.o forecast.o matrix.o types.o logging.o
 signtool: $(SIGNTOOL_OBJS)
 	gcc -o signtool $(SIGNTOOL_OBJS) $(LDFLAGS)
 
-all: weather signtool
+CHECKER_OBJS = checker.o forecast.o matrix.o types.o logging.o
+checker: $(CHECKER_OBJS)
+	gcc -o checker $(CHECKER_OBJS) $(LDFLAGS)
+
+all: weather checker
 
 clean:
-	rm -f weather signtool *.o
+	rm -f weather checker signtool *.o
