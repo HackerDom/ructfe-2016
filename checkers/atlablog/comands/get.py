@@ -1,13 +1,16 @@
-from comands.phantom_js import get_driver, DriverInitializationException, DriverTimeoutException
-
-import traceback
 from selenium.webdriver import PhantomJS
 from selenium.common.exceptions import NoSuchElementException
 
+from comands.phantom_js import\
+    get_driver, DriverInitializationException, DriverTimeoutException
 from comands import OK, MUMBLE, DOWN, CHECKER_ERROR, CORRUPT
-from templates.urllib_forms import MumbleException, DownException, prepare_post_request
 
-from urllib.request import build_opener, HTTPCookieProcessor, HTTPRedirectHandler
+from templates.urllib_forms import\
+    MumbleException, DownException, prepare_post_request, get_useragent
+
+import traceback
+from urllib.request import\
+    build_opener, HTTPCookieProcessor, HTTPRedirectHandler
 from http.cookiejar import LWPCookieJar
 
 
@@ -25,6 +28,7 @@ def non_selenium_get(command_ip, flag_id, flag, vuln):
         }
 
         request = prepare_post_request("{}/login".format(command_ip), data)
+        request.add_header('User-Agent', get_useragent())
         response = browser.open(request).read().decode()
         session = {}
         for cookie in cookies:
@@ -71,6 +75,11 @@ def init_get(command_ip, flag_id, flag, vuln):
 
 
 def run_get_logic(driver: PhantomJS, comand_id, post, flag, cookies):
+    if 'sessions' not in cookies:
+        return {
+            "code": MUMBLE,
+            "public": "Session troubles!"
+        }
     driver.add_cookie({
         'name': 'sessions',
         'value': cookies['sessions'],

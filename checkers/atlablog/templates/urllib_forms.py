@@ -1,8 +1,11 @@
 from templates.user_credentials import generate_user_credentials
+from templates.user_agents import get as get_useragent
+
 from urllib.request import Request
 from urllib.parse import quote
-import re
 from urllib.error import HTTPError
+
+import re
 import random
 import string
 
@@ -63,6 +66,7 @@ def prepare_post_request(url, data):
     request = Request(url="http://{}".format(url))
     request.method = "POST"
     request.data = bytes("&".join(data), "utf-8")
+    request.add_header('User-Agent', get_useragent())
     return request
 
 

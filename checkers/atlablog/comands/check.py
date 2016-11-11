@@ -1,6 +1,6 @@
 from comands import OK, MUMBLE, DOWN
 from templates.urllib_forms import \
-    MumbleException, DownException, try_register_user, try_make_post
+    MumbleException, DownException, try_register_user, try_make_post, get_useragent
 
 from urllib.request import Request, build_opener, HTTPCookieProcessor, \
     HTTPRedirectHandler
@@ -37,6 +37,7 @@ def non_selenium_check(command_ip):
         }
         data = ["{}={}".format(key, quote(data[key])) for key in data]
         request.data = bytes("&".join(data), "utf-8")
+        request.add_header('User-Agent', get_useragent())
         try:
             response = browser.open(request, timeout=5).read().decode()
             if "".join(comment) in response:
