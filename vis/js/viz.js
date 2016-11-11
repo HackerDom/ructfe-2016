@@ -1,6 +1,7 @@
 var Viz = function(infoData, startScoreboard) {
 	var LOAD_DATA_INTERVAL = 30*1000;
 	var EVENTS_VISUALIZATION_INTERVAL = 1000;
+	var SERVICE_NAME_TO_NUM = {"atlablog": 4, "weather": 1, "cartographer": 3, "sapmarine": 2, "crash": 0, "thebin": 5};
 	var COLOR_CONSTANTS = ["#ED953A", "#E5BD1F", "#3FE1D6", "#568AFF", "#8C41DA", "#BA329E"];
 	var RED_COLOR = "#EC2B34";
 	var DOWN_SERVICE_COLOR = "#1D3542";
@@ -25,7 +26,7 @@ var Viz = function(infoData, startScoreboard) {
 	var teams = [];
 	var teamIdToNum = {};
 	var teamNameToNum = {};
-	var services = [];
+	var services = new Array(SERVICES_COUNT);
 	var serviceIdToNum = {};
 	var new_events = [];
 	var nodes;
@@ -59,9 +60,9 @@ var Viz = function(infoData, startScoreboard) {
 	(function() {
 		for (var fieldName in info.services) {
 			if (info.services.hasOwnProperty(fieldName)) {
-				var id = services.length;
-				services.push({id: id, service_id: fieldName, name: info.services[fieldName], color: COLOR_CONSTANTS[id], visible: true});
-				serviceIdToNum[fieldName] = services.length - 1;
+				var num = SERVICE_NAME_TO_NUM[info.services[fieldName]];
+				services[num] = {id: num, service_id: fieldName, name: info.services[fieldName], color: COLOR_CONSTANTS[num], visible: true};
+				serviceIdToNum[fieldName] = num;
 			}
 		}
 	})();

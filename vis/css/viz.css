@@ -68,7 +68,7 @@ body,
 #filters-container .filter {
   color: white;
   cursor: pointer;
-  text-align: right;
+  text-align: left;
 }
 #filters-container .filter.deselected .service-name {
   text-decoration: line-through;

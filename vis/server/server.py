@@ -10,6 +10,7 @@ from time import time
 
 
 ROUND_TIME = 60*1000
+service_names = ["atlablog", "weather", "cartographer", "sapmarine", "crash", "thebin"]
 
 
 def team_(x): return 't{}'.format(x)
@@ -40,7 +41,7 @@ def tojson(fn):
 def info_page():
     return {
         'teams': {team_(i): team_name(i) for i in range(args.teams)},
-        'services': {service_(i): 'SVC_%d'%i for i in range(args.services)},
+        'services': {service_(i): service_names[i] for i in range(args.services)},
         'start': 0
     }
 
