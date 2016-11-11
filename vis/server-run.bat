@@ -1,1 +1,1 @@
-python .\server\server.py
+python .\test-server\server.py
