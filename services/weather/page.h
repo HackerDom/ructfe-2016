@@ -92,3 +92,18 @@
 	LINE("		<script src=\"/static/js/atlantis.js\"></script>") \
 	LINE("	</body>") \
 	LINE("</html>")
+
+
+#define CBODY \
+	LINE("Current weather forecast:") \
+	LINE("") \
+	LINE("Today: %d*C, %s") \
+	LINE("") \
+	LINE("Next 5 days:") \
+	LINE("    - %d*C, %s") \
+	LINE("    - %d*C, %s") \
+	LINE("    - %d*C, %s") \
+	LINE("    - %d*C, %s") \
+	LINE("    - %d*C, %s") \
+	LINE("") \
+	LINE("Signature: %016llx")

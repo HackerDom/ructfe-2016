@@ -17,9 +17,7 @@ __author__ = 'm_messiah, tris, dodo_888'
 
 OK, CORRUPT, MUMBLE, DOWN, CHECKER_ERROR = 101, 102, 103, 104, 110
 
-FLAGS_ALPHABET = string.ascii_lowercase + string.ascii_uppercase + string.digits
-
-NECESSARY_TIME_DIFFERENCE = 5 * 60
+FLAGS_ALPHABET = string.ascii_uppercase + string.digits
 
 def close(code, public="", private=""):
     if public:
@@ -90,16 +88,7 @@ def put(*args):
     except CheckerException as e:
         close(MUMBLE, "Service did not work as expected", "Checker exception: %s" % e)
     except Exception as e:
-        close(CHECKER_ERROR, "Unknown error", "Unknown error: %s" % e)
-
-
-def try_get(client, flag, metadata):
-    image = client.getImage(metadata["key"], metadata["id"])
-    seafloorMap = SeafloorMap.fromBytes(image)
-    if (seafloorMap.getFlag() != flag):
-        close(CORRUPT, "Flag is missing")
-    if (not check_chunk_in_recent(client, metadata["id"])):
-        close(CORRUPT, "Flag is missing")
+        close(MUMBLE, "Unknown error", "Unknown error: %s" % e)
 
 
 def check_chunk_in_recent(client, chunkid):
@@ -108,6 +97,15 @@ def check_chunk_in_recent(client, chunkid):
         if chunk == chunkid:
             return True
     return False
+
+
+def try_get(client, flag, metadata):
+    image = client.getImage(metadata["key"], metadata["id"])
+    seafloorMap = SeafloorMap.fromBytes(image)
+    if seafloorMap.getFlag() != flag:
+        close(CORRUPT, "Flag is missing")
+    if not check_chunk_in_recent(client, metadata["id"]):
+        close(CORRUPT, "Flag is missing")
 
 
 def get(*args):
@@ -125,7 +123,7 @@ def get(*args):
     except CheckerException as e:
         close(MUMBLE, "Service did not work as expected", "Checker exception: %s" % e)
     except Exception as e:
-        close(CHECKER_ERROR, "Unknown error", "Unknown error: %s" % e)
+        close(MUMBLE, "Unknown error", "Unknown error: %s" % e)
 
 
 def check(*args):
@@ -143,7 +141,7 @@ def check(*args):
     except CheckerException as e:
         close(MUMBLE, "Service did not work as expected", "Checker exception: %s" % e)
     except Exception as e:
-        close(CHECKER_ERROR, "Unknown error", "Unknown error: %s" % e)
+        close(MUMBLE, "Unknown error", "Unknown error: %s" % e)
 
 
 def info(*args):

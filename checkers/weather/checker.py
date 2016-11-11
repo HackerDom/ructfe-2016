@@ -2,33 +2,54 @@
 
 from sys import argv, stderr
 import subprocess
-import requests
 import socket
 import random
 import string
 
 OK, CORRUPT, MUMBLE, DOWN, CHECKER_ERROR = 101, 102, 103, 104, 110
 
+def control(target, request, do_receive):
+	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+	data = None
+
+	try:
+		s.connect((target, 16761))
+	except:
+		print("Failed to connect to control port", file=stderr)
+		exit(DOWN)
+
+	try:
+		s.sendall(request)
+		if do_receive:
+			data = s.recv(1024)
+			if b"502 Bad Gateway" in data:
+				print("Got 502 from nginx", file=stderr)
+				exit(DOWN)
+
+	except Exception as e:
+		print("Failed to communicate through control port: " + str(e), file=stderr)
+		exit(DOWN)
+
+	s.close()
+
+	return data
 
 def check(*args):
-	addr, *use_internal_port = args
+	addr, = args
 
 	data = str(random.random())[2:]
 	signature = subprocess.check_output('./signtool ' + data, shell=True).strip().decode('ascii')
 
-	port = 16780 if use_internal_port else 80
-	url = 'http://%s:%s/%s' % (addr, port, data)
-	try:
-		r = requests.get(url)
-		if r.status_code != 200:
-			print("Failed to GET: got unexpected code " + str(r.status_code), file=stderr)
-			exit(MUMBLE)
-		if not "Signature: " + signature in r.text:
-			print("Web page does not contain valid signature", file=stderr)
-			exit(MUMBLE)
-	except Exception as e:
-		print("Failed to GET: " + str(e), file=stderr)
-		exit(DOWN)
+	request = b'/' + data.encode('ascii') + b'\n'
+
+	data = control(addr, request, True)
+
+	text = data.decode('ascii', 'ignore')
+
+	if not "Signature: " + signature in text:
+		print("Forecast does not contain valid signature", file=stderr)
+		exit(MUMBLE)
 
 	exit(OK)
 
@@ -39,23 +60,9 @@ def put(*args):
 
 	request = b'\x01\x00\x00\x00' + flag_id.replace('-', '').encode('ascii') + flag.encode('ascii')
 
-	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-	try:
-		s.connect((addr, 16761))
-	except:
-		print("Failed to connect to control port", file=stderr)
-		exit(DOWN)
-
-	try:
-		s.send(request)
-	except Exception as e:
-		print("Failed to communicate through control port: " + str(e), file=stderr)
-		exit(DOWN)
+	control(addr, request, False)
 
 	print(flag_id)
-
-	s.close()
 
 	exit(OK)
 
@@ -64,22 +71,7 @@ def get(*args):
 
 	request = b'\x00\x00\x00\x00' + flag_id.replace('-', '').encode('ascii')
 
-	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-	try:
-		s.connect((addr, 16761))
-	except:
-		print("Failed to connect to control port", file=stderr)
-		exit(DOWN)
-
-	try:
-		s.send(request)
-		data = s.recv(4 + 12 + 32)
-	except Exception as e:
-		print("Failed to communicate through control port: " + str(e), file=stderr)
-		exit(DOWN)
-
-	s.close()
+	data = control(addr, request, True)
 
 	received_flag = data.decode('ascii', 'ignore')
 	if received_flag == flag:

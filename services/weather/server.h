@@ -17,3 +17,5 @@ void wt_close_client(const struct client *client);
 void wt_make_nonblocking(int32 socket);
 
 int32 wt_start_server(uint32 address, int32 port);
+
+void wt_fill_template(const char *request, char *buffer, const char *template);
