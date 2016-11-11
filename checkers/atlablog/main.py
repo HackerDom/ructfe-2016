@@ -2,8 +2,7 @@
 
 import sys
 from urllib.error import URLError
-from comands import\
-    check, put, get, OK, MUMBLE, CORRUPT, DOWN, CHECKER_ERROR
+from comands import check, put, get, OK, MUMBLE, CORRUPT, DOWN, CHECKER_ERROR
 
 
 def close(code, public="", private="", flag_id=""):
