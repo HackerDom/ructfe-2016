@@ -2,7 +2,7 @@
 
 import sys
 from urllib.error import URLError
-from comands import check, put, get, OK, MUMBLE, CORRUPT, DOWN, CHECKER_ERROR
+from comands import check, put, get, OK, MUMBLE, DOWN, CHECKER_ERROR
 
 
 def close(code, public="", private="", flag_id=""):
@@ -62,11 +62,11 @@ if __name__ == '__main__':
     try:
         COMMANDS.get(sys.argv[1], not_found)(*sys.argv[2:])
     except CheckerException as e:
-        close(CORRUPT, "Service did not work as expected",
+        close(DOWN, "Service did not work as expected",
               "Checker exception: %s" % e)
     except URLError as e:
         close(DOWN, "Bad command address", "Checksystem fail {}".format(e))
     except OSError as e:
-        close(CORRUPT, "Socket I/O error", "SOCKET ERROR: %s" % e)
+        close(DOWN, "Socket I/O error", "SOCKET ERROR: %s" % e)
     except Exception as e:
         close(CHECKER_ERROR, "Unknown error", "INTERNAL ERROR: %s" % e)
