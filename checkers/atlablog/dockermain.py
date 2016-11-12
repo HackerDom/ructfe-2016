@@ -3,9 +3,8 @@
 import logging
 import sys
 from datetime import datetime
-from time import time
 
-from dockerlib import docker_run, insecure_run
+from dockerlib import insecure_run, docker_run_with_cache
 
 logger = logging.getLogger("dockerize")
 logging.basicConfig(
@@ -46,14 +45,14 @@ def main():
     TARGET = './main.py'.split()
     argv = sys.argv[:]
     subtype, team_ip, argv = _check_args(argv)
-    tid = (team_ip + '-' + str(time())).replace('.', '-').replace(':', '-')
+    tid = team_ip.replace('.', '-').replace(':', '-')
     logger.info('tid=%s', tid)
 
     if is_docker_required(subtype, team_ip, argv):
         command = TARGET_DOCKER + [subtype, team_ip] + argv
         t1 = datetime.now()
         logger.info("start command inside docker: %r", (command))
-        r = docker_run(tid, command, network='bridge')
+        r = docker_run_with_cache(tid, command, network='bridge')
         t2 = datetime.now()
         logger.info("finish docker (%sms): status=%d",
                     (t2 - t1).microseconds, r.returncode)

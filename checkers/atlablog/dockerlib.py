@@ -8,26 +8,44 @@ log = logging.getLogger(__name__)
 
 DockerResult = namedtuple('DockerResult', 'ok status is_timeout output name '
                                           'real_command command')
+bin_docker = 'docker'
+bin_timeout = 'timeout'
+if sys.platform == 'darwin':
+    bin_docker = '/usr/local/bin/docker'
+if sys.platform == 'darwin':
+    bin_timeout = '/usr/local/bin/gtimeout'
 
 
 def kill_and_remove(ctr_name):
     for action in ('kill', 'rm'):
-        p = Popen('docker %s %s' % (action, ctr_name), shell=True,
-                  stdout=PIPE, stderr=PIPE)
+        p = Popen([bin_docker, action, ctr_name], stdout=PIPE, stderr=PIPE)
         if p.wait() != 0:
-            log.warning(p.stderr.read())
+            log.info("kill_and_remove(): %r", repr(p.stderr.read()))
             # raise RuntimeError()
 
 
-def has_container(name):
-    cmd = ['docker', 'inspect',  '-f', '{{.State.Running}}', name]
+def inspect_container(name):
+    cmd = [bin_docker, 'inspect',  '-f', '{{.State.Running}}', name]
     r = run(cmd, stderr=STDOUT, stdout=PIPE)
-    return r.returncode == 0
+    has_container = r.returncode == 0
+    is_running = b'false' not in r.stdout
+    return has_container, is_running
+
+
+def docker_exec(name, command, cwd=None):
+    if cwd is None:
+        cwd = '/'
+    docker_command = [bin_docker, 'exec', '-it', name]
+    if cwd != '/':
+        docker_command += ['-w', cwd]
+
+    docker_command += command
+    return run(docker_command)
 
 
 def docker_run(name, command, user="nobody", cwd=None, network='none',
                memory_limit='256m', image='pybase', volumes=None, env=None,
-               rm=True):
+               rm=True, daemon=False, hide=False):
     if volumes is not None and not isinstance(volumes, list):
         raise TypeError('volumes argument is not a list')
     if env is not None and not isinstance(env, dict):
@@ -50,6 +68,8 @@ def docker_run(name, command, user="nobody", cwd=None, network='none',
         cwd = '/'
 
     docker_command = [bin_docker, 'run', '--name', name]
+    if daemon:
+        docker_command += ['-d']
     if rm:
         docker_command += ['--rm']
     if network != 'bridge':
@@ -69,8 +89,18 @@ def docker_run(name, command, user="nobody", cwd=None, network='none',
         docker_command += ['-m', memory_limit]
 
     docker_command += [image] + command
+    if hide:
+        return run(docker_command, stdout=PIPE, stderr=PIPE)
+    run(docker_command)
 
-    return run(docker_command)
+
+def docker_run_with_cache(uid, command, network='bridge', memory_limit=None):
+    has_container, is_running = inspect_container(uid)
+    if not has_container or not is_running:
+        kill_and_remove(uid)
+        docker_run(uid, ['/bin/sleep', '200000000'], network=network,
+                   memory_limit=memory_limit, rm=False, daemon=True, hide=True)
+    return docker_exec(uid, command)
 
 
 def insecure_run(command):
