@@ -3,6 +3,7 @@
 import logging
 import sys
 from datetime import datetime
+from time import time
 
 from dockerlib import docker_run, insecure_run
 
@@ -45,7 +46,8 @@ def main():
     TARGET = './main.py'.split()
     argv = sys.argv[:]
     subtype, team_ip, argv = _check_args(argv)
-    tid = team_ip.replace('.', '-')
+    tid = (team_ip + str(time())).replace('.', '-').replace(':', '-')
+    logger.info('tid=%s', tid)
 
     if is_docker_required(subtype, team_ip, argv):
         command = TARGET_DOCKER + [subtype, team_ip] + argv
