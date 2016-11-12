@@ -44,7 +44,7 @@ def docker_exec(name, command, cwd=None):
 
 
 def docker_run(name, command, user="nobody", cwd=None, network='none',
-               memory_limit='256m', image='pybase', volumes=None, env=None,
+               memory_limit='256m', image='pybasex', volumes=None, env=None,
                rm=True, daemon=False, hide=False):
     if volumes is not None and not isinstance(volumes, list):
         raise TypeError('volumes argument is not a list')
