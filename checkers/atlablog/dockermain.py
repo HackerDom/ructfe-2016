@@ -1,8 +1,10 @@
+#!/usr/bin/env python3
+
 import logging
 import sys
 from datetime import datetime
 
-from dockerlib import docker_run
+from dockerlib import docker_run, insecure_run
 
 logger = logging.getLogger("dockerize")
 logging.basicConfig(
@@ -11,7 +13,6 @@ logging.basicConfig(
            "%(message)s at %(filename)s:%(lineno)d "
            "pid=%(process)d tid=%(thread)d")
 OK, CORRUPT, MUMBLE, DOWN, CHECKER_ERROR = 101, 102, 103, 104, 110
-TARGET = 'python -u main.py'.split()
 CHECK_ARGUMENTS = {
     1: lambda x: x in {'check', 'put', 'get'}
 }
@@ -33,18 +34,31 @@ def _check_args(argv):
     return argv[1], argv[2], argv[3:]
 
 
+def is_docker_required(subtype, team_ip, argv):
+    if subtype == "get":
+        return True
+    return False
+
+
 def main():
+    TARGET_DOCKER = 'python -u main.py'.split()
+    TARGET = './main.py'.split()
     argv = sys.argv[:]
-    command, team_ip, argv = _check_args(argv)
+    subtype, team_ip, argv = _check_args(argv)
     tid = team_ip.replace('.', '-')
 
-    command = TARGET + [command, team_ip] + argv
-    t1 = datetime.now()
-    logger.info("start command inside docker: %r", command)
-    r = (docker_run(tid, command, network='bridge'))
-    t2 = datetime.now()
-    logger.info("finish docker (%sms): status=%d",
-                (t2 - t1).microseconds, r.returncode)
+    if is_docker_required(subtype, team_ip, argv):
+        command = TARGET_DOCKER + [subtype, team_ip] + argv
+        t1 = datetime.now()
+        logger.info("start command inside docker: %r", (command))
+        r = docker_run(tid, command, network='bridge')
+        t2 = datetime.now()
+        logger.info("finish docker (%sms): status=%d",
+                    (t2 - t1).microseconds, r.returncode)
+    else:
+        command = TARGET + [subtype, team_ip] + argv
+        logger.info("start insecure command: %r", (command))
+        r = insecure_run(command)
     sysclose(public=r.stdout)
 
 

@@ -2,22 +2,26 @@ from selenium import webdriver, common
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from datetime import datetime
 from contextlib import contextmanager
-from templates.user_agents import get as get_header
+from templates.user_agents import get
 import signal
 
 
 def __init_phantom_js_driver():
 
     dcap = dict(DesiredCapabilities.PHANTOMJS)
-    dcap["phantomjs.page.settings.userAgent"] = (get_header(),)
+    dcap["phantomjs.page.settings.userAgent"] = (str(get()))
     current_date = datetime.isoformat(datetime.now())
-    return webdriver.PhantomJS(service_log_path='/tmp/phant-' + current_date + '.log',
-                               service_args=['--webdriver-loglevel=DEBUG',
-                                             '--debug=true',
-                                             '--local-url-access=false'],
-                               desired_capabilities=dcap
-                               )
-
+    driver = webdriver.PhantomJS(
+        desired_capabilities=dcap,
+        service_log_path='/tmp/phant-' + current_date + '.log',
+        service_args=
+            [
+                '--debug=true',
+                '--webdriver-loglevel=DEBUG',
+                '--local-url-access=false'
+            ]
+    )
+    return driver
 
 @contextmanager
 def get_driver(timeout=15):
