@@ -118,10 +118,10 @@ def try_get(client, flag, metadata):
 
 def get(*args):
     addr = args[0]
-    metadata = json.loads(args[1])
     flag = args[2]
     client = Client(addr)
     try:
+        metadata = json.loads(args[1])
         try_get(client, flag, metadata)
         close(OK)
     except http_error as e:
@@ -166,7 +166,7 @@ def main():
     try:
         HANDLERS.get(argv[1], not_found)(*argv[2:])
     except Exception as e:
-        close(CHECKER_ERROR, "MY DICK IS BIG, IT'S VERY VERY BIG", "INTERNAL ERROR: %s" % e)
+        close(CHECKER_ERROR, "Cute checker :3", "INTERNAL ERROR: %s" % e)
 
 if __name__ == '__main__':
     main()
