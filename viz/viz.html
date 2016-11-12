@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Visualization</title>
+	<link href="./static/css/viz.min.css" rel="stylesheet" type="text/css"/>
+	<link rel="shortcut icon" href="/static/img/favicon.ico" type="image/x-icon">
+	<link href="https://fonts.googleapis.com/css?family=Roboto:100" rel="stylesheet">
+	<script src="./static/lib/jquery-3.1.1.min.js"></script>
+	<script src="./static/lib/jquery-ui-tooltip-1.12.1.min.js"></script>
+	<script src="./static/lib/underscore-1.8.3.min.js"></script>
+	<script src="./static/lib/md5.min.js"></script>
+	<script src="./static/lib/d3-3.5.12.min.js"></script>
+	<script src="./static/js/viz.min.js"></script>
+</head>
+<body>
+	<div id="svg-wrapper">
+		<svg id="svg-viz" version="1.1" xmlns="http://www.w3.org/2000/svg">
+		</svg>
+	</div>
+	<div id="atlantis">ATLANTIS</div>
+	<div id="alphabet">ructfe</div>
+	<div id="attacks" class="statistics">
+		<span class="header">attacks</span>
+		<span class="value">-</span>
+	</div>
+	<div id="alive" class="statistics">
+		<span class="value">-</span>
+		<span class="header">alive</span>
+	</div>
+	<div id="find-team-wrapper">
+		<input type="text" size="20" placeholder="look for team">
+	</div>
+	<div id="filters-container">
+	</div>
+	<script>
+		var viz;
+		$.when(
+			$.getJSON("/api/info"),
+			$.getJSON("/api/scoreboard")
+		).done(function(infoResult, scoreboardResult) {
+			if (infoResult[1] === "success" && scoreboardResult[1] === "success")
+			{
+				viz = new Viz(infoResult[0], scoreboardResult[0]);
+			}
+		});
+	</script>
+</body>
+</html>

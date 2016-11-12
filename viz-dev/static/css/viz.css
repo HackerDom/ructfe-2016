@@ -1,11 +1,11 @@
 @font-face {
   font-family: 'Atlantean1';
-  src: url('/static/fonts/Atlantean1.ttf.woff') format('woff'), url('/static/fonts/Atlantean1.ttf.svg#Atlantean1') format('svg'), url('/static/fonts/Atlantean1.ttf.eot'), url('/static/fonts/Atlantean1.ttf.eot?#iefix') format('embedded-opentype');
+  src: url('../fonts/Atlantean1.ttf.woff') format('woff'), url('../fonts/Atlantean1.ttf.svg#Atlantean1') format('svg'), url('../fonts/Atlantean1.ttf.eot'), url('../fonts/Atlantean1.ttf.eot?#iefix') format('embedded-opentype');
   font-weight: normal;
   font-style: normal;
 }
 body {
-  background: url(/static/img/background.png) #1B1E3C;
+  background: url(../img/background.png) #1B1E3C;
   background-size: cover;
 }
 html,
@@ -36,6 +36,11 @@ body,
   position: relative;
   border: solid #B7E99B 1px;
 }
+.ui-tooltip .team-tooltip table {
+  table-layout: fixed;
+  width: 100%;
+  word-wrap: break-word;
+}
 .ui-tooltip .team-tooltip .header {
   font-weight: normal;
 }
@@ -49,8 +54,9 @@ body,
   margin-bottom: 8px;
   line-height: 1;
 }
-.ui-tooltip .team-tooltip td {
+.ui-tooltip .team-tooltip td:first-child {
   vertical-align: top;
+  width: 69px;
 }
 .ui-tooltip .team-tooltip img {
   margin-right: 5px;

@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Visualization</title>
-	<link href="./static/css/viz.css" rel="stylesheet" type="text/css"/>
+	<link href="./static/css/viz.min.css" rel="stylesheet" type="text/css"/>
 	<link rel="shortcut icon" href="/static/img/favicon.ico" type="image/x-icon">
 	<link href="https://fonts.googleapis.com/css?family=Roboto:100" rel="stylesheet">
 	<script src="./static/lib/jquery-3.1.1.min.js"></script>
@@ -11,7 +11,7 @@
 	<script src="./static/lib/underscore-1.8.3.min.js"></script>
 	<script src="./static/lib/md5.min.js"></script>
 	<script src="./static/lib/d3-3.5.12.min.js"></script>
-	<script src="./static/js/viz.js"></script>
+	<script src="./static/js/viz.min.js"></script>
 </head>
 <body>
 	<div id="svg-wrapper">
@@ -36,8 +36,8 @@
 	<script>
 		var viz;
 		$.when(
-			$.getJSON("./api/info"),
-			$.getJSON("./api/scoreboard")
+			$.getJSON("/api/info"),
+			$.getJSON("/api/scoreboard")
 		).done(function(infoResult, scoreboardResult) {
 			if (infoResult[1] === "success" && scoreboardResult[1] === "success")
 			{
