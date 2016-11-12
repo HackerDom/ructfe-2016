@@ -1,6 +1,7 @@
 from comands import OK, MUMBLE, DOWN
 from templates.urllib_forms import \
-    MumbleException, DownException, try_register_user, try_make_post, get_useragent
+    MumbleException, DownException,\
+    try_register_user, try_make_post, get_useragent, try_upload_file
 
 from urllib.request import Request, build_opener, HTTPCookieProcessor, \
     HTTPRedirectHandler
@@ -33,7 +34,7 @@ def non_selenium_check(command_ip):
 
         data = {
             "text": "".join(comment),
-            "attachments": ''
+            "attachments": try_upload_file(browser, command_ip)
         }
         data = ["{}={}".format(key, quote(data[key])) for key in data]
         request.data = bytes("&".join(data), "utf-8")
