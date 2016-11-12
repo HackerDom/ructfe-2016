@@ -71,14 +71,15 @@ class CheckerException(Exception):
         super(CheckerException, self).__init__(msg)
 
 
-def try_put(client, flag):
+def try_put(client, flag, isCheck):
     generator = SeafloorMapsGenerator()
     seafloorMap = generator.generate()
     seafloorMap.addFlag(flag)
     postResult = client.postImage(seafloorMap.toBytes())
     metadata = postResult
+    print(isCheck)
     if not check_chunk_in_recent(client, metadata["id"]):
-        close(CORRUPT, "Flag is missing")
+        close(DOWN if isCheck else CORRUPT, "Can't get required chunk" if isCheck else "Flag is missing")
     return metadata
 
 
@@ -88,7 +89,7 @@ def put(*args):
     flag = args[2]
     client = Client(addr)   
     try:
-        put_result = try_put(client, flag)
+        put_result = try_put(client, flag, False)
         close(OK, json.dumps(put_result))
     except http_error as e:
         close(DOWN, "HTTP Error", "HTTP error sending to '%s': %s" % (addr, e))
@@ -138,7 +139,7 @@ def check(*args):
     client = Client(addr)
     flag = "".join([ random.choice(FLAGS_ALPHABET) for _ in range(31) ]) + "="
     try:
-        metadata = try_put(client, flag)
+        metadata = try_put(client, flag, True)
         try_get(client, flag, metadata)
         close(OK)
     except http_error as e:
