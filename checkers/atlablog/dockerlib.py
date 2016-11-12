@@ -65,3 +65,7 @@ def docker_run(name, command, user="nobody", cwd=None, network='none',
     docker_command += [image] + command
 
     return run(docker_command)
+
+
+def insecure_run(command):
+    return run(command)
