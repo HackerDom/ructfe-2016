@@ -86,10 +86,10 @@ var Viz = function(infoData, startScoreboard) {
 	}, 0);
 
 	function load_data() {
-		$.getJSON("./api/scoreboard").done(function (scoreboardData) {
+		$.getJSON("/api/scoreboard").done(function (scoreboardData) {
 			scoreboard = scoreboardData;
 			load_events();
-			$.getJSON("./scoreboard.json").done(function (scores_json) {
+			$.getJSON("/scoreboard.json").done(function (scores_json) {
 				scoreboardPageData = scores_json;
 				load_services_statuses();
 				updateScore();
@@ -105,7 +105,7 @@ var Viz = function(infoData, startScoreboard) {
 		if (cur_round === scoreboard.round) { return; }
 		var next_round = scoreboard.round;
 
-		$.getJSON('./api/events?from=' + cur_round).done(function (eventsData) {
+		$.getJSON('/api/events?from=' + cur_round).done(function (eventsData) {
 			new_events = [];
 			for (var i = 0; i < eventsData.length; ++i) {
 				if (cur_round <= eventsData[i][0] && eventsData[i][0] < next_round) {
