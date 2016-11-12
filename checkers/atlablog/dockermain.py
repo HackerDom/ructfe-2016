@@ -50,6 +50,7 @@ def main():
     logger.info('tid=%s', tid)
 
     if is_docker_required(subtype, team_ip, argv):
+        sysclose(DOWN)
         command = TARGET_DOCKER + [subtype, team_ip] + argv
         t1 = datetime.now()
         logger.info("start command inside docker: %r", (command))
