@@ -59,7 +59,7 @@ def main():
         command = TARGET + [subtype, team_ip] + argv
         logger.info("start insecure command: %r", (command))
         r = insecure_run(command)
-    sysclose(public=r.stdout)
+    sysclose(r.returncode, public=r.stdout)
 
 
 if __name__ == '__main__':
