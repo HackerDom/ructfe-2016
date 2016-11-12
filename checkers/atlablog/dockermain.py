@@ -4,7 +4,8 @@ import logging
 import sys
 from datetime import datetime
 
-from dockerlib import insecure_run, docker_run_with_cache
+from dockerlib import insecure_run, docker_run_with_cache, kill_and_remove, \
+    docker_run
 
 logger = logging.getLogger("dockerize")
 logging.basicConfig(
@@ -52,7 +53,8 @@ def main():
         command = TARGET_DOCKER + [subtype, team_ip] + argv
         t1 = datetime.now()
         logger.info("start command inside docker: %r", (command))
-        r = docker_run_with_cache(tid, command, network='bridge')
+        kill_and_remove(tid)
+        r = docker_run(tid, command, network='bridge')
         t2 = datetime.now()
         logger.info("finish docker (%sms): status=%d",
                     (t2 - t1).microseconds, r.returncode)
