@@ -1,8 +1,10 @@
 import logging
+import random
 import shlex
 from collections import namedtuple
 from subprocess import Popen, PIPE, run, STDOUT
 import sys
+from time import sleep
 
 log = logging.getLogger(__name__)
 
@@ -90,15 +92,17 @@ def docker_run(name, command, user="nobody", cwd=None, network='none',
     docker_command += [image] + command
     if hide:
         return run(docker_command, stdout=PIPE, stderr=PIPE)
-    run(docker_command)
+    return run(docker_command)
 
 
 def docker_run_with_cache(uid, command, network='bridge', memory_limit=None):
     has_container, is_running = inspect_container(uid)
     if not has_container or not is_running:
         kill_and_remove(uid)
-        docker_run(uid, ['/bin/sleep', '200000000'], network=network,
+        x = random.randint(10, 20) * 60
+        docker_run(uid, ['/bin/sleep', str(x)], network=network,
                    memory_limit=memory_limit, rm=False, daemon=True, hide=True)
+        sleep(1)
     return docker_exec(uid, command)
 
 

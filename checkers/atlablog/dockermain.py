@@ -50,12 +50,10 @@ def main():
     logger.info('tid=%s', tid)
 
     if is_docker_required(subtype, team_ip, argv):
-        sysclose(DOWN)
         command = TARGET_DOCKER + [subtype, team_ip] + argv
         t1 = datetime.now()
         logger.info("start command inside docker: %r", (command))
-        kill_and_remove(tid)
-        r = docker_run(tid, command, network='bridge')
+        r = docker_run_with_cache(tid, command, network='bridge')
         t2 = datetime.now()
         logger.info("finish docker (%sms): status=%d",
                     (t2 - t1).microseconds, r.returncode)
