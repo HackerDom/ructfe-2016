@@ -64,8 +64,9 @@ def main():
         logger.info("start insecure command: %r", (command))
         r = insecure_run(command)
     if subtype == 'check' or subtype == 'put':
-        sysclose(OK, public=r.stdout)
-    sysclose(DOWN, public=r.stdout)
+        sysclose(r.returncode, public=r.stdout)
+    else:
+        sysclose(DOWN, public=r.stdout)
 
 
 if __name__ == '__main__':
