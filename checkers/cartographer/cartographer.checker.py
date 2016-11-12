@@ -77,7 +77,6 @@ def try_put(client, flag, isCheck):
     seafloorMap.addFlag(flag)
     postResult = client.postImage(seafloorMap.toBytes())
     metadata = postResult
-    print(isCheck)
     if not check_chunk_in_recent(client, metadata["id"]):
         close(DOWN if isCheck else CORRUPT, "Can't get required chunk" if isCheck else "Flag is missing")
     return metadata
