@@ -1,0 +1,3 @@
+- name: put public key of backuper in postgres
+  authorized_key: user=postgres key="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDdJTHBb9jUuvLG5v4LKL+zLKzXeQiy1vpnr7YPGX9iAlJwCx9H4OjyZl0+83MSWb6vSqSaq/Q6yxzBXTfi+zIvPDtb+xtmZCIZDNYv8/UIVAHN+ue+YTTZDLxdtDU2K638D3gwQsNbU/B+NcwTNsPXmavytRyGG1KtIjutxdzgawsqAX8AAl2VZ7L0M4HjarmBbxn7w8EjmPbIclTA2ejguutoP51dxPK5hEN9776QOnirKL/jl8s+7ixc1ujvjdVQcPMp7SezD6VsXW75JhbLkD7B3tL0YCLVccQrxSDuSvTz4Zv9HA4+/TjUyCC2zd4GCSo3IknOcz2rmmPMiGTv alice@baysgentoonotebook"
+  tags: backupable

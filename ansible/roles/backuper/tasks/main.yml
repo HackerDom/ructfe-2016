@@ -1,0 +1,23 @@
+- name: apt install mailutils
+  apt: name=mailutils state=latest
+  tags: backuper
+
+- name: create backuper user
+  user: name=backuper shell=/bin/bash
+  tags: backuper
+
+- name: create backuper directories
+  file: path=/home/backuper/{{item}} state=directory owner=backuper group=backuper
+  with_items:
+    - a
+    - b
+    - .ssh
+  tags: backuper
+
+- name: copy backuper user private ssh key
+  copy: src=id_rsa dest=/home/backuper/.ssh/id_rsa owner=backuper group=backuper mode=0600
+  tags: backuper
+
+- name: copy backup script
+  copy: src=checksystem_backup.sh dest=/home/backuper/checksystem_backup.sh mode=0755
+  tags: backuper

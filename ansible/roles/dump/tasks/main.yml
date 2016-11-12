@@ -6,8 +6,14 @@
   file: path=/home/dump state=directory
   tags: dump
 
-- name: copy start_dump.sh
-  copy: src=start_dump.sh dest=/home/dump/start_dump.sh mode=0755
+- name: copy start_dump_eth1.sh
+  copy: src=start_dump_eth1.sh dest=/home/dump/start_dump.sh mode=0755
+  when: datacenter=='a'
+  tags: dump
+
+- name: copy start_dump_eth0.sh
+  copy: src=start_dump_eth0.sh dest=/home/dump/start_dump.sh mode=0755
+  when: datacenter=='b'
   tags: dump
 
 - name: copy get_pkg_stat.sh

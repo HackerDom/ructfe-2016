@@ -1,0 +1,9 @@
+- hosts: backuper
+  roles:
+    - common
+    - backuper
+
+- hosts: cs-db
+  roles:
+    - common
+    - backupable

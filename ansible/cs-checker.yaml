@@ -1,6 +1,7 @@
 - hosts: chk2.a5,chk3.a6,chk4.a7,chk6.a9,chk5.b8,chk6.b9
   roles:
     - common
+    - monitoring_client
     - { role: cs_common, tags: ['cs'] }
     - { role: cs_checker, tags: ['cs'] }
     - logging_client

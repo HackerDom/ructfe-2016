@@ -14,6 +14,7 @@ ping-timer-rem
 persist-tun
 persist-key
 
+txqueuelen 1000
 tun-mtu 1500
 fragment 1300
 mssfix
