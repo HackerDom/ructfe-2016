@@ -39,6 +39,11 @@ html, body, #svg-wrapper, #svg-viz  {
 		padding: 5px;
 		position: relative;
 		border: solid #B7E99B 1px;
+		table {
+			table-layout: fixed;
+			width: 100%;
+			word-wrap: break-word;
+		}
 		.header {
 			font-weight: normal;
 		}
@@ -52,8 +57,9 @@ html, body, #svg-wrapper, #svg-viz  {
 			margin-bottom: 8px;
 			line-height: 1;
 		}
-		td {
+		td:first-child {
 			vertical-align: top;
+			width: 69px;
 		}
 		img {
 			margin-right: 5px;

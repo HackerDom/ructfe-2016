@@ -429,8 +429,8 @@ var Viz = function(infoData, startScoreboard) {
 	$(".ui-helper-hidden-accessible").remove();
 
 	function createTooltipHtml(nodeData) {
-		return "<table><td><img src='https://ructfe.org/logos/" + md5(nodeData.name) + ".png'/></td>"
-			+ "<td><div class='header-wrapper'><span class='header'></span> <span class='value team-name'>" + htmlEncode(nodeData.name) + "</span></div>"
+		return "<table><td><img src='https://ructfe.org/logos/" + md5(nodeData.name ) + ".png'/></td>"
+			+ "<td><div class='header-wrapper'><span class='value team-name'>" + htmlEncode(nodeData.name) + "</span></div>"
 			+ "<div><span class='header'>Place:</span> <span class='value'>" + nodeData.place + "</span></div>"
 			+ "<div><span class='header'>Score:</span> <span class='value'>" + nodeData.score + "</span></div></td></tr></table>";
 	}
