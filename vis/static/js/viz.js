@@ -75,7 +75,7 @@ var Viz = function(infoData, startScoreboard) {
 
 	drawTeams();
 
-	/*setTimeout(function () {
+	setTimeout(function () {
 		events_visualization_loop();
 		setInterval(events_visualization_loop, EVENTS_VISUALIZATION_INTERVAL);
 	}, 0);
@@ -83,7 +83,7 @@ var Viz = function(infoData, startScoreboard) {
 	setTimeout(function () {
 		load_data();
 		setInterval(load_data, LOAD_DATA_INTERVAL);
-	}, 0);*/
+	}, 0);
 
 	function load_data() {
 		$.getJSON("./api/scoreboard").done(function (scoreboardData) {
