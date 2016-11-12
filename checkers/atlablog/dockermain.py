@@ -46,7 +46,7 @@ def main():
     TARGET = './main.py'.split()
     argv = sys.argv[:]
     subtype, team_ip, argv = _check_args(argv)
-    tid = (team_ip + str(time())).replace('.', '-').replace(':', '-')
+    tid = (team_ip + '-' + str(time())).replace('.', '-').replace(':', '-')
     logger.info('tid=%s', tid)
 
     if is_docker_required(subtype, team_ip, argv):
@@ -61,6 +61,8 @@ def main():
         command = TARGET + [subtype, team_ip] + argv
         logger.info("start insecure command: %r", (command))
         r = insecure_run(command)
+    if subtype == 'check':
+        sysclose(OK, public=r.stdout)
     sysclose(DOWN, public=r.stdout)
 
 

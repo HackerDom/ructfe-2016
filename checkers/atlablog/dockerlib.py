@@ -1,7 +1,7 @@
 import logging
 import shlex
 from collections import namedtuple
-from subprocess import Popen, PIPE, run
+from subprocess import Popen, PIPE, run, STDOUT
 import sys
 
 log = logging.getLogger(__name__)
@@ -17,6 +17,12 @@ def kill_and_remove(ctr_name):
         if p.wait() != 0:
             log.warning(p.stderr.read())
             # raise RuntimeError()
+
+
+def has_container(name):
+    cmd = ['docker', 'inspect',  '-f', '{{.State.Running}}', name]
+    r = run(cmd, stderr=STDOUT, stdout=PIPE)
+    return r.returncode == 0
 
 
 def docker_run(name, command, user="nobody", cwd=None, network='none',
