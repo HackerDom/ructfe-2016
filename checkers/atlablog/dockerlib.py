@@ -17,11 +17,10 @@ if sys.platform == 'darwin':
 
 
 def kill_and_remove(ctr_name):
-    for action in ('kill', 'rm'):
-        p = Popen([bin_docker, action, ctr_name], stdout=PIPE, stderr=PIPE)
-        if p.wait() != 0:
-            log.info("kill_and_remove(): %r", repr(p.stderr.read()))
-            # raise RuntimeError()
+    p = Popen([bin_docker, 'rm', '-f', ctr_name], stdout=PIPE, stderr=STDOUT)
+    if p.wait() != 0:
+        log.info("kill_and_remove(): %r", repr(p.stdout.read()))
+        # raise RuntimeError()
 
 
 def inspect_container(name):
