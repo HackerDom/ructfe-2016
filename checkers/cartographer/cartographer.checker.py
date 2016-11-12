@@ -71,15 +71,14 @@ class CheckerException(Exception):
         super(CheckerException, self).__init__(msg)
 
 
-def try_put(client, flag, isCheck):
+def try_put(client, flag):
     generator = SeafloorMapsGenerator()
     seafloorMap = generator.generate()
     seafloorMap.addFlag(flag)
     postResult = client.postImage(seafloorMap.toBytes())
     metadata = postResult
-    print(isCheck)
     if not check_chunk_in_recent(client, metadata["id"]):
-        close(DOWN if isCheck else CORRUPT, "Can't get required chunk" if isCheck else "Flag is missing")
+        raise CheckerException("Chunk that was just put is not among recent")
     return metadata
 
 
@@ -89,7 +88,7 @@ def put(*args):
     flag = args[2]
     client = Client(addr)   
     try:
-        put_result = try_put(client, flag, False)
+        put_result = try_put(client, flag)
         close(OK, json.dumps(put_result))
     except http_error as e:
         close(DOWN, "HTTP Error", "HTTP error sending to '%s': %s" % (addr, e))
@@ -118,10 +117,10 @@ def try_get(client, flag, metadata):
 
 def get(*args):
     addr = args[0]
-    metadata = json.loads(args[1])
     flag = args[2]
     client = Client(addr)
     try:
+        metadata = json.loads(args[1])
         try_get(client, flag, metadata)
         close(OK)
     except http_error as e:
@@ -139,7 +138,7 @@ def check(*args):
     client = Client(addr)
     flag = "".join([ random.choice(FLAGS_ALPHABET) for _ in range(31) ]) + "="
     try:
-        metadata = try_put(client, flag, True)
+        metadata = try_put(client, flag)
         try_get(client, flag, metadata)
         close(OK)
     except http_error as e:
@@ -166,7 +165,7 @@ def main():
     try:
         HANDLERS.get(argv[1], not_found)(*argv[2:])
     except Exception as e:
-        close(CHECKER_ERROR, "MY DICK IS BIG, IT'S VERY VERY BIG", "INTERNAL ERROR: %s" % e)
+        close(CHECKER_ERROR, "Cute checker :3", "INTERNAL ERROR: %s" % e)
 
 if __name__ == '__main__':
     main()
