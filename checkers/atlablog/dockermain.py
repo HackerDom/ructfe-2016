@@ -61,10 +61,8 @@ def main():
         command = TARGET + [subtype, team_ip] + argv
         logger.info("start insecure command: %r", (command))
         r = insecure_run(command)
-    if subtype == 'check' or subtype == 'put':
-        sysclose(r.returncode, public=r.stdout)
-    else:
-        sysclose(DOWN, public=r.stdout)
+        logger.info("finish insecure command: status=%d", r.returncode)
+    sysclose(r.returncode, public=r.stdout)
 
 
 if __name__ == '__main__':
