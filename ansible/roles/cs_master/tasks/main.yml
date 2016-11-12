@@ -17,7 +17,7 @@
   template: src=nginx.conf.j2 dest=/etc/nginx/conf.d/cs.conf
 
 - name: sync vis
-  synchronize: src=../vis dest=/home/cs
+  synchronize: src=../viz dest=/home/cs
 
 - name: permissions
-  file: path=/home/cs/vis owner={{cs_user}} group=www-data recurse=yes
+  file: path=/home/cs/viz owner={{cs_user}} group=www-data recurse=yes

@@ -27,16 +27,8 @@ server {
     proxy_set_header Connection "upgrade";
   }
 
-  location /vis {
+  location /viz {
     root /home/cs;
     index viz.html;
-  }
-
-  location /vis/api {
-    proxy_pass http://cs/api;
-  }
-
-  location /vis/scoreboard.json {
-    proxy_pass http://cs/scoreboard.json;
   }
 }
