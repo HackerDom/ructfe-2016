@@ -35,7 +35,7 @@ def inspect_container(name):
 def docker_exec(name, command, cwd=None):
     if cwd is None:
         cwd = '/'
-    docker_command = [bin_docker, 'exec', '-it', name]
+    docker_command = [bin_docker, 'exec', '-i', name]
     if cwd != '/':
         docker_command += ['-w', cwd]
 
