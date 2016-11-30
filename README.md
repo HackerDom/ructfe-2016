@@ -6,6 +6,4 @@ The contest is driven by classic rules (Attack-Defense [CTF](https://en.wikipedi
 
 RuCTFE 2016 was held on November 12, 2016. [Results](https://ructfe.org/results)
 
-Some writeups are here: https://github.com/HackerDom/ructfe-2016/wiki/Writeups
-
 Copyright (C) 2016 [HackerDom](http://hackerdom.ru)
